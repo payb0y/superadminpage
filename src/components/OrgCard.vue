@@ -1,5 +1,9 @@
 <template>
-  <div class="org-card" @click="$emit('click')">
+  <div
+    class="org-card"
+    :class="{ 'org-card--selected': selected }"
+    @click="$emit('click')"
+  >
     <div class="org-card__header">
       <span class="org-card__avatar">{{ initial }}</span>
       <div class="org-card__title-group">
@@ -43,6 +47,10 @@ export default {
     org: {
       type: Object,
       required: true,
+    },
+    selected: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
@@ -95,6 +103,15 @@ export default {
 .org-card:hover {
   box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
   transform: translateY(-1px);
+}
+
+.org-card--selected {
+  box-shadow: 0 0 0 2px #4a90d9, var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
+  background: #f5faff;
+}
+
+.org-card--selected:hover {
+  box-shadow: 0 0 0 2px #4a90d9, var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
 .org-card__header {

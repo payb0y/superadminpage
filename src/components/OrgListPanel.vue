@@ -41,6 +41,7 @@
         v-for="org in paginatedOrgs"
         :key="'org-' + org.id"
         :org="org"
+        :selected="org.id === selectedOrgId"
         @click="$emit('select-org', org.id)"
       />
     </div>
@@ -77,6 +78,10 @@ export default {
     orgs: {
       type: Array,
       default: () => [],
+    },
+    selectedOrgId: {
+      type: [Number, String, null],
+      default: null,
     },
   },
   data() {

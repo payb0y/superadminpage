@@ -21,7 +21,11 @@
 
       <AlertsPanel v-if="platform" :alerts="platform.alerts" />
 
-      <OrgListPanel :orgs="orgs" @select-org="onSelectOrg" />
+      <OrgListPanel
+        :orgs="orgs"
+        :selected-org-id="selectedOrgId"
+        @select-org="onSelectOrg"
+      />
 
       <section
         v-if="currentView === 'orgDetail'"
@@ -127,9 +131,8 @@ export default {
 
 <style>
 /* unscoped — overrides Nextcloud dark mode */
-#app-content {
+#app-content:has(.superadmin-dashboard) {
   background-color: #f0f1f5 !important;
-  min-height: 100vh;
 }
 </style>
 
