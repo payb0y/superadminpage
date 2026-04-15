@@ -1,9 +1,5 @@
 <template>
   <section class="org-detail">
-    <button class="org-detail__back" @click="$emit('back')">
-      ‹ Back to organizations
-    </button>
-
     <header class="org-detail__header">
       <span class="org-detail__avatar">{{ initial }}</span>
       <div class="org-detail__title-group">
@@ -230,21 +226,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md, 16px);
-}
-
-.org-detail__back {
-  align-self: flex-start;
-  background: none;
-  border: none;
-  color: #4a90d9;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 4px 0;
-}
-
-.org-detail__back:hover {
-  text-decoration: underline;
 }
 
 .org-detail__header {
