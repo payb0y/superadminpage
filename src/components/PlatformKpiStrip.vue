@@ -29,8 +29,9 @@
       title="Tasks"
       icon-color="#f59e0b"
       :metrics="[
-        { value: kpis.projects.total, label: 'projects all-time' },
-        { value: kpis.orgs.cancelled, label: 'churned' },
+        { value: kpis.tasks.total, label: 'open' },
+        { value: kpis.tasks.done, label: 'done' },
+        { value: kpis.tasks.overdue, label: 'overdue' },
       ]"
     />
   </div>

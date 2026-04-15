@@ -70,6 +70,30 @@ class PlatformService {
         $stmt->execute();
         $projRow = $stmt->fetch() ?: ['total' => 0, 'active' => 0];
 
+        // Cross-platform task counts (Deck cards joined through custom_projects)
+        $taskSql = "
+            SELECT
+                COUNT(c.id) AS total_tasks,
+                SUM(CASE WHEN s.title = 'Approved/Done' AND c.deleted_at = 0 THEN 1 ELSE 0 END) AS done_tasks,
+                SUM(CASE
+                    WHEN c.duedate IS NOT NULL
+                     AND c.duedate < NOW()
+                     AND c.deleted_at = 0
+                     AND s.title <> 'Approved/Done'
+                    THEN 1 ELSE 0
+                END) AS overdue_tasks
+            FROM *PREFIX*custom_projects cp
+            INNER JOIN *PREFIX*deck_stacks s
+                    ON s.board_id = CAST(cp.board_id AS UNSIGNED)
+            INNER JOIN *PREFIX*deck_cards c
+                    ON c.stack_id = s.id
+                   AND c.deleted_at = 0
+                   AND c.archived = 0
+        ";
+        $stmt = $this->db->prepare($taskSql);
+        $stmt->execute();
+        $taskRow = $stmt->fetch() ?: ['total_tasks' => 0, 'done_tasks' => 0, 'overdue_tasks' => 0];
+
         return [
             'orgs' => [
                 'total'     => (int)($orgRow['total_orgs'] ?? 0),
@@ -88,6 +112,11 @@ class PlatformService {
             'projects' => [
                 'total'  => (int)$projRow['total'],
                 'active' => (int)$projRow['active'],
+            ],
+            'tasks' => [
+                'total'   => (int)$taskRow['total_tasks'],
+                'done'    => (int)$taskRow['done_tasks'],
+                'overdue' => (int)$taskRow['overdue_tasks'],
             ],
         ];
     }
