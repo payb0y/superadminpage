@@ -1,5 +1,9 @@
 <template>
   <section class="org-detail">
+    <button class="org-detail__back" @click="$emit('back')">
+      × Close
+    </button>
+
     <header class="org-detail__header">
       <span class="org-detail__avatar">{{ initial }}</span>
       <div class="org-detail__title-group">
@@ -226,6 +230,21 @@ export default {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md, 16px);
+}
+
+.org-detail__back {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary, #6b7280);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.org-detail__back:hover {
+  color: var(--color-text-primary, #1a1a2e);
 }
 
 .org-detail__header {

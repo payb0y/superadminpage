@@ -23,36 +23,21 @@
 
       <OrgListPanel :orgs="orgs" @select-org="onSelectOrg" />
 
-      <transition name="drawer">
-        <div
-          v-if="currentView === 'orgDetail'"
-          class="drawer-backdrop"
-          @click.self="onBack"
-        >
-          <aside
-            class="drawer"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Organization detail"
-          >
-            <button
-              class="drawer__close"
-              type="button"
-              aria-label="Close organization detail"
-              @click="onBack"
-            >
-              ×
-            </button>
-            <div class="drawer__body">
-              <div v-if="detailLoading" class="drawer__loading">
-                <div class="superadmin-dashboard__spinner"></div>
-                <p>Loading organization…</p>
-              </div>
-              <OrgDetailView v-else-if="orgDetail" :org="orgDetail" />
-            </div>
-          </aside>
+      <section
+        v-if="currentView === 'orgDetail'"
+        ref="detailSection"
+        class="superadmin-dashboard__detail"
+      >
+        <div v-if="detailLoading" class="superadmin-dashboard__loading">
+          <div class="superadmin-dashboard__spinner"></div>
+          <p>Loading organization…</p>
         </div>
-      </transition>
+        <OrgDetailView
+          v-else-if="orgDetail"
+          :org="orgDetail"
+          @back="onBack"
+        />
+      </section>
     </template>
   </div>
 </template>
@@ -87,23 +72,6 @@ export default {
   },
   mounted() {
     this.fetchAll();
-    this.onKeydown = (e) => {
-      if (e.key === "Escape" && this.currentView === "orgDetail") {
-        this.onBack();
-      }
-    };
-    window.addEventListener("keydown", this.onKeydown);
-  },
-  beforeDestroy() {
-    if (this.onKeydown) {
-      window.removeEventListener("keydown", this.onKeydown);
-    }
-    document.body.style.overflow = "";
-  },
-  watch: {
-    currentView(v) {
-      document.body.style.overflow = v === "orgDetail" ? "hidden" : "";
-    },
   },
   methods: {
     async fetchAll() {
@@ -126,6 +94,14 @@ export default {
       this.currentView = "orgDetail";
       this.detailLoading = true;
       this.orgDetail = null;
+      this.$nextTick(() => {
+        if (this.$refs.detailSection) {
+          this.$refs.detailSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      });
       try {
         const url = generateUrl(
           "/apps/superadminpage/api/super/orgs/" + orgId,
@@ -249,88 +225,7 @@ export default {
   color: var(--color-danger);
 }
 
-.drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  display: flex;
-  justify-content: flex-end;
-  z-index: 1000;
-}
-
-.drawer {
-  position: relative;
-  width: clamp(480px, 60vw, 820px);
-  height: 100vh;
-  background: var(--bg-page, #f0f1f5);
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
-  overflow-y: auto;
-  padding: var(--spacing-lg, 24px);
-  display: flex;
-  flex-direction: column;
-}
-
-.drawer__close {
-  position: sticky;
-  top: 0;
-  align-self: flex-end;
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 50%;
-  background: var(--bg-card, #fff);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  color: var(--color-text-primary, #1a1a2e);
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  transition: background 0.15s;
-}
-
-.drawer__close:hover {
-  background: #eef1f5;
-}
-
-.drawer__body {
-  margin-top: var(--spacing-md, 16px);
-  flex: 1;
-}
-
-.drawer__loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: var(--spacing-2xl, 40px);
-  color: var(--color-text-secondary, #6b7280);
-  font-size: 14px;
-}
-
-.drawer-enter-active,
-.drawer-leave-active {
-  transition: opacity 0.18s ease;
-}
-.drawer-enter-active .drawer,
-.drawer-leave-active .drawer {
-  transition: transform 0.18s ease;
-}
-.drawer-enter,
-.drawer-leave-to {
-  opacity: 0;
-}
-.drawer-enter .drawer,
-.drawer-leave-to .drawer {
-  transform: translateX(100%);
-}
-
-@media (max-width: 768px) {
-  .drawer {
-    width: 100vw;
-  }
+.superadmin-dashboard__detail {
+  scroll-margin-top: var(--spacing-md, 16px);
 }
 </style>
