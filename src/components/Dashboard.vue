@@ -2,18 +2,27 @@
   <div class="superadmin-dashboard">
     <div v-if="loading" class="superadmin-dashboard__loading">
       <div class="superadmin-dashboard__spinner"></div>
-      <p>Loading organizations…</p>
+      <p>Loading super-admin dashboard…</p>
     </div>
 
     <div v-else-if="error" class="superadmin-dashboard__error">
       <p>{{ error }}</p>
     </div>
 
-    <OrgListPanel
-      v-else-if="currentView === 'orgList'"
-      :orgs="orgs"
-      @select-org="onSelectOrg"
-    />
+    <template v-else-if="currentView === 'orgList'">
+      <header class="superadmin-dashboard__page-header">
+        <h1 class="superadmin-dashboard__page-title">Super Admin</h1>
+        <p class="superadmin-dashboard__page-sub">
+          Platform-wide overview across all organizations
+        </p>
+      </header>
+
+      <PlatformKpiStrip v-if="platform" :kpis="platform.kpis" />
+
+      <AlertsPanel v-if="platform" :alerts="platform.alerts" />
+
+      <OrgListPanel :orgs="orgs" @select-org="onSelectOrg" />
+    </template>
 
     <div v-else-if="currentView === 'orgDetail'">
       <div v-if="detailLoading" class="superadmin-dashboard__loading">
@@ -34,14 +43,22 @@ import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import OrgListPanel from "./OrgListPanel.vue";
 import OrgDetailView from "./OrgDetailView.vue";
+import PlatformKpiStrip from "./PlatformKpiStrip.vue";
+import AlertsPanel from "./AlertsPanel.vue";
 
 export default {
   name: "Dashboard",
-  components: { OrgListPanel, OrgDetailView },
+  components: {
+    OrgListPanel,
+    OrgDetailView,
+    PlatformKpiStrip,
+    AlertsPanel,
+  },
   data() {
     return {
       currentView: "orgList",
       orgs: [],
+      platform: null,
       selectedOrgId: null,
       orgDetail: null,
       loading: true,
@@ -50,17 +67,20 @@ export default {
     };
   },
   mounted() {
-    this.fetchOrgs();
+    this.fetchAll();
   },
   methods: {
-    async fetchOrgs() {
+    async fetchAll() {
       try {
-        const url = generateUrl("/apps/superadminpage/api/super/orgs");
-        const res = await axios.get(url);
-        this.orgs = (res.data && res.data.orgs) || [];
+        const [platformRes, orgsRes] = await Promise.all([
+          axios.get(generateUrl("/apps/superadminpage/api/super/data")),
+          axios.get(generateUrl("/apps/superadminpage/api/super/orgs")),
+        ]);
+        this.platform = platformRes.data || null;
+        this.orgs = (orgsRes.data && orgsRes.data.orgs) || [];
       } catch (e) {
-        console.error("Failed to load organizations", e);
-        this.error = e.message || "Failed to load organizations";
+        console.error("Failed to load dashboard", e);
+        this.error = e.message || "Failed to load dashboard";
       } finally {
         this.loading = false;
       }
@@ -137,6 +157,29 @@ export default {
     sans-serif;
   color: var(--color-text-primary);
   min-height: calc(100vh - 50px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.superadmin-dashboard__page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.superadmin-dashboard__page-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.superadmin-dashboard__page-sub {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0;
 }
 
 .superadmin-dashboard__loading,

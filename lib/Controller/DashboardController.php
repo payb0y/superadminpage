@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\SuperAdminPage\Controller;
 
 use OCA\SuperAdminPage\Service\OrgOverviewService;
+use OCA\SuperAdminPage\Service\PlatformService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -17,6 +18,7 @@ class DashboardController extends Controller {
     private IUserSession $userSession;
     private IGroupManager $groupManager;
     private OrgOverviewService $orgOverview;
+    private PlatformService $platform;
 
     public function __construct(
         string $appName,
@@ -24,11 +26,13 @@ class DashboardController extends Controller {
         IUserSession $userSession,
         IGroupManager $groupManager,
         OrgOverviewService $orgOverview,
+        PlatformService $platform,
     ) {
         parent::__construct($appName, $request);
         $this->userSession = $userSession;
         $this->groupManager = $groupManager;
         $this->orgOverview = $orgOverview;
+        $this->platform = $platform;
     }
 
     /**
@@ -38,7 +42,7 @@ class DashboardController extends Controller {
         if (($forbidden = $this->requireAdmin()) !== null) {
             return $forbidden;
         }
-        return new JSONResponse([]);
+        return new JSONResponse($this->platform->getOverview());
     }
 
     /**
