@@ -70,8 +70,43 @@ class OrgOverviewService {
             'subscription' => $this->getSubscription($orgId),
             'members'      => $this->getMembers($orgId),
             'projects'     => $this->getProjects($orgId),
+            'backups'      => $this->getBackups($orgId),
             'usageSummary' => $this->getUsageSummary($orgId),
         ];
+    }
+
+    private function getBackups(int $orgId): array {
+        $sql = "
+            SELECT id, status, backup_type, trigger_source,
+                   artifact_name, artifact_size,
+                   created_at, started_at, finished_at, expires_at
+              FROM *PREFIX*org_backup_jobs
+             WHERE organization_id = ?
+             ORDER BY created_at DESC
+             LIMIT 100
+        ";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$orgId]);
+            $rows = $stmt->fetchAll();
+        } catch (\Throwable $e) {
+            return [];
+        }
+
+        return array_map(function ($r) {
+            return [
+                'jobId'         => (string)$r['id'],
+                'status'        => $r['status'],
+                'backupType'    => $r['backup_type'],
+                'triggerSource' => $r['trigger_source'],
+                'artifactName'  => $r['artifact_name'],
+                'artifactSize'  => $r['artifact_size'] !== null ? (int)$r['artifact_size'] : null,
+                'createdAt'     => $r['created_at'],
+                'startedAt'     => $r['started_at'],
+                'finishedAt'    => $r['finished_at'],
+                'expiresAt'     => $r['expires_at'],
+            ];
+        }, $rows);
     }
 
     private function orgExists(int $orgId): bool {

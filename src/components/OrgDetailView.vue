@@ -135,6 +135,12 @@
         v-else-if="activeTab === 'projects'"
         :projects="org.projects"
       />
+
+      <BackupsPanel
+        v-else-if="activeTab === 'backups'"
+        :jobs="org.backups || []"
+        :embedded="true"
+      />
     </div>
   </section>
 </template>
@@ -143,10 +149,11 @@
 import KpiCard from "./KpiCard.vue";
 import MembersPanel from "./MembersPanel.vue";
 import ProjectsPanel from "./ProjectsPanel.vue";
+import BackupsPanel from "./BackupsPanel.vue";
 
 export default {
   name: "OrgDetailView",
-  components: { KpiCard, MembersPanel, ProjectsPanel },
+  components: { KpiCard, MembersPanel, ProjectsPanel, BackupsPanel },
   props: {
     org: {
       type: Object,
@@ -167,6 +174,11 @@ export default {
           key: "projects",
           label: "Projects",
           count: this.org.projects.length,
+        },
+        {
+          key: "backups",
+          label: "Backups",
+          count: (this.org.backups || []).length,
         },
       ];
     },
