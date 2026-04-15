@@ -1,0 +1,11 @@
+{
+    "name": "nextcloud/superadminpage",
+    "description": "Cross-organization super-admin analytics dashboard for Nextcloud",
+    "type": "project",
+    "license": "AGPL-3.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "OCA\\SuperAdminPage\\": "lib/"
+        }
+    }
+}
