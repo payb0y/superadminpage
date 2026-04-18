@@ -217,24 +217,91 @@
       </div>
     </div>
 
-    <div v-if="totalPages > 1" class="org-list__pagination">
-      <button
-        class="org-list__page-btn"
-        :disabled="currentPage <= 1"
-        @click="currentPage--"
-      >
-        ‹
-      </button>
-      <span class="org-list__page-info">
-        {{ currentPage }} / {{ totalPages }}
-      </span>
-      <button
-        class="org-list__page-btn"
-        :disabled="currentPage >= totalPages"
-        @click="currentPage++"
-      >
-        ›
-      </button>
+    <div
+      v-if="filteredOrgs.length > 0"
+      class="org-list__pagination-bar"
+    >
+      <div class="org-list__page-summary">
+        Showing
+        <strong>{{ rangeStart }}</strong>–<strong>{{ rangeEnd }}</strong>
+        of <strong>{{ filteredOrgs.length }}</strong>
+      </div>
+
+      <div v-if="totalPages > 1" class="org-list__pagination">
+        <button
+          type="button"
+          class="org-list__page-btn"
+          :disabled="currentPage === 1"
+          aria-label="First page"
+          @click="currentPage = 1"
+        >
+          «
+        </button>
+        <button
+          type="button"
+          class="org-list__page-btn"
+          :disabled="currentPage <= 1"
+          aria-label="Previous page"
+          @click="currentPage--"
+        >
+          ‹
+        </button>
+        <template v-for="(p, i) in visiblePages">
+          <span
+            v-if="p === '…'"
+            :key="'ellipsis-' + i"
+            class="org-list__page-ellipsis"
+          >
+            …
+          </span>
+          <button
+            v-else
+            :key="'page-' + p"
+            type="button"
+            class="org-list__page-num"
+            :class="{ 'org-list__page-num--active': p === currentPage }"
+            :aria-current="p === currentPage ? 'page' : null"
+            @click="currentPage = p"
+          >
+            {{ p }}
+          </button>
+        </template>
+        <button
+          type="button"
+          class="org-list__page-btn"
+          :disabled="currentPage >= totalPages"
+          aria-label="Next page"
+          @click="currentPage++"
+        >
+          ›
+        </button>
+        <button
+          type="button"
+          class="org-list__page-btn"
+          :disabled="currentPage === totalPages"
+          aria-label="Last page"
+          @click="currentPage = totalPages"
+        >
+          »
+        </button>
+      </div>
+
+      <div class="org-list__page-size">
+        <label :for="pageSizeId">Per page</label>
+        <select
+          :id="pageSizeId"
+          v-model.number="pageSize"
+          class="org-list__page-size-select"
+        >
+          <option
+            v-for="n in pageSizeOptions"
+            :key="n"
+            :value="n"
+          >
+            {{ n }}
+          </option>
+        </select>
+      </div>
     </div>
   </section>
 </template>
@@ -246,7 +313,16 @@ import OrgCard from "./OrgCard.vue";
 import OrgDetailView from "./OrgDetailView.vue";
 
 const VIEW_MODE_STORAGE_KEY = "superadminpage.orgListView";
-const ORG_LIST_BUILD_MARKER = "v4-inline-full-detail";
+const ORG_LIST_BUILD_MARKER = "v5-pagination";
+
+const PAGE_SIZE_OPTIONS = {
+  grid: [9, 18, 36, 72],
+  table: [10, 20, 50, 100],
+};
+
+function defaultPageSize(viewMode) {
+  return viewMode === "table" ? 20 : 9;
+}
 
 export default {
   name: "OrgListPanel",
@@ -258,10 +334,12 @@ export default {
     },
   },
   data() {
+    const viewMode = this.readViewMode();
     return {
       searchQuery: "",
       statusFilter: "all",
       currentPage: 1,
+      pageSize: defaultPageSize(viewMode),
       statusOptions: [
         { value: "all", label: "All" },
         { value: "active", label: "Active" },
@@ -269,7 +347,7 @@ export default {
         { value: "cancelled", label: "Cancelled" },
         { value: "none", label: "No plan" },
       ],
-      viewMode: this.readViewMode(),
+      viewMode,
       expanded: {},
       detailCache: {},
       detailLoading: {},
@@ -280,8 +358,11 @@ export default {
     buildMarker() {
       return ORG_LIST_BUILD_MARKER;
     },
-    pageSize() {
-      return this.viewMode === "table" ? 20 : 9;
+    pageSizeId() {
+      return "org-list-page-size-" + this._uid;
+    },
+    pageSizeOptions() {
+      return PAGE_SIZE_OPTIONS[this.viewMode] || PAGE_SIZE_OPTIONS.grid;
     },
     filteredOrgs() {
       const q = (this.searchQuery || "").toLowerCase();
@@ -302,9 +383,40 @@ export default {
       const start = (this.currentPage - 1) * this.pageSize;
       return this.filteredOrgs.slice(start, start + this.pageSize);
     },
+    rangeStart() {
+      if (this.filteredOrgs.length === 0) return 0;
+      return (this.currentPage - 1) * this.pageSize + 1;
+    },
+    rangeEnd() {
+      return Math.min(
+        this.currentPage * this.pageSize,
+        this.filteredOrgs.length,
+      );
+    },
+    visiblePages() {
+      const total = this.totalPages;
+      const current = this.currentPage;
+      if (total <= 7) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+      }
+      const pages = [1];
+      if (current > 3) pages.push("…");
+      const start = Math.max(2, current - 1);
+      const end = Math.min(total - 1, current + 1);
+      for (let p = start; p <= end; p++) pages.push(p);
+      if (current < total - 2) pages.push("…");
+      pages.push(total);
+      return pages;
+    },
   },
   watch: {
     searchQuery() {
+      this.currentPage = 1;
+    },
+    statusFilter() {
+      this.currentPage = 1;
+    },
+    pageSize() {
       this.currentPage = 1;
     },
     filteredOrgs() {
@@ -318,6 +430,7 @@ export default {
       } catch (_) {
         // ignore storage errors (private mode, etc.)
       }
+      this.pageSize = defaultPageSize(v);
       this.currentPage = 1;
     },
   },
@@ -775,33 +888,61 @@ export default {
 
 /* ───────── Pagination ───────── */
 
+.org-list__pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 16px);
+  margin-top: var(--spacing-sm, 8px);
+  flex-wrap: wrap;
+}
+
+.org-list__page-summary {
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+  font-variant-numeric: tabular-nums;
+}
+
+.org-list__page-summary strong {
+  color: var(--color-text-primary, #1a1a2e);
+  font-weight: 700;
+}
+
 .org-list__pagination {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin-top: 8px;
+  gap: 4px;
 }
 
-.org-list__page-btn {
-  width: 32px;
+.org-list__page-btn,
+.org-list__page-num {
+  min-width: 32px;
   height: 32px;
+  padding: 0 6px;
   border-radius: 8px;
   border: 1px solid var(--color-border, #e5e7eb);
   background: #fff;
-  font-size: 18px;
+  font-size: 13px;
   font-weight: 600;
-  color: #4a90d9;
+  color: var(--color-text-secondary, #6b7280);
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.15s;
+  font-variant-numeric: tabular-nums;
 }
 
-.org-list__page-btn:hover:not(:disabled) {
+.org-list__page-btn {
+  font-size: 16px;
+  color: #4a90d9;
+}
+
+.org-list__page-btn:hover:not(:disabled),
+.org-list__page-num:hover:not(.org-list__page-num--active) {
   background: #e8f0fe;
   border-color: #4a90d9;
+  color: #1e4a8a;
 }
 
 .org-list__page-btn:disabled {
@@ -809,10 +950,50 @@ export default {
   cursor: not-allowed;
 }
 
-.org-list__page-info {
+.org-list__page-num--active {
+  background: #4a90d9;
+  border-color: #4a90d9;
+  color: #fff;
+  cursor: default;
+}
+
+.org-list__page-ellipsis {
+  min-width: 20px;
+  text-align: center;
+  color: var(--color-text-muted, #9ca3af);
+  font-size: 13px;
+  user-select: none;
+}
+
+.org-list__page-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.org-list__page-size label {
+  font-weight: 500;
+}
+
+.org-list__page-size-select {
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: #fff;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-primary, #1a1a2e);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.org-list__page-size-select:hover,
+.org-list__page-size-select:focus {
+  border-color: #4a90d9;
+  outline: none;
 }
 
 /* ───────── Responsive ───────── */
