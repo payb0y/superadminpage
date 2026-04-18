@@ -98,6 +98,7 @@
         v-for="org in paginatedOrgs"
         :key="'org-' + org.id"
         :org="org"
+        @click="revealOrgInTable(org)"
       />
     </div>
 
@@ -120,6 +121,7 @@
           'org-list__row--expanded': !!expanded[org.id],
         }"
         role="row"
+        :data-org-id="org.id"
       >
         <div
           class="org-list__row-summary"
@@ -478,6 +480,29 @@ export default {
       if (!isOpen && !this.detailCache[org.id] && !this.detailLoading[org.id]) {
         this.loadDetail(org.id);
       }
+    },
+    revealOrgInTable(org) {
+      this.viewMode = "table";
+      this.$nextTick(() => {
+        const idx = this.filteredOrgs.findIndex((o) => o.id === org.id);
+        if (idx === -1) return;
+        this.currentPage = Math.floor(idx / this.pageSize) + 1;
+        this.$set(this.expanded, org.id, true);
+        if (
+          !this.detailCache[org.id] &&
+          !this.detailLoading[org.id]
+        ) {
+          this.loadDetail(org.id);
+        }
+        this.$nextTick(() => {
+          const el = this.$el.querySelector(
+            '[data-org-id="' + org.id + '"]',
+          );
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
     },
     async loadDetail(orgId) {
       this.$set(this.detailLoading, orgId, true);
