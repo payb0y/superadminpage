@@ -103,293 +103,230 @@
       />
     </div>
 
-    <div v-else class="org-list__table-wrap">
-      <table class="org-list__table">
-        <thead>
-          <tr>
-            <th class="org-list__th org-list__th--expand" aria-label="Expand"></th>
-            <th class="org-list__th">Name</th>
-            <th class="org-list__th">Status</th>
-            <th class="org-list__th org-list__th--plan">Plan</th>
-            <th class="org-list__th org-list__th--num">Members</th>
-            <th class="org-list__th org-list__th--num">Projects</th>
-            <th class="org-list__th org-list__th--num org-list__th--storage">
-              Storage
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <template v-for="org in paginatedOrgs">
-            <tr
-              :key="'row-' + org.id"
-              class="org-list__row"
-              :class="{
-                'org-list__row--selected': org.id === selectedOrgId,
-                'org-list__row--expanded': !!expanded[org.id],
-              }"
-              @click="$emit('select-org', org.id)"
+    <div v-else class="org-list__grid-table" role="table">
+      <div class="org-list__header-row" role="row">
+        <div class="org-list__th org-list__th--expand" role="columnheader" aria-label="Expand"></div>
+        <div class="org-list__th" role="columnheader">Name</div>
+        <div class="org-list__th" role="columnheader">Status</div>
+        <div class="org-list__th org-list__th--plan" role="columnheader">Plan</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">Members</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">Projects</div>
+        <div class="org-list__th org-list__th--num org-list__th--storage" role="columnheader">Storage</div>
+      </div>
+
+      <div
+        v-for="org in paginatedOrgs"
+        :key="'org-' + org.id"
+        class="org-list__row"
+        :class="{
+          'org-list__row--selected': org.id === selectedOrgId,
+          'org-list__row--expanded': !!expanded[org.id],
+        }"
+        role="row"
+      >
+        <div
+          class="org-list__row-summary"
+          @click="$emit('select-org', org.id)"
+        >
+          <div class="org-list__cell org-list__cell--expand" role="cell">
+            <button
+              type="button"
+              class="org-list__expand-btn"
+              :class="{ 'org-list__expand-btn--open': !!expanded[org.id] }"
+              :aria-expanded="!!expanded[org.id]"
+              aria-label="Toggle organization details"
+              @click.stop="toggleExpand(org)"
             >
-              <td class="org-list__cell org-list__cell--expand">
-                <button
-                  type="button"
-                  class="org-list__expand-btn"
-                  :class="{
-                    'org-list__expand-btn--open': !!expanded[org.id],
-                  }"
-                  :aria-expanded="!!expanded[org.id]"
-                  aria-label="Toggle organization details"
-                  @click.stop="toggleExpand(org)"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </button>
-              </td>
-              <td class="org-list__cell org-list__cell--name">
-                <span class="org-list__avatar">{{ initial(org) }}</span>
-                <span class="org-list__name">{{ org.name }}</span>
-              </td>
-              <td class="org-list__cell">
-                <span
-                  class="org-list__pill"
-                  :class="'org-list__pill--' + statusTone(org)"
-                >
-                  <span class="org-list__dot"></span>
-                  {{ statusLabel(org) }}
-                </span>
-              </td>
-              <td class="org-list__cell org-list__cell--plan">
-                <span class="org-list__pill org-list__pill--plan">
-                  {{ org.planName || "No plan" }}
-                </span>
-              </td>
-              <td class="org-list__cell org-list__cell--num">
-                {{ org.memberCount }}
-              </td>
-              <td class="org-list__cell org-list__cell--num">
-                {{ org.projectCount }}
-              </td>
-              <td
-                class="org-list__cell org-list__cell--num org-list__cell--storage"
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
               >
-                {{ storageDisplay(org) }}
-              </td>
-            </tr>
-            <tr
-              v-if="expanded[org.id]"
-              :key="'detail-' + org.id"
-              class="org-list__detail-row"
-              @click.stop
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+          <div class="org-list__cell org-list__cell--name" role="cell">
+            <span class="org-list__avatar">{{ initial(org) }}</span>
+            <span class="org-list__name">{{ org.name }}</span>
+          </div>
+          <div class="org-list__cell" role="cell">
+            <span
+              class="org-list__pill"
+              :class="'org-list__pill--' + statusTone(org)"
             >
-              <td class="org-list__detail-cell" :colspan="7">
-                <div
-                  v-if="detailLoading[org.id]"
-                  class="org-list__detail-state"
-                >
-                  <div class="org-list__spinner"></div>
-                  <span>Loading organization…</span>
+              <span class="org-list__dot"></span>
+              {{ statusLabel(org) }}
+            </span>
+          </div>
+          <div class="org-list__cell org-list__cell--plan" role="cell">
+            <span class="org-list__pill org-list__pill--plan">
+              {{ org.planName || "No plan" }}
+            </span>
+          </div>
+          <div class="org-list__cell org-list__cell--num" role="cell">
+            {{ org.memberCount }}
+          </div>
+          <div class="org-list__cell org-list__cell--num" role="cell">
+            {{ org.projectCount }}
+          </div>
+          <div
+            class="org-list__cell org-list__cell--num org-list__cell--storage"
+            role="cell"
+          >
+            {{ storageDisplay(org) }}
+          </div>
+        </div>
+
+        <div
+          v-if="expanded[org.id]"
+          class="org-list__row-detail"
+          @click.stop
+        >
+          <div
+            v-if="detailLoading[org.id]"
+            class="org-list__detail-state"
+          >
+            <div class="org-list__spinner"></div>
+            <span>Loading organization…</span>
+          </div>
+
+          <div
+            v-else-if="detailError[org.id]"
+            class="org-list__detail-state org-list__detail-state--error"
+          >
+            <span>{{ detailError[org.id] }}</span>
+            <button
+              type="button"
+              class="org-list__retry-btn"
+              @click="loadDetail(org.id)"
+            >
+              Retry
+            </button>
+          </div>
+
+          <template v-else-if="detailCache[org.id]">
+            <div class="org-list__stat-strip">
+              <span>
+                <strong>{{ detailCache[org.id].usageSummary.projectCount }}</strong>
+                Projects
+              </span>
+              <span class="org-list__stat-sep">·</span>
+              <span>
+                <strong>{{ detailCache[org.id].usageSummary.totalTasks }}</strong>
+                Tasks
+                <span class="org-list__stat-muted">
+                  ({{ detailCache[org.id].usageSummary.doneTasks }} done)
+                </span>
+              </span>
+              <span class="org-list__stat-sep">·</span>
+              <span>
+                <strong>{{ detailCache[org.id].usageSummary.memberCount }}</strong>
+                <span class="org-list__stat-muted">
+                  / {{ detailCache[org.id].subscription.maxMembers || "∞" }}
+                </span>
+                Members
+              </span>
+              <span class="org-list__stat-sep">·</span>
+              <span>
+                <strong>
+                  {{ detailCache[org.id].subscription.price }}
+                  {{ detailCache[org.id].subscription.currency }}
+                </strong>
+                <span class="org-list__stat-muted">/ month</span>
+              </span>
+            </div>
+
+            <div class="org-list__info-grid">
+              <div class="org-list__info-col">
+                <h4>Profile</h4>
+                <div class="org-list__info-row">
+                  <span class="org-list__info-label">Owner UID</span>
+                  <span class="org-list__info-value">
+                    {{ detailCache[org.id].profile.adminUid }}
+                  </span>
+                </div>
+                <div class="org-list__info-row">
+                  <span class="org-list__info-label">Contact</span>
+                  <span class="org-list__info-value">
+                    {{ contactName(detailCache[org.id]) }}
+                  </span>
+                </div>
+                <div class="org-list__info-row">
+                  <span class="org-list__info-label">Email</span>
+                  <span class="org-list__info-value">
+                    {{ detailCache[org.id].profile.contactEmail || "—" }}
+                  </span>
                 </div>
                 <div
-                  v-else-if="detailError[org.id]"
-                  class="org-list__detail-state org-list__detail-state--error"
+                  v-if="detailCache[org.id].profile.contactPhone"
+                  class="org-list__info-row"
                 >
-                  <span>{{ detailError[org.id] }}</span>
-                  <button
-                    type="button"
-                    class="org-list__retry-btn"
-                    @click="loadDetail(org.id)"
-                  >
-                    Retry
-                  </button>
+                  <span class="org-list__info-label">Phone</span>
+                  <span class="org-list__info-value">
+                    {{ detailCache[org.id].profile.contactPhone }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="org-list__info-col">
+                <h4>Subscription</h4>
+                <div class="org-list__info-row">
+                  <span class="org-list__info-label">Status</span>
+                  <span class="org-list__info-value">
+                    {{ statusLabel({ subscriptionStatus: detailCache[org.id].subscription.status }) }}
+                  </span>
+                </div>
+                <div class="org-list__info-row">
+                  <span class="org-list__info-label">Plan</span>
+                  <span class="org-list__info-value">
+                    {{ detailCache[org.id].subscription.planName || "—" }}
+                  </span>
+                </div>
+                <div class="org-list__info-row">
+                  <span class="org-list__info-label">Price</span>
+                  <span class="org-list__info-value">
+                    {{ detailCache[org.id].subscription.price }}
+                    {{ detailCache[org.id].subscription.currency }}
+                    <span class="org-list__info-muted">/ mo</span>
+                  </span>
+                </div>
+                <div class="org-list__info-row">
+                  <span class="org-list__info-label">Member cap</span>
+                  <span class="org-list__info-value">
+                    {{ detailCache[org.id].subscription.maxMembers || "∞" }}
+                  </span>
                 </div>
                 <div
-                  v-else-if="detailCache[org.id]"
-                  class="org-list__detail-body"
+                  v-if="detailCache[org.id].subscription.startedAt"
+                  class="org-list__info-row"
                 >
-                  <div class="org-list__detail-header">
-                    <div class="org-list__detail-tabs">
-                      <button
-                        v-for="tab in detailTabs(detailCache[org.id])"
-                        :key="tab.key"
-                        type="button"
-                        class="org-list__detail-tab"
-                        :class="{
-                          'org-list__detail-tab--active':
-                            currentTab(org.id) === tab.key,
-                        }"
-                        @click="setDetailTab(org.id, tab.key)"
-                      >
-                        {{ tab.label }}
-                        <span
-                          v-if="tab.count !== null"
-                          class="org-list__detail-tab-count"
-                        >
-                          {{ tab.count }}
-                        </span>
-                      </button>
-                    </div>
-                    <button
-                      type="button"
-                      class="org-list__open-full"
-                      @click="$emit('select-org', org.id)"
-                    >
-                      Open full details →
-                    </button>
-                  </div>
-
-                  <div class="org-list__detail-content">
-                    <div
-                      v-if="currentTab(org.id) === 'overview'"
-                      class="org-list__overview"
-                    >
-                      <div class="org-list__kpi-strip">
-                        <KpiCard
-                          title="Projects"
-                          :metrics="[
-                            {
-                              value:
-                                detailCache[org.id].usageSummary.projectCount,
-                              label: 'total',
-                            },
-                          ]"
-                        />
-                        <KpiCard
-                          title="Tasks"
-                          :metrics="[
-                            {
-                              value:
-                                detailCache[org.id].usageSummary.totalTasks,
-                              label: 'total',
-                            },
-                            {
-                              value:
-                                detailCache[org.id].usageSummary.doneTasks,
-                              label: 'done',
-                            },
-                          ]"
-                        />
-                        <KpiCard
-                          title="Resources"
-                          :metrics="[
-                            {
-                              value:
-                                detailCache[org.id].usageSummary.memberCount,
-                              label: 'members',
-                            },
-                            {
-                              value:
-                                detailCache[org.id].subscription.maxMembers ||
-                                '∞',
-                              label: 'plan cap',
-                            },
-                          ]"
-                        />
-                        <KpiCard
-                          title="Financial"
-                          :metrics="[
-                            {
-                              value:
-                                detailCache[org.id].subscription.price +
-                                ' ' +
-                                detailCache[org.id].subscription.currency,
-                              label: 'plan price',
-                            },
-                          ]"
-                        />
-                      </div>
-                      <div class="org-list__profile-card">
-                        <h4 class="org-list__section-title">
-                          Organization profile
-                        </h4>
-                        <div class="org-list__profile-grid">
-                          <div class="org-list__profile-item">
-                            <span class="org-list__profile-label">
-                              Owner UID
-                            </span>
-                            <span class="org-list__profile-value">
-                              {{ detailCache[org.id].profile.adminUid }}
-                            </span>
-                          </div>
-                          <div class="org-list__profile-item">
-                            <span class="org-list__profile-label">
-                              Contact
-                            </span>
-                            <span class="org-list__profile-value">
-                              {{ contactName(detailCache[org.id]) }}
-                            </span>
-                          </div>
-                          <div class="org-list__profile-item">
-                            <span class="org-list__profile-label">Email</span>
-                            <span class="org-list__profile-value">
-                              {{ detailCache[org.id].profile.contactEmail }}
-                            </span>
-                          </div>
-                          <div
-                            v-if="detailCache[org.id].profile.contactPhone"
-                            class="org-list__profile-item"
-                          >
-                            <span class="org-list__profile-label">Phone</span>
-                            <span class="org-list__profile-value">
-                              {{ detailCache[org.id].profile.contactPhone }}
-                            </span>
-                          </div>
-                          <div class="org-list__profile-item">
-                            <span class="org-list__profile-label">
-                              Subscription
-                            </span>
-                            <span class="org-list__profile-value">
-                              {{ detailCache[org.id].subscription.status }}
-                              <template
-                                v-if="
-                                  detailCache[org.id].subscription.startedAt
-                                "
-                              >
-                                (since
-                                {{
-                                  formatDate(
-                                    detailCache[org.id].subscription.startedAt,
-                                  )
-                                }})
-                              </template>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <MembersPanel
-                      v-else-if="currentTab(org.id) === 'members'"
-                      :members="detailCache[org.id].members"
-                      :embedded="true"
-                    />
-
-                    <ProjectsPanel
-                      v-else-if="currentTab(org.id) === 'projects'"
-                      :projects="detailCache[org.id].projects"
-                    />
-
-                    <BackupsPanel
-                      v-else-if="currentTab(org.id) === 'backups'"
-                      :jobs="detailCache[org.id].backups || []"
-                      :embedded="true"
-                    />
-                  </div>
+                  <span class="org-list__info-label">Started</span>
+                  <span class="org-list__info-value">
+                    {{ formatDate(detailCache[org.id].subscription.startedAt) }}
+                  </span>
                 </div>
-              </td>
-            </tr>
+              </div>
+            </div>
+
+            <div class="org-list__detail-footer">
+              <button
+                type="button"
+                class="org-list__open-full"
+                @click="$emit('select-org', org.id)"
+              >
+                Open full details →
+              </button>
+            </div>
           </template>
-        </tbody>
-      </table>
+        </div>
+      </div>
     </div>
 
     <div v-if="totalPages > 1" class="org-list__pagination">
@@ -418,16 +355,12 @@
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import OrgCard from "./OrgCard.vue";
-import KpiCard from "./KpiCard.vue";
-import MembersPanel from "./MembersPanel.vue";
-import ProjectsPanel from "./ProjectsPanel.vue";
-import BackupsPanel from "./BackupsPanel.vue";
 
 const VIEW_MODE_STORAGE_KEY = "superadminpage.orgListView";
 
 export default {
   name: "OrgListPanel",
-  components: { OrgCard, KpiCard, MembersPanel, ProjectsPanel, BackupsPanel },
+  components: { OrgCard },
   props: {
     orgs: {
       type: Array,
@@ -455,7 +388,6 @@ export default {
       detailCache: {},
       detailLoading: {},
       detailError: {},
-      activeDetailTab: {},
     };
   },
   computed: {
@@ -541,20 +473,9 @@ export default {
     toggleExpand(org) {
       const isOpen = !!this.expanded[org.id];
       this.$set(this.expanded, org.id, !isOpen);
-      if (!isOpen) {
-        if (!this.activeDetailTab[org.id]) {
-          this.$set(this.activeDetailTab, org.id, "overview");
-        }
-        if (!this.detailCache[org.id] && !this.detailLoading[org.id]) {
-          this.loadDetail(org.id);
-        }
+      if (!isOpen && !this.detailCache[org.id] && !this.detailLoading[org.id]) {
+        this.loadDetail(org.id);
       }
-    },
-    currentTab(orgId) {
-      return this.activeDetailTab[orgId] || "overview";
-    },
-    setDetailTab(orgId, tabKey) {
-      this.$set(this.activeDetailTab, orgId, tabKey);
     },
     async loadDetail(orgId) {
       this.$set(this.detailLoading, orgId, true);
@@ -573,26 +494,6 @@ export default {
       } finally {
         this.$set(this.detailLoading, orgId, false);
       }
-    },
-    detailTabs(detail) {
-      return [
-        { key: "overview", label: "Overview", count: null },
-        {
-          key: "members",
-          label: "Members",
-          count: (detail.members || []).length,
-        },
-        {
-          key: "projects",
-          label: "Projects",
-          count: (detail.projects || []).length,
-        },
-        {
-          key: "backups",
-          label: "Backups",
-          count: (detail.backups || []).length,
-        },
-      ];
     },
     contactName(detail) {
       const p = detail.profile || {};
@@ -748,88 +649,113 @@ export default {
   font-size: 14px;
 }
 
-/* ───────── Table view ───────── */
+/* ───────── Grid-table (DataGridPremium-style) ───────── */
 
-.org-list__table-wrap {
+.org-list__grid-table {
   background: var(--bg-card, #fff);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   overflow: hidden;
 }
 
-.org-list__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
+.org-list__header-row,
+.org-list__row-summary {
+  display: grid;
+  grid-template-columns:
+    36px
+    minmax(0, 2fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    88px
+    96px
+    104px;
+  align-items: center;
+  gap: 0;
+  padding: 10px 14px;
 }
 
-.org-list__th {
-  text-align: left;
+.org-list__header-row {
+  background: #fafbfd;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
   font-size: 11px;
   font-weight: 600;
   color: var(--color-text-secondary, #6b7280);
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  padding: 12px 14px;
-  background: #fafbfd;
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
 }
 
-.org-list__th--expand {
-  width: 36px;
-  padding: 12px 4px;
+.org-list__th {
+  min-width: 0;
+  padding: 0 4px;
 }
 
 .org-list__th--num {
   text-align: right;
 }
 
-.org-list__row {
-  cursor: pointer;
-  transition: background 0.15s;
-  border-bottom: 1px solid #eef1f5;
+.org-list__th--expand {
+  padding: 0;
 }
 
-.org-list__row:hover {
+.org-list__row {
+  border-bottom: 1px solid #eef1f5;
+  transition: background 0.15s;
+}
+
+.org-list__row:last-child {
+  border-bottom: none;
+}
+
+.org-list__row:hover .org-list__row-summary {
   background: #f7faff;
 }
 
 .org-list__row--selected {
-  background: #f5faff;
   box-shadow: inset 3px 0 0 #4a90d9;
 }
 
-.org-list__row--selected:hover {
-  background: #eef6ff;
+.org-list__row--selected .org-list__row-summary {
+  background: #f5faff;
 }
 
 .org-list__row--expanded {
+  background: #fafbfd;
+}
+
+.org-list__row--expanded .org-list__row-summary {
   background: #f7faff;
+  border-bottom: 1px dashed #dfe5ee;
+}
+
+.org-list__row-summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a2e);
 }
 
 .org-list__cell {
-  padding: 12px 14px;
-  color: var(--color-text-primary, #1a1a2e);
-  vertical-align: middle;
+  min-width: 0;
+  padding: 0 4px;
 }
 
 .org-list__cell--num {
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a2e);
 }
 
 .org-list__cell--expand {
-  padding: 12px 4px;
-  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .org-list__cell--name {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 0;
+  overflow: hidden;
 }
 
 .org-list__avatar {
@@ -918,15 +844,13 @@ export default {
   color: #1e4a8a;
 }
 
-/* ───────── Expanded detail row ───────── */
+/* ───────── In-place detail (inside the same row container) ───────── */
 
-.org-list__detail-row {
-  background: #fafbfd;
-  border-bottom: 1px solid #eef1f5;
-}
-
-.org-list__detail-cell {
-  padding: 0;
+.org-list__row-detail {
+  padding: 14px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .org-list__detail-state {
@@ -934,7 +858,7 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: var(--spacing-lg, 24px);
+  padding: 12px;
   color: var(--color-text-secondary, #6b7280);
   font-size: 13px;
 }
@@ -974,70 +898,97 @@ export default {
   }
 }
 
-.org-list__detail-body {
-  padding: var(--spacing-md, 16px) var(--spacing-lg, 24px) var(--spacing-lg, 24px);
+.org-list__stat-strip {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md, 16px);
-}
-
-.org-list__detail-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
   flex-wrap: wrap;
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
-  padding-bottom: 4px;
-}
-
-.org-list__detail-tabs {
-  display: flex;
-  gap: 2px;
-  flex-wrap: wrap;
-}
-
-.org-list__detail-tab {
-  background: none;
-  border: none;
-  padding: 8px 12px;
+  align-items: baseline;
+  gap: 6px 12px;
   font-size: 12px;
-  font-weight: 600;
   color: var(--color-text-secondary, #6b7280);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 0.15s, border-color 0.15s;
 }
 
-.org-list__detail-tab:hover {
+.org-list__stat-strip strong {
   color: var(--color-text-primary, #1a1a2e);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-right: 4px;
 }
 
-.org-list__detail-tab--active {
-  color: #4a90d9;
-  border-bottom-color: #4a90d9;
+.org-list__stat-muted {
+  color: var(--color-text-muted, #9ca3af);
 }
 
-.org-list__detail-tab-count {
-  font-size: 10px;
+.org-list__stat-sep {
+  color: #cfd6e0;
+  user-select: none;
+}
+
+.org-list__info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.org-list__info-col {
+  padding: 12px 16px;
+}
+
+.org-list__info-col + .org-list__info-col {
+  border-left: 1px solid var(--color-border, #e5e7eb);
+}
+
+.org-list__info-col h4 {
+  font-size: 11px;
   font-weight: 600;
-  background: #f0f1f5;
-  color: #6b7280;
-  padding: 1px 6px;
-  border-radius: 8px;
+  margin: 0 0 8px;
+  color: var(--color-text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
-.org-list__detail-tab--active .org-list__detail-tab-count {
-  background: #e8f0fe;
-  color: #1e4a8a;
+.org-list__info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid #eef1f5;
+  font-size: 12px;
+}
+
+.org-list__info-row:last-child {
+  border-bottom: none;
+}
+
+.org-list__info-label {
+  color: var(--color-text-secondary, #6b7280);
+  flex-shrink: 0;
+}
+
+.org-list__info-value {
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1a2e);
+  text-align: right;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.org-list__info-muted {
+  color: var(--color-text-muted, #9ca3af);
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+.org-list__detail-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .org-list__open-full {
-  padding: 5px 12px;
+  padding: 6px 14px;
   font-size: 12px;
   font-weight: 600;
   color: #4a90d9;
@@ -1050,71 +1001,6 @@ export default {
 
 .org-list__open-full:hover {
   background: #e8f0fe;
-}
-
-.org-list__detail-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md, 16px);
-}
-
-.org-list__overview {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md, 16px);
-}
-
-.org-list__kpi-strip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-md, 16px);
-}
-
-.org-list__profile-card {
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 10px;
-  padding: 14px 18px;
-  background: #ffffff;
-}
-
-.org-list__section-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin: 0 0 10px;
-}
-
-.org-list__profile-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 24px;
-}
-
-.org-list__profile-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid #eef1f5;
-}
-
-.org-list__profile-item:last-child {
-  border-bottom: none;
-}
-
-.org-list__profile-label {
-  font-size: 12px;
-  color: var(--color-text-secondary, #6b7280);
-}
-
-.org-list__profile-value {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-primary, #1a1a2e);
-  text-align: right;
-  word-break: break-word;
 }
 
 /* ───────── Pagination ───────── */
@@ -1165,15 +1051,29 @@ export default {
   .org-list__grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .org-list__kpi-strip {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 @media (max-width: 900px) {
+  .org-list__header-row,
+  .org-list__row-summary {
+    grid-template-columns:
+      36px
+      minmax(0, 2fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      88px
+      96px;
+  }
   .org-list__th--storage,
   .org-list__cell--storage {
     display: none;
+  }
+  .org-list__info-grid {
+    grid-template-columns: 1fr;
+  }
+  .org-list__info-col + .org-list__info-col {
+    border-left: none;
+    border-top: 1px solid var(--color-border, #e5e7eb);
   }
 }
 
@@ -1181,11 +1081,9 @@ export default {
   .org-list__grid {
     grid-template-columns: 1fr;
   }
-  .org-list__kpi-strip {
-    grid-template-columns: 1fr;
-  }
-  .org-list__profile-grid {
-    grid-template-columns: 1fr;
+  .org-list__header-row,
+  .org-list__row-summary {
+    grid-template-columns: 36px minmax(0, 2fr) minmax(0, 1fr) 88px 96px;
   }
   .org-list__th--plan,
   .org-list__cell--plan {
