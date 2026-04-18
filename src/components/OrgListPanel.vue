@@ -357,7 +357,7 @@ import { generateUrl } from "@nextcloud/router";
 import OrgCard from "./OrgCard.vue";
 
 const VIEW_MODE_STORAGE_KEY = "superadminpage.orgListView";
-const ORG_LIST_BUILD_MARKER = "v2-inline-expand";
+const ORG_LIST_BUILD_MARKER = "v3-inline-expand";
 
 export default {
   name: "OrgListPanel",
@@ -656,15 +656,17 @@ export default {
 /* ───────── Grid-table (DataGridPremium-style) ───────── */
 
 .org-list__grid-table {
+  display: block;
   background: var(--bg-card, #fff);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   overflow: hidden;
+  width: 100%;
 }
 
 .org-list__header-row,
 .org-list__row-summary {
-  display: grid;
+  display: grid !important;
   grid-template-columns:
     36px
     minmax(0, 2fr)
@@ -676,6 +678,8 @@ export default {
   align-items: center;
   gap: 0;
   padding: 10px 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .org-list__header-row {
@@ -702,8 +706,12 @@ export default {
 }
 
 .org-list__row {
+  display: block !important;
+  position: relative;
   border-bottom: 1px solid #eef1f5;
   transition: background 0.15s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .org-list__row:last-child {
@@ -851,10 +859,12 @@ export default {
 /* ───────── In-place detail (inside the same row container) ───────── */
 
 .org-list__row-detail {
-  padding: 14px 18px 18px;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   gap: 14px;
+  padding: 14px 18px 18px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .org-list__detail-state {
