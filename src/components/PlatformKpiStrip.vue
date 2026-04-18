@@ -26,10 +26,12 @@
       ]"
     />
     <KpiCard
-      title="Tasks"
+      title="Projects"
       icon-color="#f59e0b"
       :metrics="[
-        { value: kpis.tasks.total, label: 'open' },
+        { value: kpis.projects.total, label: 'projects' },
+        { value: kpis.tasks.total, label: 'tasks' },
+        { value: openTasks, label: 'open' },
         { value: kpis.tasks.done, label: 'done' },
         { value: kpis.tasks.overdue, label: 'overdue' },
       ]"
@@ -50,6 +52,11 @@ export default {
     },
   },
   computed: {
+    openTasks() {
+      const total = this.kpis.tasks.total || 0;
+      const done = this.kpis.tasks.done || 0;
+      return Math.max(0, total - done);
+    },
     mrrDisplay() {
       const v = Math.round(this.kpis.mrr.value || 0);
       const sym =
