@@ -126,7 +126,7 @@
       >
         <div
           class="org-list__row-summary"
-          @click="$emit('select-org', org.id)"
+          @click="toggleExpand(org)"
         >
           <div class="org-list__cell org-list__cell--expand" role="cell">
             <button
