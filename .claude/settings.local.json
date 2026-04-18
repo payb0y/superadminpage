@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp /home/payboy/src/nextcloud-docker-dev/data/apps-extra/adminpage/src/components/MembersPanel.vue /home/payboy/src/nextcloud-docker-dev/data/apps-extra/superadminpage/src/components/MembersPanel.vue)",
+      "Bash(cp /home/payboy/src/nextcloud-docker-dev/data/apps-extra/adminpage/src/components/KpiCard.vue /home/payboy/src/nextcloud-docker-dev/data/apps-extra/superadminpage/src/components/KpiCard.vue)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(docker exec *)"
+    ]
+  }
+}
