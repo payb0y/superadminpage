@@ -1,10 +1,17 @@
 <template>
-  <section class="org-detail">
-    <button class="org-detail__back" @click="$emit('back')">
+  <section
+    class="org-detail"
+    :class="{ 'org-detail--embedded': embedded }"
+  >
+    <button
+      v-if="!embedded"
+      class="org-detail__back"
+      @click="$emit('back')"
+    >
       × Close
     </button>
 
-    <header class="org-detail__header">
+    <header v-if="!embedded" class="org-detail__header">
       <span class="org-detail__avatar">{{ initial }}</span>
       <div class="org-detail__title-group">
         <h2 class="org-detail__name">{{ org.profile.name }}</h2>
@@ -158,6 +165,10 @@ export default {
     org: {
       type: Object,
       required: true,
+    },
+    embedded: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
@@ -446,6 +457,21 @@ export default {
   color: var(--color-text-primary, #1a1a2e);
   text-align: right;
   word-break: break-word;
+}
+
+.org-detail--embedded {
+  gap: var(--spacing-sm, 8px);
+}
+
+.org-detail--embedded .org-detail__tabs {
+  padding: 0;
+}
+
+.org-detail--embedded .org-detail__body {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding: var(--spacing-md, 16px) 0 0;
 }
 
 @media (max-width: 1200px) {

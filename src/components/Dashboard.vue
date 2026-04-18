@@ -21,27 +21,7 @@
 
       <AlertsPanel v-if="platform" :alerts="platform.alerts" />
 
-      <OrgListPanel
-        :orgs="orgs"
-        :selected-org-id="selectedOrgId"
-        @select-org="onSelectOrg"
-      />
-
-      <section
-        v-if="currentView === 'orgDetail'"
-        ref="detailSection"
-        class="superadmin-dashboard__detail"
-      >
-        <div v-if="detailLoading" class="superadmin-dashboard__loading">
-          <div class="superadmin-dashboard__spinner"></div>
-          <p>Loading organization…</p>
-        </div>
-        <OrgDetailView
-          v-else-if="orgDetail"
-          :org="orgDetail"
-          @back="onBack"
-        />
-      </section>
+      <OrgListPanel :orgs="orgs" />
     </template>
   </div>
 </template>
@@ -50,7 +30,6 @@
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import OrgListPanel from "./OrgListPanel.vue";
-import OrgDetailView from "./OrgDetailView.vue";
 import PlatformKpiStrip from "./PlatformKpiStrip.vue";
 import AlertsPanel from "./AlertsPanel.vue";
 
@@ -58,19 +37,14 @@ export default {
   name: "Dashboard",
   components: {
     OrgListPanel,
-    OrgDetailView,
     PlatformKpiStrip,
     AlertsPanel,
   },
   data() {
     return {
-      currentView: "orgList",
       orgs: [],
       platform: null,
-      selectedOrgId: null,
-      orgDetail: null,
       loading: true,
-      detailLoading: false,
       error: null,
     };
   },
@@ -92,38 +66,6 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
-    async onSelectOrg(orgId) {
-      this.selectedOrgId = orgId;
-      this.currentView = "orgDetail";
-      this.detailLoading = true;
-      this.orgDetail = null;
-      this.$nextTick(() => {
-        if (this.$refs.detailSection) {
-          this.$refs.detailSection.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        }
-      });
-      try {
-        const url = generateUrl(
-          "/apps/superadminpage/api/super/orgs/" + orgId,
-        );
-        const res = await axios.get(url);
-        this.orgDetail = res.data;
-      } catch (e) {
-        console.error("Failed to load organization detail", e);
-        this.error = e.message || "Failed to load organization";
-        this.currentView = "orgList";
-      } finally {
-        this.detailLoading = false;
-      }
-    },
-    onBack() {
-      this.currentView = "orgList";
-      this.selectedOrgId = null;
-      this.orgDetail = null;
     },
   },
 };
@@ -226,9 +168,5 @@ export default {
 
 .superadmin-dashboard__error {
   color: var(--color-danger);
-}
-
-.superadmin-dashboard__detail {
-  scroll-margin-top: var(--spacing-md, 16px);
 }
 </style>

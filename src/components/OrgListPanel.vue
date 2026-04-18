@@ -98,8 +98,6 @@
         v-for="org in paginatedOrgs"
         :key="'org-' + org.id"
         :org="org"
-        :selected="org.id === selectedOrgId"
-        @click="$emit('select-org', org.id)"
       />
     </div>
 
@@ -119,7 +117,6 @@
         :key="'org-' + org.id"
         class="org-list__row"
         :class="{
-          'org-list__row--selected': org.id === selectedOrgId,
           'org-list__row--expanded': !!expanded[org.id],
         }"
         role="row"
@@ -211,120 +208,11 @@
             </button>
           </div>
 
-          <template v-else-if="detailCache[org.id]">
-            <div class="org-list__stat-strip">
-              <span>
-                <strong>{{ detailCache[org.id].usageSummary.projectCount }}</strong>
-                Projects
-              </span>
-              <span class="org-list__stat-sep">·</span>
-              <span>
-                <strong>{{ detailCache[org.id].usageSummary.totalTasks }}</strong>
-                Tasks
-                <span class="org-list__stat-muted">
-                  ({{ detailCache[org.id].usageSummary.doneTasks }} done)
-                </span>
-              </span>
-              <span class="org-list__stat-sep">·</span>
-              <span>
-                <strong>{{ detailCache[org.id].usageSummary.memberCount }}</strong>
-                <span class="org-list__stat-muted">
-                  / {{ detailCache[org.id].subscription.maxMembers || "∞" }}
-                </span>
-                Members
-              </span>
-              <span class="org-list__stat-sep">·</span>
-              <span>
-                <strong>
-                  {{ detailCache[org.id].subscription.price }}
-                  {{ detailCache[org.id].subscription.currency }}
-                </strong>
-                <span class="org-list__stat-muted">/ month</span>
-              </span>
-            </div>
-
-            <div class="org-list__info-grid">
-              <div class="org-list__info-col">
-                <h4>Profile</h4>
-                <div class="org-list__info-row">
-                  <span class="org-list__info-label">Owner UID</span>
-                  <span class="org-list__info-value">
-                    {{ detailCache[org.id].profile.adminUid }}
-                  </span>
-                </div>
-                <div class="org-list__info-row">
-                  <span class="org-list__info-label">Contact</span>
-                  <span class="org-list__info-value">
-                    {{ contactName(detailCache[org.id]) }}
-                  </span>
-                </div>
-                <div class="org-list__info-row">
-                  <span class="org-list__info-label">Email</span>
-                  <span class="org-list__info-value">
-                    {{ detailCache[org.id].profile.contactEmail || "—" }}
-                  </span>
-                </div>
-                <div
-                  v-if="detailCache[org.id].profile.contactPhone"
-                  class="org-list__info-row"
-                >
-                  <span class="org-list__info-label">Phone</span>
-                  <span class="org-list__info-value">
-                    {{ detailCache[org.id].profile.contactPhone }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="org-list__info-col">
-                <h4>Subscription</h4>
-                <div class="org-list__info-row">
-                  <span class="org-list__info-label">Status</span>
-                  <span class="org-list__info-value">
-                    {{ statusLabel({ subscriptionStatus: detailCache[org.id].subscription.status }) }}
-                  </span>
-                </div>
-                <div class="org-list__info-row">
-                  <span class="org-list__info-label">Plan</span>
-                  <span class="org-list__info-value">
-                    {{ detailCache[org.id].subscription.planName || "—" }}
-                  </span>
-                </div>
-                <div class="org-list__info-row">
-                  <span class="org-list__info-label">Price</span>
-                  <span class="org-list__info-value">
-                    {{ detailCache[org.id].subscription.price }}
-                    {{ detailCache[org.id].subscription.currency }}
-                    <span class="org-list__info-muted">/ mo</span>
-                  </span>
-                </div>
-                <div class="org-list__info-row">
-                  <span class="org-list__info-label">Member cap</span>
-                  <span class="org-list__info-value">
-                    {{ detailCache[org.id].subscription.maxMembers || "∞" }}
-                  </span>
-                </div>
-                <div
-                  v-if="detailCache[org.id].subscription.startedAt"
-                  class="org-list__info-row"
-                >
-                  <span class="org-list__info-label">Started</span>
-                  <span class="org-list__info-value">
-                    {{ formatDate(detailCache[org.id].subscription.startedAt) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div class="org-list__detail-footer">
-              <button
-                type="button"
-                class="org-list__open-full"
-                @click="$emit('select-org', org.id)"
-              >
-                Open full details →
-              </button>
-            </div>
-          </template>
+          <OrgDetailView
+            v-else-if="detailCache[org.id]"
+            :org="detailCache[org.id]"
+            :embedded="true"
+          />
         </div>
       </div>
     </div>
@@ -355,21 +243,18 @@
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import OrgCard from "./OrgCard.vue";
+import OrgDetailView from "./OrgDetailView.vue";
 
 const VIEW_MODE_STORAGE_KEY = "superadminpage.orgListView";
-const ORG_LIST_BUILD_MARKER = "v3-inline-expand";
+const ORG_LIST_BUILD_MARKER = "v4-inline-full-detail";
 
 export default {
   name: "OrgListPanel",
-  components: { OrgCard },
+  components: { OrgCard, OrgDetailView },
   props: {
     orgs: {
       type: Array,
       default: () => [],
-    },
-    selectedOrgId: {
-      type: [Number, String, null],
-      default: null,
     },
   },
   data() {
@@ -498,22 +383,6 @@ export default {
       } finally {
         this.$set(this.detailLoading, orgId, false);
       }
-    },
-    contactName(detail) {
-      const p = detail.profile || {};
-      const full = ((p.contactFirstName || "") + " " + (p.contactLastName || ""))
-        .trim();
-      return full || "—";
-    },
-    formatDate(d) {
-      if (!d) return "—";
-      const dt = new Date(d);
-      if (isNaN(dt.getTime())) return d;
-      return dt.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
     },
   },
 };
@@ -722,14 +591,6 @@ export default {
   background: #f7faff;
 }
 
-.org-list__row--selected {
-  box-shadow: inset 3px 0 0 #4a90d9;
-}
-
-.org-list__row--selected .org-list__row-summary {
-  background: #f5faff;
-}
-
 .org-list__row--expanded {
   background: #fafbfd;
 }
@@ -912,111 +773,6 @@ export default {
   }
 }
 
-.org-list__stat-strip {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 12px;
-  font-size: 12px;
-  color: var(--color-text-secondary, #6b7280);
-}
-
-.org-list__stat-strip strong {
-  color: var(--color-text-primary, #1a1a2e);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  margin-right: 4px;
-}
-
-.org-list__stat-muted {
-  color: var(--color-text-muted, #9ca3af);
-}
-
-.org-list__stat-sep {
-  color: #cfd6e0;
-  user-select: none;
-}
-
-.org-list__info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 10px;
-  background: #fff;
-  overflow: hidden;
-}
-
-.org-list__info-col {
-  padding: 12px 16px;
-}
-
-.org-list__info-col + .org-list__info-col {
-  border-left: 1px solid var(--color-border, #e5e7eb);
-}
-
-.org-list__info-col h4 {
-  font-size: 11px;
-  font-weight: 600;
-  margin: 0 0 8px;
-  color: var(--color-text-secondary, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-
-.org-list__info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  padding: 5px 0;
-  border-bottom: 1px solid #eef1f5;
-  font-size: 12px;
-}
-
-.org-list__info-row:last-child {
-  border-bottom: none;
-}
-
-.org-list__info-label {
-  color: var(--color-text-secondary, #6b7280);
-  flex-shrink: 0;
-}
-
-.org-list__info-value {
-  font-weight: 600;
-  color: var(--color-text-primary, #1a1a2e);
-  text-align: right;
-  word-break: break-word;
-  min-width: 0;
-}
-
-.org-list__info-muted {
-  color: var(--color-text-muted, #9ca3af);
-  font-weight: 500;
-  margin-left: 2px;
-}
-
-.org-list__detail-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.org-list__open-full {
-  padding: 6px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #4a90d9;
-  background: transparent;
-  border: 1px solid #4a90d9;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.org-list__open-full:hover {
-  background: #e8f0fe;
-}
-
 /* ───────── Pagination ───────── */
 
 .org-list__pagination {
@@ -1081,13 +837,6 @@ export default {
   .org-list__th--storage,
   .org-list__cell--storage {
     display: none;
-  }
-  .org-list__info-grid {
-    grid-template-columns: 1fr;
-  }
-  .org-list__info-col + .org-list__info-col {
-    border-left: none;
-    border-top: 1px solid var(--color-border, #e5e7eb);
   }
 }
 
