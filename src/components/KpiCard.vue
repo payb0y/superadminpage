@@ -112,16 +112,18 @@
       </div>
       <span class="kpi-card__title">{{ title }}</span>
     </div>
-    <div class="kpi-card__metrics">
-      <div
-        v-for="(metric, index) in metrics"
-        :key="index"
-        class="kpi-card__metric"
-      >
-        <span class="kpi-card__metric-value">{{ metric.value }}</span>
-        <span class="kpi-card__metric-label">{{ metric.label }}</span>
+    <slot>
+      <div class="kpi-card__metrics">
+        <div
+          v-for="(metric, index) in metrics"
+          :key="index"
+          class="kpi-card__metric"
+        >
+          <span class="kpi-card__metric-value">{{ metric.value }}</span>
+          <span class="kpi-card__metric-label">{{ metric.label }}</span>
+        </div>
       </div>
-    </div>
+    </slot>
   </div>
 </template>
 
@@ -143,7 +145,7 @@ export default {
     },
     metrics: {
       type: Array,
-      required: true,
+      default: () => [],
     },
   },
   computed: {
