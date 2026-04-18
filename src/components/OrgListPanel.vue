@@ -1,5 +1,5 @@
 <template>
-  <section class="org-list">
+  <section class="org-list" :data-build="buildMarker">
     <header class="org-list__header">
       <h2 class="org-list__title">
         Organizations
@@ -357,6 +357,7 @@ import { generateUrl } from "@nextcloud/router";
 import OrgCard from "./OrgCard.vue";
 
 const VIEW_MODE_STORAGE_KEY = "superadminpage.orgListView";
+const ORG_LIST_BUILD_MARKER = "v2-inline-expand";
 
 export default {
   name: "OrgListPanel",
@@ -391,6 +392,9 @@ export default {
     };
   },
   computed: {
+    buildMarker() {
+      return ORG_LIST_BUILD_MARKER;
+    },
     pageSize() {
       return this.viewMode === "table" ? 20 : 9;
     },
