@@ -63,20 +63,25 @@
 
       <div
         v-if="isExpanded(project.id)"
-        class="projects-panel__timeline"
+        class="projects-panel__expanded"
       >
-        <TimelineChart :timeline="project.timeline || []" />
-      </div>
+        <section class="projects-panel__section">
+          <h4 class="projects-panel__section-title">Timeline</h4>
+          <div class="projects-panel__section-body">
+            <TimelineChart :timeline="project.timeline || []" />
+          </div>
+        </section>
 
-      <div
-        v-if="isExpanded(project.id)"
-        class="projects-panel__tasks"
-      >
-        <ProjectTaskBrowser
-          :tasks="tasksByProject[project.id] || []"
-          :loading="!!tasksLoadingByProject[project.id]"
-          :error="tasksErrorByProject[project.id] || null"
-        />
+        <section class="projects-panel__section">
+          <h4 class="projects-panel__section-title">Tasks</h4>
+          <div class="projects-panel__section-body">
+            <ProjectTaskBrowser
+              :tasks="tasksByProject[project.id] || []"
+              :loading="!!tasksLoadingByProject[project.id]"
+              :error="tasksErrorByProject[project.id] || null"
+            />
+          </div>
+        </section>
       </div>
     </div>
   </section>
@@ -245,18 +250,38 @@ export default {
   color: #4a90d9;
 }
 
-.projects-panel__timeline {
+.projects-panel__expanded {
   border-top: 1px solid #eef1f5;
   padding: 16px;
   background: #fafbfd;
-}
-
-.projects-panel__tasks {
-  border-top: 1px solid #eef1f5;
-  padding: 16px;
-  background: #fafbfd;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
+}
+
+.projects-panel__section {
+  background: #fff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.projects-panel__section-title {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted, #6b7280);
+  background: #fafbfd;
+  border-bottom: 1px solid var(--color-border, #eef1f5);
+}
+
+.projects-panel__section-body {
+  padding: 14px;
 }
 
 .projects-panel__main {
