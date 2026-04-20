@@ -316,9 +316,12 @@ class OrgOverviewService {
             return [];
         }
 
+        $projectIds = array_map(fn ($p) => (int)$p['id'], $projects);
+        $timelinesByProject = $this->fetchTimelinesForProjects($projectIds);
+
         $boardIds = array_filter(array_column($projects, 'board_id'));
         if (empty($boardIds)) {
-            return array_map(fn ($p) => $this->emptyProject($p), $projects);
+            return array_map(fn ($p) => $this->emptyProject($p, $timelinesByProject[(int)$p['id']] ?? []), $projects);
         }
 
         $placeholders = implode(',', array_fill(0, count($boardIds), '?'));
@@ -393,15 +396,16 @@ class OrgOverviewService {
             ];
         }
 
-        return array_map(function ($p) use ($totalByBoard, $doneByBoard, $overdueByBoard, $stacksByBoard) {
+        return array_map(function ($p) use ($totalByBoard, $doneByBoard, $overdueByBoard, $stacksByBoard, $timelinesByProject) {
             $bid      = (int)$p['board_id'];
+            $pid      = (int)$p['id'];
             $total    = $totalByBoard[$bid]  ?? 0;
             $done     = $doneByBoard[$bid]   ?? 0;
             $overdue  = $overdueByBoard[$bid] ?? 0;
             $progress = $total > 0 ? (int)round(($done / $total) * 100) : 0;
 
             return [
-                'id'       => (int)$p['id'],
+                'id'       => $pid,
                 'name'     => $p['name'],
                 'boardId'  => $bid,
                 'total'    => $total,
@@ -409,11 +413,12 @@ class OrgOverviewService {
                 'overdue'  => $overdue,
                 'progress' => $progress,
                 'stacks'   => $stacksByBoard[$bid] ?? [],
+                'timeline' => $timelinesByProject[$pid] ?? [],
             ];
         }, $projects);
     }
 
-    private function emptyProject(array $p): array {
+    private function emptyProject(array $p, array $timeline = []): array {
         return [
             'id'       => (int)$p['id'],
             'name'     => $p['name'],
@@ -423,7 +428,35 @@ class OrgOverviewService {
             'overdue'  => 0,
             'progress' => 0,
             'stacks'   => [],
+            'timeline' => $timeline,
         ];
+    }
+
+    private function fetchTimelinesForProjects(array $projectIds): array {
+        if (empty($projectIds)) {
+            return [];
+        }
+        $ph = implode(',', array_fill(0, count($projectIds), '?'));
+        $sql = "
+            SELECT pti.project_id, pti.label, pti.system_key,
+                   pti.start_date, pti.end_date, pti.color
+            FROM *PREFIX*project_timeline_items pti
+            WHERE pti.project_id IN ($ph)
+            ORDER BY pti.project_id, pti.order_index
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($projectIds);
+        $map = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $map[(int)$row['project_id']][] = [
+                'label'     => $row['label'],
+                'systemKey' => $row['system_key'],
+                'startDate' => $row['start_date'],
+                'endDate'   => $row['end_date'],
+                'color'     => $row['color'],
+            ];
+        }
+        return $map;
     }
 
     private function getUsageSummary(int $orgId): array {

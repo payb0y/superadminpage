@@ -6,7 +6,8 @@
       "Bash(npm install *)",
       "Bash(npm run *)",
       "Bash(docker exec *)",
-      "Bash(xargs cat *)"
+      "Bash(xargs cat *)",
+      "Bash(docker start *)"
     ]
   }
 }

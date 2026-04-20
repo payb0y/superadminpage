@@ -17,39 +17,66 @@
       v-for="project in filteredProjects"
       :key="'proj-' + project.id"
       class="projects-panel__row"
+      :class="{ 'projects-panel__row--expanded': isExpanded(project.id) }"
     >
-      <div class="projects-panel__main">
-        <span class="projects-panel__name">{{ project.name }}</span>
-        <div class="projects-panel__meta">
-          <span class="projects-panel__meta-item">
-            {{ project.done }}/{{ project.total }} tasks
-          </span>
-          <span
-            v-if="project.overdue > 0"
-            class="projects-panel__meta-item projects-panel__meta-item--danger"
-          >
-            {{ project.overdue }} overdue
-          </span>
+      <div
+        class="projects-panel__row-header"
+        role="button"
+        tabindex="0"
+        :aria-expanded="isExpanded(project.id) ? 'true' : 'false'"
+        @click="toggleExpand(project.id)"
+        @keydown.enter.prevent="toggleExpand(project.id)"
+        @keydown.space.prevent="toggleExpand(project.id)"
+      >
+        <span
+          class="projects-panel__chevron"
+          :class="{ 'projects-panel__chevron--open': isExpanded(project.id) }"
+          aria-hidden="true"
+        >▸</span>
+
+        <div class="projects-panel__main">
+          <span class="projects-panel__name">{{ project.name }}</span>
+          <div class="projects-panel__meta">
+            <span class="projects-panel__meta-item">
+              {{ project.done }}/{{ project.total }} tasks
+            </span>
+            <span
+              v-if="project.overdue > 0"
+              class="projects-panel__meta-item projects-panel__meta-item--danger"
+            >
+              {{ project.overdue }} overdue
+            </span>
+          </div>
+        </div>
+
+        <div class="projects-panel__progress">
+          <div class="projects-panel__bar">
+            <div
+              class="projects-panel__fill"
+              :class="fillClass(project)"
+              :style="{ width: project.progress + '%' }"
+            ></div>
+          </div>
+          <span class="projects-panel__pct">{{ project.progress }}%</span>
         </div>
       </div>
 
-      <div class="projects-panel__progress">
-        <div class="projects-panel__bar">
-          <div
-            class="projects-panel__fill"
-            :class="fillClass(project)"
-            :style="{ width: project.progress + '%' }"
-          ></div>
-        </div>
-        <span class="projects-panel__pct">{{ project.progress }}%</span>
+      <div
+        v-if="isExpanded(project.id)"
+        class="projects-panel__timeline"
+      >
+        <TimelineChart :timeline="project.timeline || []" />
       </div>
     </div>
   </section>
 </template>
 
 <script>
+import TimelineChart from "./TimelineChart.vue";
+
 export default {
   name: "ProjectsPanel",
+  components: { TimelineChart },
   props: {
     projects: {
       type: Array,
@@ -59,6 +86,7 @@ export default {
   data() {
     return {
       searchQuery: "",
+      expandedIds: [],
     };
   },
   computed: {
@@ -75,6 +103,17 @@ export default {
       if (p.progress >= 75) return "projects-panel__fill--high";
       if (p.progress >= 40) return "projects-panel__fill--mid";
       return "projects-panel__fill--low";
+    },
+    isExpanded(id) {
+      return this.expandedIds.indexOf(id) !== -1;
+    },
+    toggleExpand(id) {
+      const i = this.expandedIds.indexOf(id);
+      if (i === -1) {
+        this.expandedIds.push(id);
+      } else {
+        this.expandedIds.splice(i, 1);
+      }
     },
   },
 };
@@ -118,15 +157,53 @@ export default {
   background: #fff;
   border: 1px solid #f3f4f6;
   border-radius: 10px;
-  padding: 14px 16px;
   display: flex;
-  align-items: center;
-  gap: 20px;
+  flex-direction: column;
   transition: border-color 0.15s;
 }
 
 .projects-panel__row:hover {
   border-color: #e0e3e9;
+}
+
+.projects-panel__row--expanded {
+  border-color: #e0e3e9;
+}
+
+.projects-panel__row-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+
+.projects-panel__row-header:focus-visible {
+  box-shadow: inset 0 0 0 2px #4a90d9;
+  border-radius: 10px;
+}
+
+.projects-panel__chevron {
+  font-size: 12px;
+  color: var(--color-text-muted, #9ca3af);
+  width: 12px;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.projects-panel__chevron--open {
+  transform: rotate(90deg);
+  color: #4a90d9;
+}
+
+.projects-panel__timeline {
+  border-top: 1px solid #eef1f5;
+  padding: 16px;
+  background: #fafbfd;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
 .projects-panel__main {
@@ -198,7 +275,7 @@ export default {
 }
 
 @media (max-width: 600px) {
-  .projects-panel__row {
+  .projects-panel__row-header {
     flex-direction: column;
     align-items: stretch;
   }
