@@ -67,16 +67,30 @@
       >
         <TimelineChart :timeline="project.timeline || []" />
       </div>
+
+      <div
+        v-if="isExpanded(project.id)"
+        class="projects-panel__tasks"
+      >
+        <ProjectTaskBrowser
+          :tasks="tasksByProject[project.id] || []"
+          :loading="!!tasksLoadingByProject[project.id]"
+          :error="tasksErrorByProject[project.id] || null"
+        />
+      </div>
     </div>
   </section>
 </template>
 
 <script>
+import axios from "@nextcloud/axios";
+import { generateUrl } from "@nextcloud/router";
 import TimelineChart from "./TimelineChart.vue";
+import ProjectTaskBrowser from "./ProjectTaskBrowser.vue";
 
 export default {
   name: "ProjectsPanel",
-  components: { TimelineChart },
+  components: { TimelineChart, ProjectTaskBrowser },
   props: {
     projects: {
       type: Array,
@@ -87,6 +101,9 @@ export default {
     return {
       searchQuery: "",
       expandedIds: [],
+      tasksByProject: {},
+      tasksLoadingByProject: {},
+      tasksErrorByProject: {},
     };
   },
   computed: {
@@ -111,8 +128,38 @@ export default {
       const i = this.expandedIds.indexOf(id);
       if (i === -1) {
         this.expandedIds.push(id);
+        if (
+          !this.tasksByProject[id] &&
+          !this.tasksLoadingByProject[id]
+        ) {
+          this.loadTasks(id);
+        }
       } else {
         this.expandedIds.splice(i, 1);
+      }
+    },
+    async loadTasks(projectId) {
+      this.$set(this.tasksLoadingByProject, projectId, true);
+      this.$set(this.tasksErrorByProject, projectId, null);
+      try {
+        const res = await axios.get(
+          generateUrl(
+            "/apps/superadminpage/api/super/projects/" + projectId + "/tasks",
+          ),
+        );
+        this.$set(
+          this.tasksByProject,
+          projectId,
+          (res.data && res.data.tasks) || [],
+        );
+      } catch (e) {
+        this.$set(
+          this.tasksErrorByProject,
+          projectId,
+          (e && e.message) || "Failed to load tasks",
+        );
+      } finally {
+        this.$set(this.tasksLoadingByProject, projectId, false);
       }
     },
   },
@@ -199,6 +246,12 @@ export default {
 }
 
 .projects-panel__timeline {
+  border-top: 1px solid #eef1f5;
+  padding: 16px;
+  background: #fafbfd;
+}
+
+.projects-panel__tasks {
   border-top: 1px solid #eef1f5;
   padding: 16px;
   background: #fafbfd;

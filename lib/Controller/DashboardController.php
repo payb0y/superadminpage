@@ -6,6 +6,7 @@ namespace OCA\SuperAdminPage\Controller;
 
 use OCA\SuperAdminPage\Service\OrgOverviewService;
 use OCA\SuperAdminPage\Service\PlatformService;
+use OCA\SuperAdminPage\Service\ProjectTasksService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -19,6 +20,7 @@ class DashboardController extends Controller {
     private IGroupManager $groupManager;
     private OrgOverviewService $orgOverview;
     private PlatformService $platform;
+    private ProjectTasksService $projectTasks;
 
     public function __construct(
         string $appName,
@@ -27,12 +29,14 @@ class DashboardController extends Controller {
         IGroupManager $groupManager,
         OrgOverviewService $orgOverview,
         PlatformService $platform,
+        ProjectTasksService $projectTasks,
     ) {
         parent::__construct($appName, $request);
         $this->userSession = $userSession;
         $this->groupManager = $groupManager;
         $this->orgOverview = $orgOverview;
         $this->platform = $platform;
+        $this->projectTasks = $projectTasks;
     }
 
     /**
@@ -63,6 +67,20 @@ class DashboardController extends Controller {
             return $forbidden;
         }
         $data = $this->orgOverview->getOrgOverview($orgId);
+        if ($data === null) {
+            return new JSONResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
+        }
+        return new JSONResponse($data);
+    }
+
+    /**
+     * @NoCSRFRequired
+     */
+    public function getProjectTasks(int $projectId): JSONResponse {
+        if (($forbidden = $this->requireAdmin()) !== null) {
+            return $forbidden;
+        }
+        $data = $this->projectTasks->getTasksForProject($projectId);
         if ($data === null) {
             return new JSONResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
         }
