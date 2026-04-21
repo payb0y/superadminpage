@@ -5,19 +5,31 @@
         Organizations
         <span class="org-list__count">{{ orgs.length }}</span>
       </h2>
-      <div
-        class="org-list__view-toggle"
-        role="group"
-        aria-label="Organization view mode"
-      >
-        <button
-          type="button"
-          class="org-list__view-btn"
-          :class="{ 'org-list__view-btn--active': viewMode === 'grid' }"
-          :aria-pressed="viewMode === 'grid'"
-          title="Grid view"
-          @click="viewMode = 'grid'"
+      <div class="org-list__header-controls">
+        <div class="org-list__sort">
+          <label class="org-list__sort-label" :for="sortSelectId">Sort</label>
+          <select
+            :id="sortSelectId"
+            v-model="sortBy"
+            class="org-list__sort-select"
+          >
+            <option value="planDesc">Plan: high → low</option>
+            <option value="planAsc">Plan: low → high</option>
+          </select>
+        </div>
+        <div
+          class="org-list__view-toggle"
+          role="group"
+          aria-label="Organization view mode"
         >
+          <button
+            type="button"
+            class="org-list__view-btn"
+            :class="{ 'org-list__view-btn--active': viewMode === 'grid' }"
+            :aria-pressed="viewMode === 'grid'"
+            title="Grid view"
+            @click="viewMode = 'grid'"
+          >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="14"
@@ -61,6 +73,7 @@
           </svg>
           Table
         </button>
+        </div>
       </div>
     </header>
 
@@ -315,6 +328,7 @@ import OrgCard from "./OrgCard.vue";
 import OrgDetailView from "./OrgDetailView.vue";
 
 const VIEW_MODE_STORAGE_KEY = "superadminpage.orgListView";
+const SORT_STORAGE_KEY = "superadminpage.orgListSort";
 const ORG_LIST_BUILD_MARKER = "v5-pagination";
 
 const PAGE_SIZE_OPTIONS = {
@@ -322,8 +336,28 @@ const PAGE_SIZE_OPTIONS = {
   table: [10, 20, 50, 100],
 };
 
+const PLAN_TIER_RANK = {
+  Enterprise: 0,
+  Custom: 1,
+  Pro: 2,
+  Free: 3,
+};
+const NO_PLAN_RANK = 4;
+const STANDARD_PLANS = ["Free", "Pro", "Enterprise"];
+
 function defaultPageSize(viewMode) {
   return viewMode === "table" ? 20 : 9;
+}
+
+function planBucket(planName) {
+  if (!planName || planName === "No plan") return "No plan";
+  return STANDARD_PLANS.indexOf(planName) === -1 ? "Custom" : planName;
+}
+
+function planRank(planName) {
+  const bucket = planBucket(planName);
+  if (bucket === "No plan") return NO_PLAN_RANK;
+  return PLAN_TIER_RANK[bucket];
 }
 
 export default {
@@ -349,6 +383,7 @@ export default {
         { value: "cancelled", label: "Cancelled" },
         { value: "none", label: "No plan" },
       ],
+      sortBy: this.readSortBy(),
       viewMode,
       expanded: {},
       detailCache: {},
@@ -362,6 +397,9 @@ export default {
     },
     pageSizeId() {
       return "org-list-page-size-" + this._uid;
+    },
+    sortSelectId() {
+      return "org-list-sort-" + this._uid;
     },
     pageSizeOptions() {
       return PAGE_SIZE_OPTIONS[this.viewMode] || PAGE_SIZE_OPTIONS.grid;
@@ -378,21 +416,30 @@ export default {
         return true;
       });
     },
+    sortedOrgs() {
+      const dir = this.sortBy === "planAsc" ? 1 : -1;
+      return this.filteredOrgs.slice().sort((a, b) => {
+        const ra = planRank(a.planName);
+        const rb = planRank(b.planName);
+        if (ra === rb) return 0;
+        return (ra - rb) * dir * -1;
+      });
+    },
     totalPages() {
-      return Math.max(1, Math.ceil(this.filteredOrgs.length / this.pageSize));
+      return Math.max(1, Math.ceil(this.sortedOrgs.length / this.pageSize));
     },
     paginatedOrgs() {
       const start = (this.currentPage - 1) * this.pageSize;
-      return this.filteredOrgs.slice(start, start + this.pageSize);
+      return this.sortedOrgs.slice(start, start + this.pageSize);
     },
     rangeStart() {
-      if (this.filteredOrgs.length === 0) return 0;
+      if (this.sortedOrgs.length === 0) return 0;
       return (this.currentPage - 1) * this.pageSize + 1;
     },
     rangeEnd() {
       return Math.min(
         this.currentPage * this.pageSize,
-        this.filteredOrgs.length,
+        this.sortedOrgs.length,
       );
     },
     visiblePages() {
@@ -421,7 +468,15 @@ export default {
     pageSize() {
       this.currentPage = 1;
     },
-    filteredOrgs() {
+    sortBy(v) {
+      try {
+        window.localStorage.setItem(SORT_STORAGE_KEY, v);
+      } catch (_) {
+        // ignore storage errors (private mode, etc.)
+      }
+      this.currentPage = 1;
+    },
+    sortedOrgs() {
       if (this.currentPage > this.totalPages) {
         this.currentPage = this.totalPages;
       }
@@ -443,6 +498,14 @@ export default {
         return v === "table" || v === "grid" ? v : "grid";
       } catch (_) {
         return "grid";
+      }
+    },
+    readSortBy() {
+      try {
+        const v = window.localStorage.getItem(SORT_STORAGE_KEY);
+        return v === "planAsc" || v === "planDesc" ? v : "planDesc";
+      } catch (_) {
+        return "planDesc";
       }
     },
     initial(org) {
@@ -484,7 +547,7 @@ export default {
     revealOrgInTable(org) {
       this.viewMode = "table";
       this.$nextTick(() => {
-        const idx = this.filteredOrgs.findIndex((o) => o.id === org.id);
+        const idx = this.sortedOrgs.findIndex((o) => o.id === org.id);
         if (idx === -1) return;
         this.currentPage = Math.floor(idx / this.pageSize) + 1;
         this.$set(this.expanded, org.id, true);
@@ -558,6 +621,41 @@ export default {
   color: #1e4a8a;
   padding: 2px 10px;
   border-radius: 8px;
+}
+
+.org-list__header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  flex-wrap: wrap;
+}
+
+.org-list__sort {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.org-list__sort-label {
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+  font-weight: 500;
+}
+
+.org-list__sort-select {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: #fff;
+  color: var(--color-text-primary, #1a1a2e);
+  cursor: pointer;
+}
+
+.org-list__sort-select:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.15);
 }
 
 .org-list__view-toggle {
