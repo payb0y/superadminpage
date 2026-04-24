@@ -38,7 +38,9 @@ class ProjectTasksService {
                 'stack'     => $row['stack_title'],
                 'status'    => $row['task_status'],
                 'due'       => $row['duedate'],
-                'createdAt' => $row['card_created_at'],
+                'createdAt' => !empty($row['card_created_at'])
+                    ? date('Y-m-d H:i:s', (int)$row['card_created_at'])
+                    : null,
                 'dueBucket' => $row['due_bucket'],
                 'labels'    => $labelsByCard[$cardId] ?? [],
                 'assignees' => $assigneesByCard[$cardId] ?? [],
