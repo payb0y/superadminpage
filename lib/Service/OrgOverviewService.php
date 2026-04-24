@@ -303,7 +303,11 @@ class OrgOverviewService {
 
     private function getProjects(int $orgId): array {
         $sql = "
-            SELECT cp.id, cp.name, cp.board_id
+            SELECT cp.id, cp.name, cp.board_id,
+                   cp.number, cp.status, cp.description,
+                   cp.client_name, cp.client_email, cp.client_phone,
+                   cp.loc_street, cp.loc_city, cp.loc_zip,
+                   cp.created_at, cp.updated_at
             FROM *PREFIX*custom_projects cp
             WHERE cp.organization_id = ?
             ORDER BY cp.name
@@ -318,10 +322,15 @@ class OrgOverviewService {
 
         $projectIds = array_map(fn ($p) => (int)$p['id'], $projects);
         $timelinesByProject = $this->fetchTimelinesForProjects($projectIds);
+        $resourcesByProject = $this->fetchResourceCounts($orgId, $projectIds);
 
         $boardIds = array_filter(array_column($projects, 'board_id'));
         if (empty($boardIds)) {
-            return array_map(fn ($p) => $this->emptyProject($p, $timelinesByProject[(int)$p['id']] ?? []), $projects);
+            return array_map(fn ($p) => $this->emptyProject(
+                $p,
+                $timelinesByProject[(int)$p['id']] ?? [],
+                $resourcesByProject[(int)$p['id']] ?? ['files' => 0, 'whiteboards' => 0, 'notes' => 0]
+            ), $projects);
         }
 
         $placeholders = implode(',', array_fill(0, count($boardIds), '?'));
@@ -396,7 +405,7 @@ class OrgOverviewService {
             ];
         }
 
-        return array_map(function ($p) use ($totalByBoard, $doneByBoard, $overdueByBoard, $stacksByBoard, $timelinesByProject) {
+        return array_map(function ($p) use ($totalByBoard, $doneByBoard, $overdueByBoard, $stacksByBoard, $timelinesByProject, $resourcesByProject) {
             $bid      = (int)$p['board_id'];
             $pid      = (int)$p['id'];
             $total    = $totalByBoard[$bid]  ?? 0;
@@ -405,31 +414,119 @@ class OrgOverviewService {
             $progress = $total > 0 ? (int)round(($done / $total) * 100) : 0;
 
             return [
-                'id'       => $pid,
-                'name'     => $p['name'],
-                'boardId'  => $bid,
-                'total'    => $total,
-                'done'     => $done,
-                'overdue'  => $overdue,
-                'progress' => $progress,
-                'stacks'   => $stacksByBoard[$bid] ?? [],
-                'timeline' => $timelinesByProject[$pid] ?? [],
+                'id'          => $pid,
+                'name'        => $p['name'],
+                'boardId'     => $bid,
+                'number'      => $p['number'] ?? '',
+                'status'      => (int)($p['status'] ?? 0),
+                'statusLabel' => $this->statusLabel((int)($p['status'] ?? 0)),
+                'description' => $p['description'] ?? '',
+                'clientName'  => $p['client_name'] ?? '',
+                'clientEmail' => $p['client_email'] ?? '',
+                'clientPhone' => $p['client_phone'] ?? '',
+                'location'    => trim(($p['loc_street'] ?? '') . ', ' . ($p['loc_city'] ?? '') . ' ' . ($p['loc_zip'] ?? ''), ', '),
+                'createdAt'   => $p['created_at'] ?? '',
+                'updatedAt'   => $p['updated_at'] ?? '',
+                'total'       => $total,
+                'done'        => $done,
+                'overdue'     => $overdue,
+                'progress'    => $progress,
+                'stacks'      => $stacksByBoard[$bid] ?? [],
+                'timeline'    => $timelinesByProject[$pid] ?? [],
+                'resources'   => $resourcesByProject[$pid] ?? ['files' => 0, 'whiteboards' => 0, 'notes' => 0],
             ];
         }, $projects);
     }
 
-    private function emptyProject(array $p, array $timeline = []): array {
+    private function emptyProject(array $p, array $timeline = [], array $resources = ['files' => 0, 'whiteboards' => 0, 'notes' => 0]): array {
         return [
-            'id'       => (int)$p['id'],
-            'name'     => $p['name'],
-            'boardId'  => (int)($p['board_id'] ?? 0),
-            'total'    => 0,
-            'done'     => 0,
-            'overdue'  => 0,
-            'progress' => 0,
-            'stacks'   => [],
-            'timeline' => $timeline,
+            'id'          => (int)$p['id'],
+            'name'        => $p['name'],
+            'boardId'     => (int)($p['board_id'] ?? 0),
+            'number'      => $p['number'] ?? '',
+            'status'      => (int)($p['status'] ?? 0),
+            'statusLabel' => $this->statusLabel((int)($p['status'] ?? 0)),
+            'description' => $p['description'] ?? '',
+            'clientName'  => $p['client_name'] ?? '',
+            'clientEmail' => $p['client_email'] ?? '',
+            'clientPhone' => $p['client_phone'] ?? '',
+            'location'    => trim(($p['loc_street'] ?? '') . ', ' . ($p['loc_city'] ?? '') . ' ' . ($p['loc_zip'] ?? ''), ', '),
+            'createdAt'   => $p['created_at'] ?? '',
+            'updatedAt'   => $p['updated_at'] ?? '',
+            'total'       => 0,
+            'done'        => 0,
+            'overdue'     => 0,
+            'progress'    => 0,
+            'stacks'      => [],
+            'timeline'    => $timeline,
+            'resources'   => $resources,
         ];
+    }
+
+    private function statusLabel(int $status): string {
+        switch ($status) {
+            case 0: return 'Active';
+            case 1: return 'Waiting on Customer';
+            case 2: return 'On Hold';
+            case 3: return 'Done';
+            default: return 'Unknown';
+        }
+    }
+
+    private function fetchResourceCounts(int $orgId, array $projectIds): array {
+        if (empty($projectIds)) {
+            return [];
+        }
+        $ph = implode(',', array_fill(0, count($projectIds), '?'));
+
+        $sql = "
+            SELECT cp.id AS project_id,
+                SUM(CASE
+                    WHEN mt.mimetype NOT IN ('httpd/unix-directory', 'application/vnd.excalidraw+json')
+                    THEN 1 ELSE 0
+                END) AS files,
+                SUM(CASE
+                    WHEN mt.mimetype = 'application/vnd.excalidraw+json'
+                    THEN 1 ELSE 0
+                END) AS whiteboards
+            FROM *PREFIX*custom_projects cp
+            LEFT JOIN *PREFIX*filecache f ON f.parent = cp.folder_id
+            LEFT JOIN *PREFIX*mimetypes mt ON mt.id = f.mimetype
+            WHERE cp.organization_id = ? AND cp.id IN ($ph)
+            GROUP BY cp.id
+        ";
+        $params = array_merge([$orgId], $projectIds);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        $map = [];
+        while ($row = $stmt->fetch()) {
+            $map[(int)$row['project_id']] = [
+                'files'       => (int)$row['files'],
+                'whiteboards' => (int)$row['whiteboards'],
+                'notes'       => 0,
+            ];
+        }
+
+        $sqlNotes = "
+            SELECT cp.id AS project_id, COUNT(f.fileid) AS cnt
+            FROM *PREFIX*custom_projects cp
+            LEFT JOIN *PREFIX*filecache pnf ON pnf.parent = cp.folder_id AND pnf.name = 'Public Notes'
+            LEFT JOIN *PREFIX*filecache f ON f.parent = pnf.fileid
+                AND f.mimetype != (SELECT id FROM *PREFIX*mimetypes WHERE mimetype = 'httpd/unix-directory')
+            WHERE cp.organization_id = ? AND cp.id IN ($ph)
+            GROUP BY cp.id
+        ";
+        $stmt = $this->db->prepare($sqlNotes);
+        $stmt->execute($params);
+        while ($row = $stmt->fetch()) {
+            $pid = (int)$row['project_id'];
+            if (isset($map[$pid])) {
+                $map[$pid]['notes'] = (int)$row['cnt'];
+            }
+        }
+
+        return $map;
     }
 
     private function fetchTimelinesForProjects(array $projectIds): array {

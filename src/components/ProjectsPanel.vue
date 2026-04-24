@@ -65,6 +65,131 @@
         v-if="isExpanded(project.id)"
         class="projects-panel__expanded"
       >
+        <div class="projects-panel__cards-row">
+          <div class="projects-panel__card">
+            <div class="projects-panel__card-header">
+              <h4 class="projects-panel__card-title">Project Overview</h4>
+              <span
+                v-if="project.statusLabel"
+                class="projects-panel__badge"
+                :class="statusClass(project)"
+              >{{ project.statusLabel }}</span>
+            </div>
+            <div class="projects-panel__info-grid">
+              <div class="projects-panel__info-item">
+                <span class="projects-panel__info-label">Project Name</span>
+                <span class="projects-panel__info-value">{{ project.name }}</span>
+              </div>
+              <div v-if="project.number" class="projects-panel__info-item">
+                <span class="projects-panel__info-label">Project Number</span>
+                <span class="projects-panel__info-value">{{ project.number }}</span>
+              </div>
+              <div v-if="project.description" class="projects-panel__info-item">
+                <span class="projects-panel__info-label">Description</span>
+                <span class="projects-panel__info-value">{{ project.description }}</span>
+              </div>
+              <div class="projects-panel__info-item">
+                <span class="projects-panel__info-label">Created</span>
+                <span class="projects-panel__info-value">{{ formatDate(project.createdAt) }}</span>
+              </div>
+              <div class="projects-panel__info-item">
+                <span class="projects-panel__info-label">Last Updated</span>
+                <span class="projects-panel__info-value">{{ formatDate(project.updatedAt) }}</span>
+              </div>
+            </div>
+            <div class="projects-panel__completion">
+              <div class="projects-panel__completion-header">
+                <span class="projects-panel__completion-label">Task Completion</span>
+                <span class="projects-panel__completion-pct">{{ project.progress }}%</span>
+              </div>
+              <div class="projects-panel__completion-bar">
+                <div
+                  class="projects-panel__completion-fill"
+                  :class="fillClass(project)"
+                  :style="{ width: project.progress + '%' }"
+                ></div>
+              </div>
+              <span class="projects-panel__completion-detail">
+                {{ project.done }} of {{ project.total }} tasks completed
+              </span>
+            </div>
+          </div>
+
+          <div class="projects-panel__card">
+            <h4 class="projects-panel__card-title">Client &amp; Resources</h4>
+            <div v-if="hasClientInfo(project)" class="projects-panel__info-grid">
+              <div v-if="project.clientName" class="projects-panel__info-item">
+                <span class="projects-panel__info-label">Client</span>
+                <span class="projects-panel__info-value">{{ project.clientName }}</span>
+              </div>
+              <div v-if="project.clientEmail" class="projects-panel__info-item">
+                <span class="projects-panel__info-label">Email</span>
+                <a
+                  :href="'mailto:' + project.clientEmail"
+                  class="projects-panel__info-link"
+                >{{ project.clientEmail }}</a>
+              </div>
+              <div v-if="project.clientPhone" class="projects-panel__info-item">
+                <span class="projects-panel__info-label">Phone</span>
+                <a
+                  :href="'tel:' + project.clientPhone"
+                  class="projects-panel__info-link"
+                >{{ project.clientPhone }}</a>
+              </div>
+              <div
+                v-if="project.location && project.location !== ','"
+                class="projects-panel__info-item"
+              >
+                <span class="projects-panel__info-label">Location</span>
+                <span class="projects-panel__info-value">{{ project.location }}</span>
+              </div>
+            </div>
+            <div v-else class="projects-panel__no-client">
+              No client information
+            </div>
+            <h4 class="projects-panel__card-title projects-panel__card-title--sub">Resources</h4>
+            <div class="projects-panel__resources">
+              <div class="projects-panel__resource-item">
+                <span class="projects-panel__resource-value">{{ (project.resources && project.resources.files) || 0 }}</span>
+                <span class="projects-panel__resource-label">Files</span>
+              </div>
+              <div class="projects-panel__resource-item">
+                <span class="projects-panel__resource-value">{{ (project.resources && project.resources.whiteboards) || 0 }}</span>
+                <span class="projects-panel__resource-label">Whiteboards</span>
+              </div>
+              <div class="projects-panel__resource-item">
+                <span class="projects-panel__resource-value">{{ (project.resources && project.resources.notes) || 0 }}</span>
+                <span class="projects-panel__resource-label">Notes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="projects-panel__kpi-row">
+          <div class="projects-panel__kpi-stat">
+            <span class="projects-panel__kpi-stat-value">{{ project.progress }}%</span>
+            <span class="projects-panel__kpi-stat-label">Completion Rate</span>
+            <div class="projects-panel__kpi-bar">
+              <div
+                class="projects-panel__kpi-bar-fill"
+                :class="fillClass(project)"
+                :style="{ width: project.progress + '%' }"
+              ></div>
+            </div>
+            <span class="projects-panel__kpi-stat-sub">{{ project.done }}/{{ project.total }} tasks</span>
+          </div>
+          <div class="projects-panel__kpi-stat">
+            <span class="projects-panel__kpi-stat-value">{{ coordinationPending(project) }}</span>
+            <span class="projects-panel__kpi-stat-label">Coordination Pending</span>
+            <span class="projects-panel__kpi-stat-sub">Weeks since Request Date</span>
+          </div>
+          <div class="projects-panel__kpi-stat">
+            <span class="projects-panel__kpi-stat-value">{{ requiredPrepTime(project) }}</span>
+            <span class="projects-panel__kpi-stat-label">Required Prep Time</span>
+            <span class="projects-panel__kpi-stat-sub">Planned preparation period</span>
+          </div>
+        </div>
+
         <section class="projects-panel__section">
           <h4 class="projects-panel__section-title">Timeline</h4>
           <div class="projects-panel__section-body">
@@ -125,6 +250,54 @@ export default {
       if (p.progress >= 75) return "projects-panel__fill--high";
       if (p.progress >= 40) return "projects-panel__fill--mid";
       return "projects-panel__fill--low";
+    },
+    formatDate(s) {
+      if (!s) return "—";
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return "—";
+      return d.toLocaleDateString();
+    },
+    hasClientInfo(p) {
+      return !!(
+        p.clientName ||
+        p.clientEmail ||
+        p.clientPhone ||
+        (p.location && p.location !== ",")
+      );
+    },
+    statusClass(p) {
+      const label = (p.statusLabel || "").toLowerCase().replace(/ /g, "-");
+      return "projects-panel__badge--" + label;
+    },
+    findTimelineItem(p, systemKey) {
+      const tl = (p && p.timeline) || [];
+      for (let i = 0; i < tl.length; i++) {
+        if (tl[i].systemKey === systemKey) return tl[i];
+      }
+      return null;
+    },
+    coordinationPending(p) {
+      const item = this.findTimelineItem(p, "request_date");
+      if (!item || !item.startDate) return "—";
+      const start = new Date(item.startDate);
+      if (isNaN(start.getTime())) return "—";
+      const days = Math.floor(
+        (Date.now() - start.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      const weeks = Math.round(days / 7);
+      return weeks + " wk" + (weeks !== 1 ? "s" : "");
+    },
+    requiredPrepTime(p) {
+      const item = this.findTimelineItem(p, "required_preparation");
+      if (!item || !item.startDate || !item.endDate) return "—";
+      const s = new Date(item.startDate);
+      const e = new Date(item.endDate);
+      if (isNaN(s.getTime()) || isNaN(e.getTime())) return "—";
+      const days = Math.floor(
+        (e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      const weeks = Math.round(days / 7);
+      return weeks + " wk" + (weeks !== 1 ? "s" : "");
     },
     isExpanded(id) {
       return this.expandedIds.indexOf(id) !== -1;
@@ -352,6 +525,229 @@ export default {
   text-align: right;
 }
 
+.projects-panel__cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.projects-panel__card {
+  background: #fff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.projects-panel__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.projects-panel__card-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.projects-panel__card-title--sub {
+  margin-top: 4px;
+}
+
+.projects-panel__badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #eef1f5;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+.projects-panel__badge--active {
+  background: #e6f4ea;
+  color: #1f7a3e;
+}
+.projects-panel__badge--waiting-on-customer {
+  background: #fff4e0;
+  color: #a1620b;
+}
+.projects-panel__badge--on-hold {
+  background: #fde8e8;
+  color: #a32222;
+}
+.projects-panel__badge--done {
+  background: #e8efff;
+  color: #2b57c7;
+}
+
+.projects-panel__info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
+.projects-panel__info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.projects-panel__info-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-text-muted, #9ca3af);
+  font-weight: 600;
+}
+
+.projects-panel__info-value {
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a2e);
+  word-break: break-word;
+}
+
+.projects-panel__info-link {
+  font-size: 13px;
+  color: #4a90d9;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.projects-panel__info-link:hover {
+  text-decoration: underline;
+}
+
+.projects-panel__no-client {
+  font-size: 12px;
+  color: var(--color-text-muted, #9ca3af);
+  font-style: italic;
+}
+
+.projects-panel__completion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.projects-panel__completion-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-text-muted, #6b7280);
+  font-weight: 600;
+}
+
+.projects-panel__completion-pct {
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.projects-panel__completion-bar {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.projects-panel__completion-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.projects-panel__completion-detail {
+  font-size: 11px;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.projects-panel__resources {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.projects-panel__resource-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 6px;
+  background: #fafbfd;
+  border: 1px solid var(--color-border, #eef1f5);
+  border-radius: 8px;
+  gap: 2px;
+}
+
+.projects-panel__resource-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.projects-panel__resource-label {
+  font-size: 11px;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.projects-panel__kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.projects-panel__kpi-stat {
+  background: #fff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.projects-panel__kpi-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1a1a2e);
+  line-height: 1.1;
+}
+
+.projects-panel__kpi-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.projects-panel__kpi-stat-sub {
+  font-size: 11px;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.projects-panel__kpi-bar {
+  width: 100%;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.projects-panel__kpi-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
 @media (max-width: 600px) {
   .projects-panel__row-header {
     flex-direction: column;
@@ -359,6 +755,13 @@ export default {
   }
   .projects-panel__progress {
     min-width: 0;
+  }
+  .projects-panel__cards-row,
+  .projects-panel__kpi-row {
+    grid-template-columns: 1fr;
+  }
+  .projects-panel__info-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
