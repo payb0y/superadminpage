@@ -191,6 +191,56 @@
         </div>
 
         <section class="projects-panel__section">
+          <h4 class="projects-panel__section-title">
+            Team Members
+            <span class="projects-panel__section-count">
+              {{ (project.members || []).length }}
+            </span>
+          </h4>
+          <div class="projects-panel__section-body">
+            <ul
+              v-if="(project.members || []).length"
+              class="projects-panel__members"
+            >
+              <li
+                v-for="m in project.members"
+                :key="m.userId"
+                class="projects-panel__member"
+              >
+                <span class="projects-panel__member-avatar">{{ initials(m.displayName) }}</span>
+                <div class="projects-panel__member-info">
+                  <span class="projects-panel__member-name">{{ m.displayName }}</span>
+                  <a
+                    v-if="m.email"
+                    :href="'mailto:' + m.email"
+                    class="projects-panel__member-email"
+                  >{{ m.email }}</a>
+                  <span
+                    v-else
+                    class="projects-panel__member-email projects-panel__member-email--muted"
+                  >No email</span>
+                </div>
+                <span
+                  class="projects-panel__member-role"
+                  :class="m.isOwner
+                    ? 'projects-panel__member-role--owner'
+                    : 'projects-panel__member-role--member'"
+                >
+                  <span v-if="m.isOwner" aria-hidden="true">★</span>
+                  {{ m.isOwner ? 'Owner' : 'Member' }}
+                </span>
+              </li>
+            </ul>
+            <div
+              v-else
+              class="projects-panel__members-empty"
+            >
+              No team members assigned to this project.
+            </div>
+          </div>
+        </section>
+
+        <section class="projects-panel__section">
           <h4 class="projects-panel__section-title">Timeline</h4>
           <div class="projects-panel__section-body">
             <TimelineChart :timeline="project.timeline || []" />
@@ -256,6 +306,13 @@ export default {
       const d = new Date(s);
       if (isNaN(d.getTime())) return "—";
       return d.toLocaleDateString();
+    },
+    initials(name) {
+      if (!name) return "?";
+      const parts = name.trim().split(/\s+/).filter(Boolean);
+      const first = parts[0] ? parts[0][0] : "";
+      const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+      return (first + last).toUpperCase() || name[0].toUpperCase();
     },
     hasClientInfo(p) {
       return !!(
@@ -763,5 +820,106 @@ export default {
   .projects-panel__info-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.projects-panel__section-count {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 600;
+}
+.projects-panel__members {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.projects-panel__member {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef0f3;
+  transition: background 120ms ease;
+}
+.projects-panel__member:last-child {
+  border-bottom: 0;
+}
+.projects-panel__member:hover {
+  background: #f7f9fc;
+}
+.projects-panel__member-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(74, 144, 217, 0.12);
+  color: #4a90d9;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+.projects-panel__member-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.projects-panel__member-name {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.projects-panel__member-email {
+  font-size: 12px;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.projects-panel__member-email:hover {
+  color: #4a90d9;
+  text-decoration: underline;
+}
+.projects-panel__member-email--muted {
+  color: #9ca3af;
+  font-style: italic;
+}
+.projects-panel__member-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.projects-panel__member-role--owner {
+  background: rgba(74, 144, 217, 0.12);
+  color: #4a90d9;
+}
+.projects-panel__member-role--member {
+  background: #eef2f7;
+  color: #6b7280;
+}
+.projects-panel__members-empty {
+  padding: 14px 12px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+  font-style: italic;
 }
 </style>

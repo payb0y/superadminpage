@@ -307,7 +307,8 @@ class OrgOverviewService {
                    cp.number, cp.status, cp.description,
                    cp.client_name, cp.client_email, cp.client_phone,
                    cp.loc_street, cp.loc_city, cp.loc_zip,
-                   cp.created_at, cp.updated_at
+                   cp.created_at, cp.updated_at,
+                   cp.owner_id, cp.project_group_gid
             FROM *PREFIX*custom_projects cp
             WHERE cp.organization_id = ?
             ORDER BY cp.name
@@ -324,12 +325,21 @@ class OrgOverviewService {
         $timelinesByProject = $this->fetchTimelinesForProjects($projectIds);
         $resourcesByProject = $this->fetchResourceCounts($orgId, $projectIds);
 
+        $ownerByProject = [];
+        foreach ($projects as $p) {
+            if (!empty($p['owner_id'])) {
+                $ownerByProject[(int)$p['id']] = $p['owner_id'];
+            }
+        }
+        $membersByProject = $this->fetchMembersForOrg($orgId, $ownerByProject);
+
         $boardIds = array_filter(array_column($projects, 'board_id'));
         if (empty($boardIds)) {
             return array_map(fn ($p) => $this->emptyProject(
                 $p,
                 $timelinesByProject[(int)$p['id']] ?? [],
-                $resourcesByProject[(int)$p['id']] ?? ['files' => 0, 'whiteboards' => 0, 'notes' => 0]
+                $resourcesByProject[(int)$p['id']] ?? ['files' => 0, 'whiteboards' => 0, 'notes' => 0],
+                $membersByProject[(int)$p['id']] ?? []
             ), $projects);
         }
 
@@ -405,7 +415,7 @@ class OrgOverviewService {
             ];
         }
 
-        return array_map(function ($p) use ($totalByBoard, $doneByBoard, $overdueByBoard, $stacksByBoard, $timelinesByProject, $resourcesByProject) {
+        return array_map(function ($p) use ($totalByBoard, $doneByBoard, $overdueByBoard, $stacksByBoard, $timelinesByProject, $resourcesByProject, $membersByProject) {
             $bid      = (int)$p['board_id'];
             $pid      = (int)$p['id'];
             $total    = $totalByBoard[$bid]  ?? 0;
@@ -434,11 +444,59 @@ class OrgOverviewService {
                 'stacks'      => $stacksByBoard[$bid] ?? [],
                 'timeline'    => $timelinesByProject[$pid] ?? [],
                 'resources'   => $resourcesByProject[$pid] ?? ['files' => 0, 'whiteboards' => 0, 'notes' => 0],
+                'members'     => $membersByProject[$pid] ?? [],
             ];
         }, $projects);
     }
 
-    private function emptyProject(array $p, array $timeline = [], array $resources = ['files' => 0, 'whiteboards' => 0, 'notes' => 0]): array {
+    private function fetchMembersForOrg(int $orgId, array $ownerByProject): array {
+        $sql = "
+            SELECT cp.id AS project_id,
+                   gu.uid AS user_uid,
+                   u.displayname,
+                   a.data AS account_data
+            FROM *PREFIX*custom_projects cp
+            INNER JOIN *PREFIX*group_user gu ON gu.gid = cp.project_group_gid
+            LEFT JOIN  *PREFIX*users u       ON u.uid = gu.uid
+            LEFT JOIN  *PREFIX*accounts a    ON a.uid = gu.uid
+            WHERE cp.organization_id = ?
+              AND cp.project_group_gid IS NOT NULL
+            ORDER BY cp.id, gu.uid
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$orgId]);
+
+        $byProject = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $pid = (int)$row['project_id'];
+            $uid = $row['user_uid'];
+            $account = [];
+            if (!empty($row['account_data'])) {
+                $decoded = json_decode($row['account_data'], true);
+                if (is_array($decoded)) {
+                    $account = $decoded;
+                }
+            }
+            $byProject[$pid][] = [
+                'userId'      => $uid,
+                'displayName' => $account['displayname']['value'] ?? $row['displayname'] ?? $uid,
+                'email'       => $account['email']['value'] ?? '',
+                'isOwner'     => isset($ownerByProject[$pid]) && $ownerByProject[$pid] === $uid,
+            ];
+        }
+
+        foreach ($byProject as $pid => &$members) {
+            usort($members, function ($a, $b) {
+                if ($a['isOwner'] !== $b['isOwner']) {
+                    return $a['isOwner'] ? -1 : 1;
+                }
+                return strcasecmp($a['displayName'], $b['displayName']);
+            });
+        }
+        return $byProject;
+    }
+
+    private function emptyProject(array $p, array $timeline = [], array $resources = ['files' => 0, 'whiteboards' => 0, 'notes' => 0], array $members = []): array {
         return [
             'id'          => (int)$p['id'],
             'name'        => $p['name'],
@@ -460,6 +518,7 @@ class OrgOverviewService {
             'stacks'      => [],
             'timeline'    => $timeline,
             'resources'   => $resources,
+            'members'     => $members,
         ];
     }
 
