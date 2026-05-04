@@ -77,6 +77,7 @@
       icon-color="#2e9e5a"
       :metrics="[
         { value: mrrDisplay, label: 'MRR' },
+        { value: arrDisplay, label: 'ARR' },
         { value: kpis.orgs.active, label: 'paying' },
       ]"
     />
@@ -108,7 +109,15 @@ export default {
       return `${d} done, ${o} overdue, ${this.openTasks} open`;
     },
     mrrDisplay() {
-      const v = Math.round(this.kpis.mrr.value || 0);
+      return this.formatMoney(this.kpis.mrr.value);
+    },
+    arrDisplay() {
+      return this.formatMoney((this.kpis.mrr.value || 0) * 12);
+    },
+  },
+  methods: {
+    formatMoney(amount) {
+      const v = Math.round(Number(amount) || 0);
       const sym =
         this.kpis.mrr.currency === "EUR"
           ? "€"
