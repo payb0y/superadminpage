@@ -31,7 +31,8 @@ class PlatformService {
                 SUM(CASE WHEN s.status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_subs
             FROM *PREFIX*organizations o
             LEFT JOIN *PREFIX*subscriptions s
-                   ON s.organization_id = o.id AND s.ended_at IS NULL
+                   ON s.organization_id = o.id
+                  AND (s.ended_at IS NULL OR s.ended_at > NOW())
         ";
         $stmt = $this->db->prepare($orgSql);
         $stmt->execute();
@@ -44,7 +45,8 @@ class PlatformService {
                    COUNT(DISTINCT p.currency) AS currency_count
             FROM *PREFIX*subscriptions s
             INNER JOIN *PREFIX*plans p ON p.id = s.plan_id
-            WHERE s.ended_at IS NULL AND s.status = 'active'
+            WHERE s.status = 'active'
+              AND (s.ended_at IS NULL OR s.ended_at > NOW())
             GROUP BY p.currency
             ORDER BY mrr DESC
             LIMIT 1
@@ -199,8 +201,8 @@ class PlatformService {
             FROM *PREFIX*organizations o
             LEFT JOIN *PREFIX*subscriptions s
                    ON s.organization_id = o.id
-                  AND s.ended_at IS NULL
                   AND s.status = 'active'
+                  AND (s.ended_at IS NULL OR s.ended_at > NOW())
             WHERE s.id IS NULL
         ";
         try {

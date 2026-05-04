@@ -33,7 +33,8 @@ class OrgOverviewService {
             LEFT JOIN *PREFIX*custom_projects cp
                    ON cp.organization_id = o.id
             LEFT JOIN *PREFIX*subscriptions s
-                   ON s.organization_id = o.id AND s.ended_at IS NULL
+                   ON s.organization_id = o.id
+                  AND (s.ended_at IS NULL OR s.ended_at > NOW())
             LEFT JOIN *PREFIX*plans p
                    ON p.id = s.plan_id
             GROUP BY o.id, o.name, p.name, s.status
