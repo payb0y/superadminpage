@@ -10,18 +10,11 @@
       ]"
     />
     <KpiCard
-      title="Financial"
-      icon-color="#2e9e5a"
-      :metrics="[
-        { value: mrrDisplay, label: 'MRR' },
-        { value: kpis.orgs.active, label: 'paying' },
-      ]"
-    />
-    <KpiCard
-      title="Resources"
+      title="Human Resources"
       icon-color="#8b5cf6"
       :metrics="[
-        { value: kpis.members.total, label: 'members' },
+        { value: kpis.members.admins, label: 'admins' },
+        { value: kpis.members.members, label: 'members' },
         { value: kpis.projects.active, label: 'projects' },
       ]"
     />
@@ -79,6 +72,14 @@
         </div>
       </div>
     </KpiCard>
+    <KpiCard
+      title="Financial"
+      icon-color="#2e9e5a"
+      :metrics="[
+        { value: mrrDisplay, label: 'MRR' },
+        { value: kpis.orgs.active, label: 'paying' },
+      ]"
+    />
   </div>
 </template>
 

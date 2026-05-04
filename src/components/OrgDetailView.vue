@@ -80,11 +80,8 @@
           <KpiCard
             title="Financial"
             :metrics="[
-              {
-                value:
-                  org.subscription.price + ' ' + org.subscription.currency,
-                label: 'plan price',
-              },
+              { value: planPriceDisplay, label: 'plan price' },
+              { value: arrDisplay, label: 'ARR' },
             ]"
           />
         </div>
@@ -220,6 +217,14 @@ export default {
       const full = (f + " " + l).trim();
       return full || "—";
     },
+    planPriceDisplay() {
+      const price = Number(this.org.subscription.price) || 0;
+      return this.formatMoney(price, this.org.subscription.currency);
+    },
+    arrDisplay() {
+      const price = Number(this.org.subscription.price) || 0;
+      return this.formatMoney(price * 12, this.org.subscription.currency);
+    },
   },
   methods: {
     formatDate(d) {
@@ -230,6 +235,15 @@ export default {
         day: "2-digit",
         month: "short",
         year: "numeric",
+      });
+    },
+    formatMoney(amount, currency) {
+      const code = currency || "EUR";
+      const sym = code === "EUR" ? "€" : code === "USD" ? "$" : code + " ";
+      const value = Number(amount) || 0;
+      return sym + value.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
       });
     },
   },

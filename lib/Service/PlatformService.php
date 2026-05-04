@@ -55,11 +55,17 @@ class PlatformService {
         $stmt->execute();
         $mrrRow = $stmt->fetch() ?: ['mrr' => 0, 'currency' => 'EUR', 'currency_count' => 0];
 
-        // Total members across platform
-        $memSql = "SELECT COUNT(*) AS cnt FROM *PREFIX*organization_members";
+        // Members across platform, split by role
+        $memSql = "
+            SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN role = 'admin'  THEN 1 ELSE 0 END) AS admins,
+                SUM(CASE WHEN role = 'member' THEN 1 ELSE 0 END) AS members
+            FROM *PREFIX*organization_members
+        ";
         $stmt = $this->db->prepare($memSql);
         $stmt->execute();
-        $memRow = $stmt->fetch() ?: ['cnt' => 0];
+        $memRow = $stmt->fetch() ?: ['total' => 0, 'admins' => 0, 'members' => 0];
 
         // Total projects (non-archived)
         $projSql = "
@@ -109,7 +115,9 @@ class PlatformService {
                 'multiCurrency' => ((int)$mrrRow['currency_count']) > 1,
             ],
             'members' => [
-                'total' => (int)$memRow['cnt'],
+                'total'   => (int)$memRow['total'],
+                'admins'  => (int)$memRow['admins'],
+                'members' => (int)$memRow['members'],
             ],
             'projects' => [
                 'total'  => (int)$projRow['total'],
