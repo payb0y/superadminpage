@@ -145,6 +145,12 @@
         :jobs="org.backups || []"
         :embedded="true"
       />
+
+      <ActivityFeed
+        v-else-if="activeTab === 'activity'"
+        :org-id="org.profile.id"
+        :embedded="true"
+      />
     </div>
   </section>
 </template>
@@ -154,10 +160,11 @@ import KpiCard from "./KpiCard.vue";
 import MembersPanel from "./MembersPanel.vue";
 import ProjectsPanel from "./ProjectsPanel.vue";
 import BackupsPanel from "./BackupsPanel.vue";
+import ActivityFeed from "./ActivityFeed.vue";
 
 export default {
   name: "OrgDetailView",
-  components: { KpiCard, MembersPanel, ProjectsPanel, BackupsPanel },
+  components: { KpiCard, MembersPanel, ProjectsPanel, BackupsPanel, ActivityFeed },
   props: {
     org: {
       type: Object,
@@ -188,6 +195,7 @@ export default {
           label: "Backups",
           count: (this.org.backups || []).length,
         },
+        { key: "activity", label: "Activity", count: null },
       ];
     },
     initial() {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\SuperAdminPage\Controller;
 
+use OCA\SuperAdminPage\Service\ActivityService;
 use OCA\SuperAdminPage\Service\OrgOverviewService;
 use OCA\SuperAdminPage\Service\PlatformService;
 use OCA\SuperAdminPage\Service\ProjectTasksService;
@@ -21,6 +22,7 @@ class DashboardController extends Controller {
     private OrgOverviewService $orgOverview;
     private PlatformService $platform;
     private ProjectTasksService $projectTasks;
+    private ActivityService $activity;
 
     public function __construct(
         string $appName,
@@ -30,6 +32,7 @@ class DashboardController extends Controller {
         OrgOverviewService $orgOverview,
         PlatformService $platform,
         ProjectTasksService $projectTasks,
+        ActivityService $activity,
     ) {
         parent::__construct($appName, $request);
         $this->userSession = $userSession;
@@ -37,6 +40,7 @@ class DashboardController extends Controller {
         $this->orgOverview = $orgOverview;
         $this->platform = $platform;
         $this->projectTasks = $projectTasks;
+        $this->activity = $activity;
     }
 
     /**
@@ -115,6 +119,52 @@ class DashboardController extends Controller {
             return $forbidden;
         }
         return new JSONResponse([]);
+    }
+
+    /**
+     * @NoCSRFRequired
+     */
+    public function getOrgActivity(int $orgId): JSONResponse {
+        if (($forbidden = $this->requireAdmin()) !== null) {
+            return $forbidden;
+        }
+        [$sources, $since, $limit] = $this->parseActivityQuery();
+        return new JSONResponse($this->activity->listForOrg($orgId, $since, $limit, $sources));
+    }
+
+    /**
+     * @NoCSRFRequired
+     */
+    public function getProjectActivity(int $orgId, int $projectId): JSONResponse {
+        if (($forbidden = $this->requireAdmin()) !== null) {
+            return $forbidden;
+        }
+        [$sources, $since, $limit] = $this->parseActivityQuery();
+        $stream = (string)$this->request->getParam('stream', 'in_project');
+
+        if ($stream === 'org_wide') {
+            return new JSONResponse($this->activity->listOrgWideForProjectView($orgId, $since, $limit, $sources));
+        }
+        return new JSONResponse($this->activity->listForProject($orgId, $projectId, $since, $limit, $sources));
+    }
+
+    /**
+     * @return array{0: array<int, string>, 1: ?int, 2: int}
+     */
+    private function parseActivityQuery(): array {
+        $rawSources = (string)$this->request->getParam('sources', '');
+        $sources = $rawSources !== ''
+            ? array_values(array_filter(array_map('trim', explode(',', $rawSources))))
+            : [];
+
+        $since = $this->request->getParam('since');
+        $since = ($since !== null && $since !== '') ? (int)$since : null;
+
+        $limit = (int)$this->request->getParam('limit', 50);
+        if ($limit <= 0) {
+            $limit = 50;
+        }
+        return [$sources, $since, $limit];
     }
 
     private function requireAdmin(): ?JSONResponse {
