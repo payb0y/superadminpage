@@ -128,8 +128,8 @@ class DashboardController extends Controller {
         if (($forbidden = $this->requireAdmin()) !== null) {
             return $forbidden;
         }
-        [$sources, $since, $limit] = $this->parseActivityQuery();
-        return new JSONResponse($this->activity->listForOrg($orgId, $since, $limit, $sources));
+        [$sources, $since, $limit, $filters] = $this->parseActivityQuery();
+        return new JSONResponse($this->activity->listForOrg($orgId, $since, $limit, $sources, $filters));
     }
 
     /**
@@ -139,17 +139,17 @@ class DashboardController extends Controller {
         if (($forbidden = $this->requireAdmin()) !== null) {
             return $forbidden;
         }
-        [$sources, $since, $limit] = $this->parseActivityQuery();
+        [$sources, $since, $limit, $filters] = $this->parseActivityQuery();
         $stream = (string)$this->request->getParam('stream', 'in_project');
 
         if ($stream === 'org_wide') {
-            return new JSONResponse($this->activity->listOrgWideForProjectView($orgId, $since, $limit, $sources));
+            return new JSONResponse($this->activity->listOrgWideForProjectView($orgId, $since, $limit, $sources, $filters));
         }
-        return new JSONResponse($this->activity->listForProject($orgId, $projectId, $since, $limit, $sources));
+        return new JSONResponse($this->activity->listForProject($orgId, $projectId, $since, $limit, $sources, $filters));
     }
 
     /**
-     * @return array{0: array<int, string>, 1: ?int, 2: int}
+     * @return array{0: array<int, string>, 1: ?int, 2: int, 3: array<string, mixed>}
      */
     private function parseActivityQuery(): array {
         $rawSources = (string)$this->request->getParam('sources', '');
@@ -164,7 +164,20 @@ class DashboardController extends Controller {
         if ($limit <= 0) {
             $limit = 50;
         }
-        return [$sources, $since, $limit];
+
+        $from  = $this->request->getParam('from');
+        $to    = $this->request->getParam('to');
+        $actor = $this->request->getParam('actor');
+        $q     = $this->request->getParam('q');
+
+        $filters = [
+            'fromTs' => ($from !== null && $from !== '') ? (int)$from : null,
+            'toTs'   => ($to !== null && $to !== '')     ? (int)$to   : null,
+            'actor'  => ($actor !== null && $actor !== '') ? (string)$actor : null,
+            'q'      => ($q !== null && $q !== '')         ? (string)$q     : null,
+        ];
+
+        return [$sources, $since, $limit, $filters];
     }
 
     private function requireAdmin(): ?JSONResponse {

@@ -36,8 +36,12 @@ class ActivityService {
 
     /**
      * Org-level feed: every source, attributed to the given org.
+     *
+     * $filters keys: fromTs (int), toTs (int), actor (string), q (string).
+     * fromTs/toTs/actor push into per-source SQL; q filters post-merge against
+     * summary + actor_uid (substring, case-insensitive).
      */
-    public function listForOrg(int $orgId, ?int $sinceTs, int $limit, array $sources = []): array {
+    public function listForOrg(int $orgId, ?int $sinceTs, int $limit, array $sources = [], array $filters = []): array {
         $sources = $this->resolveSources($sources, self::SOURCES_ALL);
         $limit = $this->clampLimit($limit);
         $rows = [];
@@ -48,19 +52,19 @@ class ActivityService {
                 continue;
             }
             try {
-                $rows = array_merge($rows, $this->$method($orgId, null, $sinceTs, $limit));
+                $rows = array_merge($rows, $this->$method($orgId, null, $sinceTs, $limit, $filters));
             } catch (\Throwable $e) {
                 // graceful: a missing source table on a given install shouldn't 500 the feed
             }
         }
 
-        return $this->mergeAndPaginate($rows, $limit);
+        return $this->mergeAndPaginate($rows, $limit, $filters['q'] ?? null);
     }
 
     /**
      * Project view, "In this project" stream — only sources with a real project anchor.
      */
-    public function listForProject(int $orgId, int $projectId, ?int $sinceTs, int $limit, array $sources = []): array {
+    public function listForProject(int $orgId, int $projectId, ?int $sinceTs, int $limit, array $sources = [], array $filters = []): array {
         $sources = $this->resolveSources($sources, self::SOURCES_PROJECT_ANCHORED);
         $sources = array_values(array_intersect($sources, self::SOURCES_PROJECT_ANCHORED));
         $limit = $this->clampLimit($limit);
@@ -72,19 +76,19 @@ class ActivityService {
                 continue;
             }
             try {
-                $rows = array_merge($rows, $this->$method($orgId, $projectId, $sinceTs, $limit));
+                $rows = array_merge($rows, $this->$method($orgId, $projectId, $sinceTs, $limit, $filters));
             } catch (\Throwable $e) {
                 // see comment in listForOrg
             }
         }
 
-        return $this->mergeAndPaginate($rows, $limit);
+        return $this->mergeAndPaginate($rows, $limit, $filters['q'] ?? null);
     }
 
     /**
      * Project view, "Org-wide" stream — events that affect the org but aren't project-anchored.
      */
-    public function listOrgWideForProjectView(int $orgId, ?int $sinceTs, int $limit, array $sources = []): array {
+    public function listOrgWideForProjectView(int $orgId, ?int $sinceTs, int $limit, array $sources = [], array $filters = []): array {
         $orgWideOnly = array_values(array_diff(self::SOURCES_ALL, self::SOURCES_PROJECT_ANCHORED));
         $sources = $this->resolveSources($sources, $orgWideOnly);
         $sources = array_values(array_intersect($sources, $orgWideOnly));
@@ -98,13 +102,13 @@ class ActivityService {
                 continue;
             }
             try {
-                $rows = array_merge($rows, $this->$method($orgId, null, $sinceTs, $limit));
+                $rows = array_merge($rows, $this->$method($orgId, null, $sinceTs, $limit, $filters));
             } catch (\Throwable $e) {
                 // see comment in listForOrg
             }
         }
 
-        return $this->mergeAndPaginate($rows, $limit);
+        return $this->mergeAndPaginate($rows, $limit, $filters['q'] ?? null);
     }
 
     // -----------------------------------------------------------------------
@@ -114,10 +118,11 @@ class ActivityService {
     /**
      * Deck activity — cards/boards/comments. Project-resolvable via card → board.
      */
-    private function fromDeck(int $orgId, ?int $projectId, ?int $sinceTs, int $limit): array {
+    private function fromDeck(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         // oc_activity.object_id for deck rows is a card id (when type='deck_card_*') or
         // a board id (when type='deck'). We try to resolve to a project via the card path,
         // falling back to board-id matching when the row is board-level.
+        $extra = $this->buildFilterClauses($filters, 'a.timestamp', 'a.user');
         $sql = "
             SELECT
                 a.activity_id, a.timestamp, a.user, a.affecteduser,
@@ -139,10 +144,11 @@ class ActivityService {
                AND a.user <> ''
                " . ($sinceTs !== null ? " AND a.timestamp < :sinceTs " : '') . "
                " . ($projectId !== null ? " AND COALESCE(cp_card.id, cp_board.id) = :projectId " : '') . "
+               " . $extra['sql'] . "
              ORDER BY a.timestamp DESC
              LIMIT " . (int)$limit;
 
-        $params = [':orgId' => $orgId];
+        $params = [':orgId' => $orgId] + $extra['params'];
         if ($sinceTs !== null) { $params[':sinceTs'] = $sinceTs; }
         if ($projectId !== null) { $params[':projectId'] = $projectId; }
 
@@ -171,11 +177,12 @@ class ActivityService {
      * Project resolution via group folder path is expensive; v1 leaves project_id null
      * for files, so file activity only appears in the Org-wide stream of the project view.
      */
-    private function fromFiles(int $orgId, ?int $projectId, ?int $sinceTs, int $limit): array {
+    private function fromFiles(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) {
             return [];
         }
 
+        $extra = $this->buildFilterClauses($filters, 'a.timestamp', 'a.user');
         $sql = "
             SELECT
                 a.activity_id, a.timestamp, a.user, a.affecteduser,
@@ -187,10 +194,11 @@ class ActivityService {
              WHERE a.app = 'files'
                AND a.user <> ''
                " . ($sinceTs !== null ? " AND a.timestamp < :sinceTs " : '') . "
+               " . $extra['sql'] . "
              ORDER BY a.timestamp DESC
              LIMIT " . (int)$limit;
 
-        $params = [':orgId' => $orgId];
+        $params = [':orgId' => $orgId] + $extra['params'];
         if ($sinceTs !== null) { $params[':sinceTs'] = $sinceTs; }
 
         $stmt = $this->db->prepare($sql);
@@ -217,7 +225,8 @@ class ActivityService {
      * Talk activity — calls and chat. Project-resolvable when the room token matches
      * a project's talk_conversation_token.
      */
-    private function fromTalk(int $orgId, ?int $projectId, ?int $sinceTs, int $limit): array {
+    private function fromTalk(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
+        $extra = $this->buildFilterClauses($filters, 'a.timestamp', 'a.user');
         $sql = "
             SELECT
                 a.activity_id, a.timestamp, a.user, a.affecteduser,
@@ -235,10 +244,11 @@ class ActivityService {
                AND a.user <> ''
                " . ($sinceTs !== null ? " AND a.timestamp < :sinceTs " : '') . "
                " . ($projectId !== null ? " AND cp.id = :projectId " : '') . "
+               " . $extra['sql'] . "
              ORDER BY a.timestamp DESC
              LIMIT " . (int)$limit;
 
-        $params = [':orgId' => $orgId];
+        $params = [':orgId' => $orgId] + $extra['params'];
         if ($sinceTs !== null) { $params[':sinceTs'] = $sinceTs; }
         if ($projectId !== null) { $params[':projectId'] = $projectId; }
 
@@ -265,11 +275,12 @@ class ActivityService {
     /**
      * Calendar/contacts (dav) activity — never project-anchored.
      */
-    private function fromCalendar(int $orgId, ?int $projectId, ?int $sinceTs, int $limit): array {
+    private function fromCalendar(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) {
             return [];
         }
 
+        $extra = $this->buildFilterClauses($filters, 'a.timestamp', 'a.user');
         $sql = "
             SELECT a.activity_id, a.timestamp, a.user, a.type, a.subject, a.object_type, a.object_id
               FROM *PREFIX*activity a
@@ -279,10 +290,11 @@ class ActivityService {
              WHERE a.app = 'dav'
                AND a.user <> ''
                " . ($sinceTs !== null ? " AND a.timestamp < :sinceTs " : '') . "
+               " . $extra['sql'] . "
              ORDER BY a.timestamp DESC
              LIMIT " . (int)$limit;
 
-        $params = [':orgId' => $orgId];
+        $params = [':orgId' => $orgId] + $extra['params'];
         if ($sinceTs !== null) { $params[':sinceTs'] = $sinceTs; }
 
         $stmt = $this->db->prepare($sql);
@@ -312,9 +324,10 @@ class ActivityService {
     /**
      * Subscription history — plan changes, status transitions.
      */
-    private function fromSubscription(int $orgId, ?int $projectId, ?int $sinceTs, int $limit): array {
+    private function fromSubscription(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) { return []; }
 
+        $extra = $this->buildFilterClauses($filters, 'UNIX_TIMESTAMP(h.change_timestamp)', 'h.changed_by_user_id');
         $sql = "
             SELECT h.id, h.subscription_id, h.changed_by_user_id,
                    h.change_timestamp, h.previous_status, h.new_status,
@@ -326,10 +339,11 @@ class ActivityService {
          LEFT JOIN *PREFIX*plans np ON np.id = h.new_plan_id
              WHERE s.organization_id = :orgId
                " . ($sinceTs !== null ? " AND UNIX_TIMESTAMP(h.change_timestamp) < :sinceTs " : '') . "
+               " . $extra['sql'] . "
              ORDER BY h.change_timestamp DESC
              LIMIT " . (int)$limit;
 
-        $params = [':orgId' => $orgId];
+        $params = [':orgId' => $orgId] + $extra['params'];
         if ($sinceTs !== null) { $params[':sinceTs'] = $sinceTs; }
 
         $stmt = $this->db->prepare($sql);
@@ -372,20 +386,23 @@ class ActivityService {
      * Backup jobs — one row per status transition (created → started → finished/expired).
      * We surface a single row per job at the most recent meaningful timestamp.
      */
-    private function fromBackup(int $orgId, ?int $projectId, ?int $sinceTs, int $limit): array {
+    private function fromBackup(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) { return []; }
 
+        $tsExpr = 'UNIX_TIMESTAMP(COALESCE(finished_at, started_at, created_at))';
+        $extra = $this->buildFilterClauses($filters, $tsExpr, 'requested_by_uid');
         $sql = "
             SELECT id, requested_by_uid, status, backup_type, trigger_source,
                    created_at, started_at, finished_at,
                    COALESCE(finished_at, started_at, created_at) AS effective_at
               FROM *PREFIX*org_backup_jobs
              WHERE organization_id = :orgId
-               " . ($sinceTs !== null ? " AND UNIX_TIMESTAMP(COALESCE(finished_at, started_at, created_at)) < :sinceTs " : '') . "
+               " . ($sinceTs !== null ? " AND $tsExpr < :sinceTs " : '') . "
+               " . $extra['sql'] . "
              ORDER BY effective_at DESC
              LIMIT " . (int)$limit;
 
-        $params = [':orgId' => $orgId];
+        $params = [':orgId' => $orgId] + $extra['params'];
         if ($sinceTs !== null) { $params[':sinceTs'] = $sinceTs; }
 
         $stmt = $this->db->prepare($sql);
@@ -415,20 +432,23 @@ class ActivityService {
     /**
      * Account hand-off jobs.
      */
-    private function fromAho(int $orgId, ?int $projectId, ?int $sinceTs, int $limit): array {
+    private function fromAho(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) { return []; }
 
+        $tsExpr = 'UNIX_TIMESTAMP(COALESCE(finished_at, started_at, created_at))';
+        $extra = $this->buildFilterClauses($filters, $tsExpr, 'requested_by_uid');
         $sql = "
             SELECT id, requested_by_uid, source_user_uid, target_user_uid, status,
                    created_at, started_at, finished_at,
                    COALESCE(finished_at, started_at, created_at) AS effective_at
               FROM *PREFIX*org_aho_jobs
              WHERE organization_id = :orgId
-               " . ($sinceTs !== null ? " AND UNIX_TIMESTAMP(COALESCE(finished_at, started_at, created_at)) < :sinceTs " : '') . "
+               " . ($sinceTs !== null ? " AND $tsExpr < :sinceTs " : '') . "
+               " . $extra['sql'] . "
              ORDER BY effective_at DESC
              LIMIT " . (int)$limit;
 
-        $params = [':orgId' => $orgId];
+        $params = [':orgId' => $orgId] + $extra['params'];
         if ($sinceTs !== null) { $params[':sinceTs'] = $sinceTs; }
 
         $stmt = $this->db->prepare($sql);
@@ -459,18 +479,20 @@ class ActivityService {
      * Member joined (current rows in oc_organization_members.created_at).
      * Removals are not tracked (hard delete) — deferred to v2.
      */
-    private function fromMember(int $orgId, ?int $projectId, ?int $sinceTs, int $limit): array {
+    private function fromMember(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) { return []; }
 
+        $extra = $this->buildFilterClauses($filters, 'UNIX_TIMESTAMP(created_at)', 'user_uid');
         $sql = "
             SELECT id, user_uid, role, created_at
               FROM *PREFIX*organization_members
              WHERE organization_id = :orgId
                " . ($sinceTs !== null ? " AND UNIX_TIMESTAMP(created_at) < :sinceTs " : '') . "
+               " . $extra['sql'] . "
              ORDER BY created_at DESC
              LIMIT " . (int)$limit;
 
-        $params = [':orgId' => $orgId];
+        $params = [':orgId' => $orgId] + $extra['params'];
         if ($sinceTs !== null) { $params[':sinceTs'] = $sinceTs; }
 
         $stmt = $this->db->prepare($sql);
@@ -498,12 +520,17 @@ class ActivityService {
      * Project lifecycle: created / archived / deleted.
      * Each project can produce up to 3 rows (one per timestamp column).
      */
-    private function fromProject(int $orgId, ?int $projectId, ?int $sinceTs, int $limit): array {
+    private function fromProject(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         $where = "WHERE cp.organization_id = :orgId";
         $params = [':orgId' => $orgId];
         if ($projectId !== null) {
             $where .= " AND cp.id = :projectId";
             $params[':projectId'] = $projectId;
+        }
+        $actor = !empty($filters['actor']) ? (string)$filters['actor'] : null;
+        if ($actor !== null) {
+            $where .= " AND cp.owner_id = :actor";
+            $params[':actor'] = $actor;
         }
 
         $sql = "
@@ -519,11 +546,20 @@ class ActivityService {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
 
+        $fromTs = !empty($filters['fromTs']) ? (int)$filters['fromTs'] : null;
+        $toTs   = !empty($filters['toTs'])   ? (int)$filters['toTs']   : null;
+        $tsAllowed = function (int $ts) use ($sinceTs, $fromTs, $toTs): bool {
+            if ($sinceTs !== null && $ts >= $sinceTs) { return false; }
+            if ($fromTs !== null && $ts < $fromTs)    { return false; }
+            if ($toTs !== null && $ts > $toTs)        { return false; }
+            return true;
+        };
+
         $out = [];
         foreach ($stmt->fetchAll() as $r) {
             if ($r['created_at']) {
                 $ts = strtotime($r['created_at']) ?: 0;
-                if ($sinceTs === null || $ts < $sinceTs) {
+                if ($tsAllowed($ts)) {
                     $out[] = $this->normalize([
                         'ts'              => $ts,
                         'actor_uid'       => $r['owner_id'] ?: null,
@@ -539,7 +575,7 @@ class ActivityService {
             }
             if ($r['archived_at']) {
                 $ts = strtotime($r['archived_at']) ?: 0;
-                if ($sinceTs === null || $ts < $sinceTs) {
+                if ($tsAllowed($ts)) {
                     $out[] = $this->normalize([
                         'ts'              => $ts,
                         'actor_uid'       => $r['owner_id'] ?: null,
@@ -560,9 +596,10 @@ class ActivityService {
     /**
      * Public link shares created by org members. share_type=3 is a public link.
      */
-    private function fromShare(int $orgId, ?int $projectId, ?int $sinceTs, int $limit): array {
+    private function fromShare(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) { return []; }
 
+        $extra = $this->buildFilterClauses($filters, 's.stime', 's.uid_initiator');
         $sql = "
             SELECT s.id, s.uid_initiator, s.share_type, s.stime, s.expiration, s.token, s.item_type, s.file_target
               FROM *PREFIX*share s
@@ -571,10 +608,11 @@ class ActivityService {
                AND om.organization_id = :orgId
              WHERE s.share_type = 3
                " . ($sinceTs !== null ? " AND s.stime < :sinceTs " : '') . "
+               " . $extra['sql'] . "
              ORDER BY s.stime DESC
              LIMIT " . (int)$limit;
 
-        $params = [':orgId' => $orgId];
+        $params = [':orgId' => $orgId] + $extra['params'];
         if ($sinceTs !== null) { $params[':sinceTs'] = $sinceTs; }
 
         $stmt = $this->db->prepare($sql);
@@ -604,9 +642,10 @@ class ActivityService {
      * Auth: most-recent session activity per user, scoped to org members.
      * Lossy by design — `oc_authtoken` only retains active tokens.
      */
-    private function fromAuth(int $orgId, ?int $projectId, ?int $sinceTs, int $limit): array {
+    private function fromAuth(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) { return []; }
 
+        $extra = $this->buildFilterClauses($filters, 't.last_activity', 't.uid');
         $sql = "
             SELECT t.uid, t.name, t.last_activity
               FROM *PREFIX*authtoken t
@@ -615,10 +654,11 @@ class ActivityService {
                AND om.organization_id = :orgId
              WHERE t.last_activity > 0
                " . ($sinceTs !== null ? " AND t.last_activity < :sinceTs " : '') . "
+               " . $extra['sql'] . "
              ORDER BY t.last_activity DESC
              LIMIT " . (int)$limit;
 
-        $params = [':orgId' => $orgId];
+        $params = [':orgId' => $orgId] + $extra['params'];
         if ($sinceTs !== null) { $params[':sinceTs'] = $sinceTs; }
 
         $stmt = $this->db->prepare($sql);
@@ -652,6 +692,30 @@ class ActivityService {
         return array_values(array_intersect($requested, self::SOURCES_ALL));
     }
 
+    /**
+     * Build the SQL fragment + bind params for the date-range and actor filters.
+     * The `q` (free-text) filter is applied post-merge, not here.
+     *
+     * @return array{sql: string, params: array<string, mixed>}
+     */
+    private function buildFilterClauses(array $filters, string $tsExpr, string $actorCol): array {
+        $sql = '';
+        $params = [];
+        if (!empty($filters['fromTs'])) {
+            $sql   .= " AND $tsExpr >= :flt_from ";
+            $params[':flt_from'] = (int)$filters['fromTs'];
+        }
+        if (!empty($filters['toTs'])) {
+            $sql   .= " AND $tsExpr <= :flt_to ";
+            $params[':flt_to'] = (int)$filters['toTs'];
+        }
+        if (!empty($filters['actor'])) {
+            $sql   .= " AND $actorCol = :flt_actor ";
+            $params[':flt_actor'] = (string)$filters['actor'];
+        }
+        return ['sql' => $sql, 'params' => $params];
+    }
+
     private function clampLimit(int $limit): int {
         return max(1, min($limit, 200));
     }
@@ -675,8 +739,18 @@ class ActivityService {
      * @param array<int, array<string, mixed>> $rows
      * @return array{rows: array<int, array<string, mixed>>, nextCursor: ?int}
      */
-    private function mergeAndPaginate(array $rows, int $limit): array {
+    private function mergeAndPaginate(array $rows, int $limit, ?string $q = null): array {
         usort($rows, static fn ($a, $b) => $b['ts'] <=> $a['ts']);
+        if ($q !== null && $q !== '') {
+            $needle = mb_strtolower($q);
+            $rows = array_values(array_filter($rows, function ($r) use ($needle) {
+                $hay = mb_strtolower((string)$r['summary']);
+                if ($hay !== '' && mb_strpos($hay, $needle) !== false) { return true; }
+                $actor = $r['actor_uid'] ?? null;
+                if ($actor !== null && mb_strpos(mb_strtolower((string)$actor), $needle) !== false) { return true; }
+                return false;
+            }));
+        }
         $rows = array_slice($rows, 0, $limit);
         $nextCursor = count($rows) === $limit ? (int)$rows[count($rows) - 1]['ts'] : null;
         return ['rows' => $rows, 'nextCursor' => $nextCursor];
