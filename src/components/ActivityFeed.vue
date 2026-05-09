@@ -140,39 +140,54 @@
           class="activity-feed__pagination"
           aria-label="Pagination"
         >
-          <button
-            class="activity-feed__page-btn"
-            :disabled="loading || currentPage === 1"
-            @click="setPage(currentPage - 1)"
-          >
-            ‹ Prev
-          </button>
-
-          <template v-for="(b, i) in pageButtons">
-            <button
-              v-if="b.type === 'page'"
-              :key="'p' + i"
-              class="activity-feed__page-btn"
-              :class="{ 'activity-feed__page-btn--active': b.value === currentPage }"
-              :disabled="loading"
-              @click="setPage(b.value)"
+          <label class="activity-feed__page-size">
+            <span class="activity-feed__page-size-label">Per page</span>
+            <select
+              class="activity-feed__page-size-select"
+              :value="pageSize"
+              @change="onPageSizeChange"
             >
-              {{ b.value }}
-            </button>
-            <span
-              v-else
-              :key="'e' + i"
-              class="activity-feed__page-ellipsis"
-            >…</span>
-          </template>
+              <option v-for="n in pageSizeOptions" :key="n" :value="n">
+                {{ n }}
+              </option>
+            </select>
+          </label>
 
-          <button
-            class="activity-feed__page-btn"
-            :disabled="loading || !hasNext"
-            @click="setPage(currentPage + 1)"
-          >
-            Next ›
-          </button>
+          <div class="activity-feed__page-controls">
+            <button
+              class="activity-feed__page-btn"
+              :disabled="loading || currentPage === 1"
+              @click="setPage(currentPage - 1)"
+            >
+              ‹ Prev
+            </button>
+
+            <template v-for="(b, i) in pageButtons">
+              <button
+                v-if="b.type === 'page'"
+                :key="'p' + i"
+                class="activity-feed__page-btn"
+                :class="{ 'activity-feed__page-btn--active': b.value === currentPage }"
+                :disabled="loading"
+                @click="setPage(b.value)"
+              >
+                {{ b.value }}
+              </button>
+              <span
+                v-else
+                :key="'e' + i"
+                class="activity-feed__page-ellipsis"
+              >…</span>
+            </template>
+
+            <button
+              class="activity-feed__page-btn"
+              :disabled="loading || !hasNext"
+              @click="setPage(currentPage + 1)"
+            >
+              Next ›
+            </button>
+          </div>
         </nav>
       </div>
     </div>
@@ -199,6 +214,8 @@ const SOURCES = [
 
 const PROJECT_ANCHORED = ["deck", "talk", "files", "project"];
 
+const PAGE_SIZE_OPTIONS = [5, 10, 25, 50, 100];
+
 function dateToUnixStart(yyyymmdd) {
   if (!yyyymmdd) return null;
   const t = new Date(yyyymmdd + "T00:00:00").getTime();
@@ -223,7 +240,8 @@ export default {
     return {
       rows: [],
       currentPage: 1,
-      pageSize: 50,
+      pageSize: 5,
+      pageSizeOptions: PAGE_SIZE_OPTIONS,
       hasNext: false,
       loading: false,
       error: null,
@@ -254,10 +272,12 @@ export default {
     },
     actorOptions() {
       // Normalize members coming from OrgOverviewService into {uid, label} sorted.
+      // OrgOverviewService returns `userId` (camelCase); accept the snake_case
+      // variants too in case other producers feed members in.
       const seen = new Set();
       const out = [];
       for (const m of this.members) {
-        const uid = m.user_uid || m.uid;
+        const uid = m.userId || m.user_uid || m.uid;
         if (!uid || seen.has(uid)) continue;
         seen.add(uid);
         out.push({ uid, label: m.displayName || uid });
@@ -349,6 +369,12 @@ export default {
       if (target === this.currentPage) return;
       this.currentPage = target;
       this.fetchPage();
+    },
+    onPageSizeChange(ev) {
+      const next = parseInt(ev.target.value, 10);
+      if (!Number.isFinite(next) || next <= 0 || next === this.pageSize) return;
+      this.pageSize = next;
+      this.resetAndFetch();
     },
     resetAndFetch() {
       this.currentPage = 1;
@@ -692,12 +718,43 @@ export default {
 .activity-feed__pagination {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 12px;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid #f2f4f7;
+}
+
+.activity-feed__page-size {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.activity-feed__page-size-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #667085;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.activity-feed__page-size-select {
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #344054;
+  cursor: pointer;
+}
+
+.activity-feed__page-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
 }
 
 .activity-feed__page-btn {
