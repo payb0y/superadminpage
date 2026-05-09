@@ -37,78 +37,91 @@ class ActivityService {
     /**
      * Org-level feed: every source, attributed to the given org.
      *
+     * Page-based pagination over UNION-merged sources. Each source is asked for
+     * its top page*size rows by ts DESC (correctness: the global top-(page*size)
+     * is always a subset of the union of each source's top-(page*size)).
+     *
      * $filters keys: fromTs (int), toTs (int), actor (string), q (string).
      * fromTs/toTs/actor push into per-source SQL; q filters post-merge against
      * summary + actor_uid (substring, case-insensitive).
      */
-    public function listForOrg(int $orgId, ?int $sinceTs, int $limit, array $sources = [], array $filters = []): array {
+    public function listForOrg(int $orgId, int $page, int $size, array $sources = [], array $filters = []): array {
         $sources = $this->resolveSources($sources, self::SOURCES_ALL);
-        $limit = $this->clampLimit($limit);
-        $rows = [];
+        $page = max(1, $page);
+        $size = $this->clampLimit($size);
+        $q = $filters['q'] ?? null;
+        $perSource = $this->perSourceLimit($page, $size, $q);
 
+        $rows = [];
         foreach ($sources as $src) {
             $method = 'from' . ucfirst($src);
             if (!method_exists($this, $method)) {
                 continue;
             }
             try {
-                $rows = array_merge($rows, $this->$method($orgId, null, $sinceTs, $limit, $filters));
+                $rows = array_merge($rows, $this->$method($orgId, null, null, $perSource, $filters));
             } catch (\Throwable $e) {
                 // graceful: a missing source table on a given install shouldn't 500 the feed
             }
         }
 
-        return $this->mergeAndPaginate($rows, $limit, $filters['q'] ?? null);
+        return $this->mergeAndPage($rows, $page, $size, $q);
     }
 
     /**
      * Project view, "In this project" stream — only sources with a real project anchor.
      */
-    public function listForProject(int $orgId, int $projectId, ?int $sinceTs, int $limit, array $sources = [], array $filters = []): array {
+    public function listForProject(int $orgId, int $projectId, int $page, int $size, array $sources = [], array $filters = []): array {
         $sources = $this->resolveSources($sources, self::SOURCES_PROJECT_ANCHORED);
         $sources = array_values(array_intersect($sources, self::SOURCES_PROJECT_ANCHORED));
-        $limit = $this->clampLimit($limit);
-        $rows = [];
+        $page = max(1, $page);
+        $size = $this->clampLimit($size);
+        $q = $filters['q'] ?? null;
+        $perSource = $this->perSourceLimit($page, $size, $q);
 
+        $rows = [];
         foreach ($sources as $src) {
             $method = 'from' . ucfirst($src);
             if (!method_exists($this, $method)) {
                 continue;
             }
             try {
-                $rows = array_merge($rows, $this->$method($orgId, $projectId, $sinceTs, $limit, $filters));
+                $rows = array_merge($rows, $this->$method($orgId, $projectId, null, $perSource, $filters));
             } catch (\Throwable $e) {
                 // see comment in listForOrg
             }
         }
 
-        return $this->mergeAndPaginate($rows, $limit, $filters['q'] ?? null);
+        return $this->mergeAndPage($rows, $page, $size, $q);
     }
 
     /**
      * Project view, "Org-wide" stream — events that affect the org but aren't project-anchored.
      */
-    public function listOrgWideForProjectView(int $orgId, ?int $sinceTs, int $limit, array $sources = [], array $filters = []): array {
+    public function listOrgWideForProjectView(int $orgId, int $page, int $size, array $sources = [], array $filters = []): array {
         $orgWideOnly = array_values(array_diff(self::SOURCES_ALL, self::SOURCES_PROJECT_ANCHORED));
         $sources = $this->resolveSources($sources, $orgWideOnly);
         $sources = array_values(array_intersect($sources, $orgWideOnly));
 
-        $limit = $this->clampLimit($limit);
-        $rows = [];
+        $page = max(1, $page);
+        $size = $this->clampLimit($size);
+        $q = $filters['q'] ?? null;
+        $perSource = $this->perSourceLimit($page, $size, $q);
 
+        $rows = [];
         foreach ($sources as $src) {
             $method = 'from' . ucfirst($src);
             if (!method_exists($this, $method)) {
                 continue;
             }
             try {
-                $rows = array_merge($rows, $this->$method($orgId, null, $sinceTs, $limit, $filters));
+                $rows = array_merge($rows, $this->$method($orgId, null, null, $perSource, $filters));
             } catch (\Throwable $e) {
                 // see comment in listForOrg
             }
         }
 
-        return $this->mergeAndPaginate($rows, $limit, $filters['q'] ?? null);
+        return $this->mergeAndPage($rows, $page, $size, $q);
     }
 
     // -----------------------------------------------------------------------
@@ -736,10 +749,22 @@ class ActivityService {
     }
 
     /**
-     * @param array<int, array<string, mixed>> $rows
-     * @return array{rows: array<int, array<string, mixed>>, nextCursor: ?int}
+     * Per-source LIMIT for a given (page, size). The +1 acts as a probe so
+     * mergeAndPage can detect hasNext when a single source has more rows than
+     * the current page boundary. Over-fetches when q is set because the search
+     * filter is applied post-merge — without over-fetching, deep search pages
+     * would be sparse.
      */
-    private function mergeAndPaginate(array $rows, int $limit, ?string $q = null): array {
+    private function perSourceLimit(int $page, int $size, ?string $q): int {
+        $base = $page * $size + 1;
+        return ($q !== null && $q !== '') ? $base * 3 : $base;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     * @return array{rows: array<int, array<string, mixed>>, page: int, size: int, hasNext: bool}
+     */
+    private function mergeAndPage(array $rows, int $page, int $size, ?string $q = null): array {
         usort($rows, static fn ($a, $b) => $b['ts'] <=> $a['ts']);
         if ($q !== null && $q !== '') {
             $needle = mb_strtolower($q);
@@ -751,9 +776,10 @@ class ActivityService {
                 return false;
             }));
         }
-        $rows = array_slice($rows, 0, $limit);
-        $nextCursor = count($rows) === $limit ? (int)$rows[count($rows) - 1]['ts'] : null;
-        return ['rows' => $rows, 'nextCursor' => $nextCursor];
+        $offset = ($page - 1) * $size;
+        $pageRows = array_slice($rows, $offset, $size);
+        $hasNext = count($rows) > $offset + $size;
+        return ['rows' => $pageRows, 'page' => $page, 'size' => $size, 'hasNext' => $hasNext];
     }
 
     private function humanize(string $type, string $subject, ?string $user, ?string $file = null): string {

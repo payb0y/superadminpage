@@ -149,6 +149,7 @@
       <ActivityFeed
         v-else-if="activeTab === 'activity'"
         :org-id="org.profile.id"
+        :members="org.members || []"
         :embedded="true"
       />
     </div>

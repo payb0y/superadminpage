@@ -70,13 +70,20 @@
           </label>
           <label class="activity-feed__field">
             <span class="activity-feed__field-label">Actor</span>
-            <input
-              type="text"
+            <select
               class="activity-feed__input"
-              placeholder="user uid"
               :value="filterActor"
-              @input="onTextInput('filterActor', $event)"
-            />
+              @change="onActorChange($event)"
+            >
+              <option value="">All actors</option>
+              <option
+                v-for="m in actorOptions"
+                :key="m.uid"
+                :value="m.uid"
+              >
+                {{ m.label }}
+              </option>
+            </select>
           </label>
           <label class="activity-feed__field activity-feed__field--grow">
             <span class="activity-feed__field-label">Search</span>
@@ -128,15 +135,45 @@
           </li>
         </ul>
 
-        <div v-if="nextCursor !== null" class="activity-feed__load-more">
+        <nav
+          v-if="rows.length > 0 || currentPage > 1"
+          class="activity-feed__pagination"
+          aria-label="Pagination"
+        >
           <button
-            class="activity-feed__load-button"
-            :disabled="loading"
-            @click="loadMore"
+            class="activity-feed__page-btn"
+            :disabled="loading || currentPage === 1"
+            @click="setPage(currentPage - 1)"
           >
-            {{ loading ? "Loading…" : "Load more" }}
+            ‹ Prev
           </button>
-        </div>
+
+          <template v-for="(b, i) in pageButtons">
+            <button
+              v-if="b.type === 'page'"
+              :key="'p' + i"
+              class="activity-feed__page-btn"
+              :class="{ 'activity-feed__page-btn--active': b.value === currentPage }"
+              :disabled="loading"
+              @click="setPage(b.value)"
+            >
+              {{ b.value }}
+            </button>
+            <span
+              v-else
+              :key="'e' + i"
+              class="activity-feed__page-ellipsis"
+            >…</span>
+          </template>
+
+          <button
+            class="activity-feed__page-btn"
+            :disabled="loading || !hasNext"
+            @click="setPage(currentPage + 1)"
+          >
+            Next ›
+          </button>
+        </nav>
       </div>
     </div>
   </component>
@@ -180,11 +217,14 @@ export default {
     orgId: { type: Number, required: true },
     projectId: { type: Number, default: null },
     embedded: { type: Boolean, default: false },
+    members: { type: Array, default: () => [] },
   },
   data() {
     return {
       rows: [],
-      nextCursor: null,
+      currentPage: 1,
+      pageSize: 50,
+      hasNext: false,
       loading: false,
       error: null,
       selectedSource: null,
@@ -212,23 +252,62 @@ export default {
     hasActiveFilters() {
       return Boolean(this.filterFrom || this.filterTo || this.filterActor || this.filterQ);
     },
+    actorOptions() {
+      // Normalize members coming from OrgOverviewService into {uid, label} sorted.
+      const seen = new Set();
+      const out = [];
+      for (const m of this.members) {
+        const uid = m.user_uid || m.uid;
+        if (!uid || seen.has(uid)) continue;
+        seen.add(uid);
+        out.push({ uid, label: m.displayName || uid });
+      }
+      out.sort((a, b) => a.label.localeCompare(b.label));
+      return out;
+    },
+    pageButtons() {
+      // Numbered pagination without a known total: always offer page 1 + a
+      // small window around the current page + a probe for the next page when
+      // hasNext. Ellipsis hides the gap between page 1 and the window.
+      const c = this.currentPage;
+      const window = [];
+      const start = Math.max(2, c - 1);
+      const end = c + (this.hasNext ? 1 : 0);
+      for (let p = start; p <= end; p++) window.push(p);
+
+      const buttons = [{ type: "page", value: 1 }];
+      if (window.length > 0 && window[0] > 2) {
+        buttons.push({ type: "ellipsis" });
+      }
+      for (const p of window) {
+        buttons.push({ type: "page", value: p });
+      }
+      // Dedupe (handles current=1 etc.)
+      const seen = new Set();
+      return buttons.filter((b) => {
+        if (b.type !== "page") return true;
+        if (seen.has(b.value)) return false;
+        seen.add(b.value);
+        return true;
+      });
+    },
   },
   watch: {
-    selectedSource() { this.refetch(); },
+    selectedSource() { this.resetAndFetch(); },
     stream() {
       this.selectedSource = null;
-      this.refetch();
+      this.resetAndFetch();
     },
-    orgId() { this.refetch(); },
-    projectId() { this.refetch(); },
-    filterFrom() { this.refetch(); },
-    filterTo() { this.refetch(); },
+    orgId() { this.resetAndFetch(); },
+    projectId() { this.resetAndFetch(); },
+    filterFrom() { this.resetAndFetch(); },
+    filterTo() { this.resetAndFetch(); },
   },
   created() {
     this._textDebounce = null;
   },
   mounted() {
-    this.refetch();
+    this.resetAndFetch();
   },
   beforeDestroy() {
     if (this._textDebounce) clearTimeout(this._textDebounce);
@@ -256,30 +335,35 @@ export default {
     onDateChange(field, ev) {
       this[field] = ev.target.value;
     },
+    onActorChange(ev) {
+      this.filterActor = ev.target.value;
+      this.resetAndFetch();
+    },
     onTextInput(field, ev) {
       this[field] = ev.target.value;
       if (this._textDebounce) clearTimeout(this._textDebounce);
-      this._textDebounce = setTimeout(() => this.refetch(), 400);
+      this._textDebounce = setTimeout(() => this.resetAndFetch(), 400);
     },
-    async refetch() {
-      this.rows = [];
-      this.nextCursor = null;
-      await this.fetchPage();
+    setPage(page) {
+      const target = Math.max(1, page);
+      if (target === this.currentPage) return;
+      this.currentPage = target;
+      this.fetchPage();
     },
-    async loadMore() {
-      if (this.nextCursor === null) return;
-      await this.fetchPage(this.nextCursor);
+    resetAndFetch() {
+      this.currentPage = 1;
+      this.fetchPage();
     },
-    async fetchPage(since = null) {
+    async fetchPage() {
       this.loading = true;
       this.error = null;
       try {
         const res = await axios.get(this.endpoint(), {
-          params: this.queryParams(since),
+          params: this.queryParams(),
         });
-        const { rows = [], nextCursor = null } = res.data || {};
-        this.rows = since === null ? rows : [...this.rows, ...rows];
-        this.nextCursor = nextCursor;
+        const { rows = [], hasNext = false } = res.data || {};
+        this.rows = rows;
+        this.hasNext = hasNext;
       } catch (e) {
         this.error = "Failed to load activity.";
       } finally {
@@ -300,10 +384,9 @@ export default {
         "/apps/superadminpage/api/super/orgs/" + this.orgId + "/activity"
       );
     },
-    queryParams(since) {
-      const p = { limit: 50 };
+    queryParams() {
+      const p = { page: this.currentPage, size: this.pageSize };
       if (this.selectedSource) p.sources = this.selectedSource;
-      if (since !== null) p.since = since;
       if (this.projectId) p.stream = this.stream;
 
       const fromTs = dateToUnixStart(this.filterFrom);
@@ -606,29 +689,51 @@ export default {
   color: #b42318;
 }
 
-.activity-feed__load-more {
-  text-align: center;
-  margin-top: 12px;
+.activity-feed__pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f2f4f7;
 }
 
-.activity-feed__load-button {
+.activity-feed__page-btn {
   background: #fff;
   border: 1px solid #d0d5dd;
-  border-radius: 8px;
-  padding: 6px 16px;
+  border-radius: 6px;
+  padding: 5px 10px;
   font-size: 12px;
   font-weight: 500;
   color: #344054;
   cursor: pointer;
+  min-width: 32px;
+  text-align: center;
 }
 
-.activity-feed__load-button:disabled {
-  opacity: 0.5;
+.activity-feed__page-btn:hover:not(:disabled):not(.activity-feed__page-btn--active) {
+  background: #f9fafb;
+}
+
+.activity-feed__page-btn:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-.activity-feed__load-button:hover:not(:disabled) {
-  background: #f9fafb;
+.activity-feed__page-btn--active {
+  background: #4a90d9;
+  border-color: #4a90d9;
+  color: #fff;
+  cursor: default;
+}
+
+.activity-feed__page-ellipsis {
+  padding: 0 4px;
+  font-size: 12px;
+  color: #98a2b3;
+  user-select: none;
 }
 
 @media (max-width: 720px) {

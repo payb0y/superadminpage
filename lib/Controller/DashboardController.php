@@ -128,8 +128,8 @@ class DashboardController extends Controller {
         if (($forbidden = $this->requireAdmin()) !== null) {
             return $forbidden;
         }
-        [$sources, $since, $limit, $filters] = $this->parseActivityQuery();
-        return new JSONResponse($this->activity->listForOrg($orgId, $since, $limit, $sources, $filters));
+        [$sources, $page, $size, $filters] = $this->parseActivityQuery();
+        return new JSONResponse($this->activity->listForOrg($orgId, $page, $size, $sources, $filters));
     }
 
     /**
@@ -139,17 +139,17 @@ class DashboardController extends Controller {
         if (($forbidden = $this->requireAdmin()) !== null) {
             return $forbidden;
         }
-        [$sources, $since, $limit, $filters] = $this->parseActivityQuery();
+        [$sources, $page, $size, $filters] = $this->parseActivityQuery();
         $stream = (string)$this->request->getParam('stream', 'in_project');
 
         if ($stream === 'org_wide') {
-            return new JSONResponse($this->activity->listOrgWideForProjectView($orgId, $since, $limit, $sources, $filters));
+            return new JSONResponse($this->activity->listOrgWideForProjectView($orgId, $page, $size, $sources, $filters));
         }
-        return new JSONResponse($this->activity->listForProject($orgId, $projectId, $since, $limit, $sources, $filters));
+        return new JSONResponse($this->activity->listForProject($orgId, $projectId, $page, $size, $sources, $filters));
     }
 
     /**
-     * @return array{0: array<int, string>, 1: ?int, 2: int, 3: array<string, mixed>}
+     * @return array{0: array<int, string>, 1: int, 2: int, 3: array<string, mixed>}
      */
     private function parseActivityQuery(): array {
         $rawSources = (string)$this->request->getParam('sources', '');
@@ -157,13 +157,11 @@ class DashboardController extends Controller {
             ? array_values(array_filter(array_map('trim', explode(',', $rawSources))))
             : [];
 
-        $since = $this->request->getParam('since');
-        $since = ($since !== null && $since !== '') ? (int)$since : null;
+        $page = (int)$this->request->getParam('page', 1);
+        if ($page < 1) { $page = 1; }
 
-        $limit = (int)$this->request->getParam('limit', 50);
-        if ($limit <= 0) {
-            $limit = 50;
-        }
+        $size = (int)$this->request->getParam('size', 50);
+        if ($size <= 0) { $size = 50; }
 
         $from  = $this->request->getParam('from');
         $to    = $this->request->getParam('to');
@@ -177,7 +175,7 @@ class DashboardController extends Controller {
             'q'      => ($q !== null && $q !== '')         ? (string)$q     : null,
         ];
 
-        return [$sources, $since, $limit, $filters];
+        return [$sources, $page, $size, $filters];
     }
 
     private function requireAdmin(): ?JSONResponse {
