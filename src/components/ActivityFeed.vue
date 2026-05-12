@@ -20,6 +20,9 @@
             {{ s.label }}
           </button>
         </div>
+        <div v-else-if="filterProjectId" class="activity-feed__rail-hint">
+          Filtered by project — only project-anchored sources are shown.
+        </div>
 
         <ul class="activity-feed__rail-list">
           <li>
@@ -82,6 +85,23 @@
                 :value="m.uid"
               >
                 {{ m.label }}
+              </option>
+            </select>
+          </label>
+          <label v-if="showProjectFilter" class="activity-feed__field">
+            <span class="activity-feed__field-label">Project</span>
+            <select
+              class="activity-feed__input"
+              :value="filterProjectId"
+              @change="onProjectChange($event)"
+            >
+              <option value="">All projects</option>
+              <option
+                v-for="p in projectOptions"
+                :key="p.id"
+                :value="p.id"
+              >
+                {{ p.label }}
               </option>
             </select>
           </label>
@@ -235,6 +255,7 @@ export default {
     projectId: { type: Number, default: null },
     embedded: { type: Boolean, default: false },
     members: { type: Array, default: () => [] },
+    projects: { type: Array, default: () => [] },
   },
   data() {
     return {
@@ -251,6 +272,7 @@ export default {
       filterTo: "",
       filterActor: "",
       filterQ: "",
+      filterProjectId: "",
     };
   },
   computed: {
@@ -260,15 +282,40 @@ export default {
         { key: "org_wide", label: "Org-wide" },
       ];
     },
+    effectiveProjectId() {
+      if (this.projectId) return this.projectId;
+      const id = parseInt(this.filterProjectId, 10);
+      return Number.isFinite(id) && id > 0 ? id : null;
+    },
     railSources() {
-      if (!this.projectId) return SOURCES;
-      if (this.stream === "in_project") {
+      // With a project context (prop OR filter dropdown), restrict the rail.
+      // The prop+stream case keeps the existing in_project / org_wide split;
+      // the filter-only case implies in_project semantics.
+      if (this.projectId) {
+        if (this.stream === "in_project") {
+          return SOURCES.filter((s) => PROJECT_ANCHORED.includes(s.key));
+        }
+        return SOURCES.filter((s) => !PROJECT_ANCHORED.includes(s.key));
+      }
+      if (this.effectiveProjectId) {
         return SOURCES.filter((s) => PROJECT_ANCHORED.includes(s.key));
       }
-      return SOURCES.filter((s) => !PROJECT_ANCHORED.includes(s.key));
+      return SOURCES;
+    },
+    showProjectFilter() {
+      return !this.projectId && this.projects && this.projects.length > 0;
+    },
+    projectOptions() {
+      const out = (this.projects || [])
+        .filter((p) => p && p.id)
+        .map((p) => ({ id: p.id, label: p.name || ("#" + p.id) }));
+      out.sort((a, b) => a.label.localeCompare(b.label));
+      return out;
     },
     hasActiveFilters() {
-      return Boolean(this.filterFrom || this.filterTo || this.filterActor || this.filterQ);
+      return Boolean(
+        this.filterFrom || this.filterTo || this.filterActor || this.filterQ || this.filterProjectId
+      );
     },
     actorOptions() {
       // Normalize members coming from OrgOverviewService into {uid, label} sorted.
@@ -322,6 +369,15 @@ export default {
     projectId() { this.resetAndFetch(); },
     filterFrom() { this.resetAndFetch(); },
     filterTo() { this.resetAndFetch(); },
+    filterProjectId(next, prev) {
+      // Picking a project hides non-project-anchored rail items, so reset the
+      // active source if it falls out of the available set.
+      if (next && this.selectedSource && !PROJECT_ANCHORED.includes(this.selectedSource)) {
+        this.selectedSource = null;
+        return; // selectedSource watcher will refetch.
+      }
+      if (next !== prev) this.resetAndFetch();
+    },
   },
   created() {
     this._textDebounce = null;
@@ -351,6 +407,7 @@ export default {
       this.filterTo = "";
       this.filterActor = "";
       this.filterQ = "";
+      this.filterProjectId = "";
     },
     onDateChange(field, ev) {
       this[field] = ev.target.value;
@@ -358,6 +415,9 @@ export default {
     onActorChange(ev) {
       this.filterActor = ev.target.value;
       this.resetAndFetch();
+    },
+    onProjectChange(ev) {
+      this.filterProjectId = ev.target.value;
     },
     onTextInput(field, ev) {
       this[field] = ev.target.value;
@@ -397,12 +457,13 @@ export default {
       }
     },
     endpoint() {
-      if (this.projectId) {
+      const pid = this.effectiveProjectId;
+      if (pid) {
         return generateUrl(
           "/apps/superadminpage/api/super/orgs/" +
             this.orgId +
             "/projects/" +
-            this.projectId +
+            pid +
             "/activity"
         );
       }
@@ -413,6 +474,8 @@ export default {
     queryParams() {
       const p = { page: this.currentPage, size: this.pageSize };
       if (this.selectedSource) p.sources = this.selectedSource;
+      // Only the prop-driven project context uses the stream toggle. When the
+      // user picks a project from the filter dropdown, default to in_project.
       if (this.projectId) p.stream = this.stream;
 
       const fromTs = dateToUnixStart(this.filterFrom);
@@ -482,6 +545,16 @@ export default {
   border-radius: 8px;
   padding: 2px;
   gap: 2px;
+}
+
+.activity-feed__rail-hint {
+  font-size: 11px;
+  color: #667085;
+  line-height: 1.4;
+  padding: 6px 10px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px dashed #e4e7ec;
 }
 
 .activity-feed__stream {

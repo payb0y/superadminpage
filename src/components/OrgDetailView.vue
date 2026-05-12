@@ -150,6 +150,7 @@
         v-else-if="activeTab === 'activity'"
         :org-id="org.profile.id"
         :members="org.members || []"
+        :projects="org.projects || []"
         :embedded="true"
       />
     </div>
