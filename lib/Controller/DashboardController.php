@@ -8,6 +8,7 @@ use OCA\SuperAdminPage\Service\ActivityService;
 use OCA\SuperAdminPage\Service\OrgOverviewService;
 use OCA\SuperAdminPage\Service\PlatformService;
 use OCA\SuperAdminPage\Service\ProjectTasksService;
+use OCA\SuperAdminPage\Service\SystemHealthService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -23,6 +24,7 @@ class DashboardController extends Controller {
     private PlatformService $platform;
     private ProjectTasksService $projectTasks;
     private ActivityService $activity;
+    private SystemHealthService $systemHealth;
 
     public function __construct(
         string $appName,
@@ -33,6 +35,7 @@ class DashboardController extends Controller {
         PlatformService $platform,
         ProjectTasksService $projectTasks,
         ActivityService $activity,
+        SystemHealthService $systemHealth,
     ) {
         parent::__construct($appName, $request);
         $this->userSession = $userSession;
@@ -41,6 +44,7 @@ class DashboardController extends Controller {
         $this->platform = $platform;
         $this->projectTasks = $projectTasks;
         $this->activity = $activity;
+        $this->systemHealth = $systemHealth;
     }
 
     /**
@@ -119,6 +123,16 @@ class DashboardController extends Controller {
             return $forbidden;
         }
         return new JSONResponse([]);
+    }
+
+    /**
+     * @NoCSRFRequired
+     */
+    public function getSystemHealth(): JSONResponse {
+        if (($forbidden = $this->requireAdmin()) !== null) {
+            return $forbidden;
+        }
+        return new JSONResponse($this->systemHealth->getSnapshot());
     }
 
     /**

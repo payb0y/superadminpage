@@ -21,6 +21,8 @@
 
       <AlertsPanel v-if="platform" :alerts="platform.alerts" />
 
+      <SystemHealthPanel />
+
       <OrgListPanel :orgs="orgs" />
     </template>
   </div>
@@ -32,6 +34,7 @@ import { generateUrl } from "@nextcloud/router";
 import OrgListPanel from "./OrgListPanel.vue";
 import PlatformKpiStrip from "./PlatformKpiStrip.vue";
 import AlertsPanel from "./AlertsPanel.vue";
+import SystemHealthPanel from "./SystemHealthPanel.vue";
 
 export default {
   name: "Dashboard",
@@ -39,6 +42,7 @@ export default {
     OrgListPanel,
     PlatformKpiStrip,
     AlertsPanel,
+    SystemHealthPanel,
   },
   data() {
     return {
