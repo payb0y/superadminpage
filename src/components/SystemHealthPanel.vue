@@ -1,18 +1,44 @@
 <template>
   <section class="system-health">
     <header class="system-health__header">
-      <h3 class="system-health__title">System health</h3>
-      <button
-        class="system-health__refresh"
-        :disabled="loading"
-        @click="fetch"
-      >
+      <h3 class="system-health__title">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+        System Health
+      </h3>
+      <div class="system-health__header-actions">
         <span
-          class="system-health__refresh-icon"
-          :class="{ 'system-health__refresh-icon--spinning': loading }"
-        >↻</span>
-        {{ loading ? "Refreshing…" : "Refresh" }}
-      </button>
+          v-if="snapshot"
+          class="system-health__live"
+          :class="{ 'system-health__live--paused': pollPaused }"
+          :title="pollPaused ? 'Live updates paused (tab hidden)' : 'Live, updating every ' + (pollMs / 1000) + 's'"
+        >
+          <span class="system-health__live-dot"></span>
+          {{ pollPaused ? "Paused" : "Live" }}
+        </span>
+        <button
+          class="system-health__refresh"
+          :disabled="loading"
+          @click="manualRefresh"
+        >
+          <span
+            class="system-health__refresh-icon"
+            :class="{ 'system-health__refresh-icon--spinning': loading }"
+          >↻</span>
+          {{ loading ? "Refreshing…" : "Refresh" }}
+        </button>
+      </div>
     </header>
 
     <div v-if="error && !snapshot" class="system-health__error">
@@ -54,6 +80,7 @@ import { generateUrl } from "@nextcloud/router";
 
 const GIB = 1024 ** 3;
 const MIB = 1024 ** 2;
+const POLL_MS = 3000;
 
 function formatBytes(n) {
   if (n === null || n === undefined || !Number.isFinite(n)) return "—";
@@ -79,6 +106,8 @@ export default {
       snapshot: null,
       loading: false,
       error: null,
+      pollPaused: false,
+      pollMs: POLL_MS,
     };
   },
   computed: {
@@ -93,8 +122,44 @@ export default {
   },
   mounted() {
     this.fetch();
+    this.startPolling();
+    this._onVisibility = () => {
+      if (typeof document === "undefined") return;
+      if (document.hidden) {
+        this.pollPaused = true;
+        this.stopPolling();
+      } else {
+        this.pollPaused = false;
+        this.fetch({ silent: true });
+        this.startPolling();
+      }
+    };
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", this._onVisibility);
+    }
+  },
+  beforeDestroy() {
+    this.stopPolling();
+    if (typeof document !== "undefined" && this._onVisibility) {
+      document.removeEventListener("visibilitychange", this._onVisibility);
+    }
   },
   methods: {
+    startPolling() {
+      this.stopPolling();
+      this._pollTimer = setInterval(() => {
+        this.fetch({ silent: true });
+      }, POLL_MS);
+    },
+    stopPolling() {
+      if (this._pollTimer) {
+        clearInterval(this._pollTimer);
+        this._pollTimer = null;
+      }
+    },
+    manualRefresh() {
+      this.fetch();
+    },
     toneFor(percent) {
       if (percent === null || percent === undefined) return "neutral";
       if (percent >= 90) return "danger";
@@ -176,18 +241,26 @@ export default {
         subtitle,
       };
     },
-    async fetch() {
-      this.loading = true;
-      this.error = null;
+    async fetch({ silent = false } = {}) {
+      if (this._fetching) return;
+      this._fetching = true;
+      if (!silent) {
+        this.loading = true;
+        this.error = null;
+      }
       try {
         const res = await axios.get(
           generateUrl("/apps/superadminpage/api/super/system")
         );
         this.snapshot = res.data || null;
+        if (silent && this.error) this.error = null;
       } catch (e) {
-        this.error = "Couldn't load system metrics.";
+        // Surface errors only on foreground fetches; silent polls keep the
+        // previous values and quietly try again on the next tick.
+        if (!silent) this.error = "Couldn't load system metrics.";
       } finally {
-        this.loading = false;
+        this._fetching = false;
+        if (!silent) this.loading = false;
       }
     },
   },
@@ -196,24 +269,82 @@ export default {
 
 <style scoped>
 .system-health {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  padding: 20px;
+  background: var(--bg-card, #fff);
+  border-radius: var(--radius-card, 12px);
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
+  padding: var(--spacing-lg, 24px);
 }
 
 .system-health__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-md, 16px);
 }
 
 .system-health__title {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
-  color: #1d2939;
+  color: var(--color-text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.system-health__title svg {
+  color: #4a90d9;
+}
+
+.system-health__header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.system-health__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #067a56;
+  background: #ecfdf5;
+  border: 1px solid #a6f4c5;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: default;
+}
+
+.system-health__live--paused {
+  color: #667085;
+  background: #f2f4f7;
+  border-color: #eaecf0;
+}
+
+.system-health__live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  animation: system-health-pulse 1.6s ease-out infinite;
+}
+
+.system-health__live--paused .system-health__live-dot {
+  background: #98a2b3;
+  animation: none;
+  box-shadow: none;
+}
+
+@keyframes system-health-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0.55); }
+  70%  { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0); }
 }
 
 .system-health__refresh {
