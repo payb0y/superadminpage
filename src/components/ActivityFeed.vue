@@ -71,23 +71,6 @@
               @change="onDateChange('filterTo', $event)"
             />
           </label>
-          <label class="activity-feed__field">
-            <span class="activity-feed__field-label">Actor</span>
-            <select
-              class="activity-feed__input"
-              :value="filterActor"
-              @change="onActorChange($event)"
-            >
-              <option value="">All actors</option>
-              <option
-                v-for="m in actorOptions"
-                :key="m.uid"
-                :value="m.uid"
-              >
-                {{ m.label }}
-              </option>
-            </select>
-          </label>
           <label v-if="showProjectFilter" class="activity-feed__field">
             <span class="activity-feed__field-label">Project</span>
             <select
@@ -102,6 +85,23 @@
                 :value="p.id"
               >
                 {{ p.label }}
+              </option>
+            </select>
+          </label>
+          <label class="activity-feed__field">
+            <span class="activity-feed__field-label">Actor</span>
+            <select
+              class="activity-feed__input"
+              :value="filterActor"
+              @change="onActorChange($event)"
+            >
+              <option value="">All actors</option>
+              <option
+                v-for="m in actorOptions"
+                :key="m.uid"
+                :value="m.uid"
+              >
+                {{ m.label }}
               </option>
             </select>
           </label>

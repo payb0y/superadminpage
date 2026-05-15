@@ -18,7 +18,7 @@
               'backups-panel__filter-badge--' + (s.value || 'all'),
               { 'backups-panel__filter-badge--active': statusFilter === s.value },
             ]"
-            @click="statusFilter = s.value; currentPage = 1"
+            @click="statusFilter = s.value"
           >{{ s.label }}</span>
         </div>
 
@@ -32,7 +32,7 @@
               'backups-panel__filter-badge--' + (t.value || 'all'),
               { 'backups-panel__filter-badge--active': typeFilter === t.value },
             ]"
-            @click="typeFilter = t.value; currentPage = 1"
+            @click="typeFilter = t.value"
           >{{ t.label }}</span>
         </div>
 
@@ -46,7 +46,7 @@
               'backups-panel__filter-badge--' + (tr.value || 'all'),
               { 'backups-panel__filter-badge--active': triggerFilter === tr.value },
             ]"
-            @click="triggerFilter = tr.value; currentPage = 1"
+            @click="triggerFilter = tr.value"
           >{{ tr.label }}</span>
         </div>
       </div>
@@ -73,7 +73,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="job in paginatedJobs"
+              v-for="job in filteredJobs"
               :key="job.jobId"
               class="backups-panel__row"
             >
@@ -172,23 +172,6 @@
         </table>
       </div>
 
-      <!-- Pagination -->
-      <div v-if="totalPages > 1" class="backups-panel__pagination">
-        <button
-          class="backups-panel__page-btn"
-          :disabled="currentPage <= 1"
-          @click="currentPage--"
-        >&#8249;</button>
-        <span class="backups-panel__page-info">{{ currentPage }} / {{ totalPages }}</span>
-        <button
-          class="backups-panel__page-btn"
-          :disabled="currentPage >= totalPages"
-          @click="currentPage++"
-        >&#8250;</button>
-      </div>
-      <div v-if="filteredJobs.length > 0" class="backups-panel__showing-hint">
-        Showing {{ paginatedJobs.length }} of {{ filteredJobs.length }} backups
-      </div>
     </template>
   </div>
 </template>
@@ -213,8 +196,6 @@ export default {
       statusFilter: '',
       typeFilter: '',
       triggerFilter: '',
-      currentPage: 1,
-      pageSize: 5,
     };
   },
   computed: {
@@ -254,20 +235,6 @@ export default {
         result.push(job);
       }
       return result;
-    },
-    totalPages: function () {
-      return Math.max(1, Math.ceil(this.filteredJobs.length / this.pageSize));
-    },
-    paginatedJobs: function () {
-      var start = (this.currentPage - 1) * this.pageSize;
-      return this.filteredJobs.slice(start, start + this.pageSize);
-    },
-  },
-  watch: {
-    filteredJobs: function () {
-      if (this.currentPage > this.totalPages) {
-        this.currentPage = this.totalPages;
-      }
     },
   },
   methods: {
@@ -602,51 +569,4 @@ export default {
   font-size: 12px;
 }
 
-/* ─── Pagination ─── */
-.backups-panel__pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.backups-panel__page-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  color: #4a90d9;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
-}
-
-.backups-panel__page-btn:hover:not(:disabled) {
-  background: #e8f0fe;
-  border-color: #4a90d9;
-}
-
-.backups-panel__page-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.backups-panel__page-info {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
-}
-
-.backups-panel__showing-hint {
-  text-align: center;
-  font-size: 11px;
-  color: var(--color-text-muted, #9ca3af);
-  margin-top: 6px;
-}
 </style>
