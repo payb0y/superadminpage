@@ -21,30 +21,29 @@
     </div>
 
     <div v-else class="system-health__grid">
-      <GaugeCard
-        title="CPU load"
-        :value-line="cpu.valueLine"
-        :percent="cpu.percent"
-        :subtitle="cpu.subtitle"
-      />
-      <GaugeCard
-        title="Memory"
-        :value-line="memory.valueLine"
-        :percent="memory.percent"
-        :subtitle="memory.subtitle"
-      />
-      <GaugeCard
-        title="Disk"
-        :value-line="disk.valueLine"
-        :percent="disk.percent"
-        :subtitle="disk.subtitle"
-      />
-      <GaugeCard
-        title="Uptime"
-        :value-line="uptime.valueLine"
-        :percent="null"
-        :subtitle="uptime.subtitle"
-      />
+      <div
+        v-for="card in cards"
+        :key="card.key"
+        class="system-health__card"
+      >
+        <div class="system-health__card-title">{{ card.title }}</div>
+        <div class="system-health__card-value">{{ card.valueLine }}</div>
+        <div
+          v-if="card.percent !== null"
+          class="system-health__bar"
+        >
+          <div
+            class="system-health__bar-fill"
+            :class="'system-health__bar-fill--' + toneFor(card.percent)"
+            :style="{ width: clamp(card.percent) + '%' }"
+          ></div>
+          <span class="system-health__bar-percent">{{ card.percent }}%</span>
+        </div>
+        <div v-else class="system-health__bar system-health__bar--empty"></div>
+        <div v-if="card.subtitle" class="system-health__card-sub">
+          {{ card.subtitle }}
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -73,54 +72,8 @@ function formatDuration(seconds) {
   return mins + "m";
 }
 
-function toneFor(percent) {
-  if (percent === null || percent === undefined) return "neutral";
-  if (percent >= 90) return "danger";
-  if (percent >= 70) return "warn";
-  return "ok";
-}
-
-const GaugeCard = {
-  name: "GaugeCard",
-  props: {
-    title: { type: String, required: true },
-    valueLine: { type: String, required: true },
-    percent: { type: Number, default: null },
-    subtitle: { type: String, default: "" },
-  },
-  computed: {
-    tone() {
-      return toneFor(this.percent);
-    },
-    barWidth() {
-      if (this.percent === null) return 0;
-      return Math.max(0, Math.min(100, this.percent));
-    },
-    hasBar() {
-      return this.percent !== null;
-    },
-  },
-  template: `
-    <div class="system-health__card">
-      <div class="system-health__card-title">{{ title }}</div>
-      <div class="system-health__card-value">{{ valueLine }}</div>
-      <div v-if="hasBar" class="system-health__bar">
-        <div
-          class="system-health__bar-fill"
-          :class="'system-health__bar-fill--' + tone"
-          :style="{ width: barWidth + '%' }"
-        ></div>
-        <span class="system-health__bar-percent">{{ percent }}%</span>
-      </div>
-      <div v-else class="system-health__bar system-health__bar--empty"></div>
-      <div v-if="subtitle" class="system-health__card-sub">{{ subtitle }}</div>
-    </div>
-  `,
-};
-
 export default {
   name: "SystemHealthPanel",
-  components: { GaugeCard },
   data() {
     return {
       snapshot: null,
@@ -129,62 +82,100 @@ export default {
     };
   },
   computed: {
-    cpu() {
-      const c = this.snapshot && this.snapshot.cpu;
-      if (!c) return { valueLine: "—", percent: null, subtitle: "" };
-      const cores = c.cores;
-      const valueLine = cores
-        ? c.load1.toFixed(2) + " / " + cores
-        : c.load1.toFixed(2);
-      const percent = cores ? Math.min(100, Math.round((c.load1 / cores) * 100)) : null;
-      const subtitle =
-        "1m " + c.load1.toFixed(2) +
-        " · 5m " + c.load5.toFixed(2) +
-        " · 15m " + c.load15.toFixed(2);
-      return { valueLine, percent, subtitle };
-    },
-    memory() {
-      const m = this.snapshot && this.snapshot.memory;
-      const s = this.snapshot && this.snapshot.swap;
-      if (!m) return { valueLine: "—", percent: null, subtitle: "" };
-      const valueLine =
-        formatBytes(m.usedBytes) + " / " + formatBytes(m.totalBytes);
-      const subtitle = s
-        ? "swap " + formatBytes(s.usedBytes) + " / " + formatBytes(s.totalBytes)
-        : "";
-      return { valueLine, percent: m.percent, subtitle };
-    },
-    disk() {
-      const d = this.snapshot && this.snapshot.disk;
-      if (!d) return { valueLine: "—", percent: null, subtitle: "" };
-      if (d.totalBytes === null) {
-        return { valueLine: "—", percent: null, subtitle: d.path || "" };
-      }
-      return {
-        valueLine: formatBytes(d.usedBytes) + " / " + formatBytes(d.totalBytes),
-        percent: d.percent,
-        subtitle: "data partition",
-      };
-    },
-    uptime() {
-      const u = this.snapshot && this.snapshot.uptime;
-      const v = this.snapshot && this.snapshot.nextcloudVersion;
-      if (!u) {
-        return {
-          valueLine: "—",
-          subtitle: v ? "NC " + v : "",
-        };
-      }
-      return {
-        valueLine: formatDuration(u.seconds),
-        subtitle: v ? "NC " + v : "since boot",
-      };
+    cards() {
+      return [
+        this.cpuCard(),
+        this.memoryCard(),
+        this.diskCard(),
+        this.uptimeCard(),
+      ];
     },
   },
   mounted() {
     this.fetch();
   },
   methods: {
+    toneFor(percent) {
+      if (percent === null || percent === undefined) return "neutral";
+      if (percent >= 90) return "danger";
+      if (percent >= 70) return "warn";
+      return "ok";
+    },
+    clamp(percent) {
+      if (!Number.isFinite(percent)) return 0;
+      return Math.max(0, Math.min(100, percent));
+    },
+    cpuCard() {
+      const c = this.snapshot && this.snapshot.cpu;
+      if (!c) {
+        return { key: "cpu", title: "CPU load", valueLine: "—", percent: null, subtitle: "" };
+      }
+      const cores = c.cores;
+      const valueLine = cores
+        ? c.load1.toFixed(2) + " / " + cores
+        : c.load1.toFixed(2);
+      const percent = cores
+        ? Math.min(100, Math.round((c.load1 / cores) * 100))
+        : null;
+      const subtitle =
+        "1m " + c.load1.toFixed(2) +
+        " · 5m " + c.load5.toFixed(2) +
+        " · 15m " + c.load15.toFixed(2);
+      return { key: "cpu", title: "CPU load", valueLine, percent, subtitle };
+    },
+    memoryCard() {
+      const m = this.snapshot && this.snapshot.memory;
+      const s = this.snapshot && this.snapshot.swap;
+      if (!m) {
+        return { key: "memory", title: "Memory", valueLine: "—", percent: null, subtitle: "" };
+      }
+      return {
+        key: "memory",
+        title: "Memory",
+        valueLine: formatBytes(m.usedBytes) + " / " + formatBytes(m.totalBytes),
+        percent: m.percent,
+        subtitle: s
+          ? "swap " + formatBytes(s.usedBytes) + " / " + formatBytes(s.totalBytes)
+          : "",
+      };
+    },
+    diskCard() {
+      const d = this.snapshot && this.snapshot.disk;
+      if (!d) {
+        return { key: "disk", title: "Disk", valueLine: "—", percent: null, subtitle: "" };
+      }
+      if (d.totalBytes === null) {
+        return {
+          key: "disk",
+          title: "Disk",
+          valueLine: "—",
+          percent: null,
+          subtitle: d.path || "",
+        };
+      }
+      return {
+        key: "disk",
+        title: "Disk",
+        valueLine: formatBytes(d.usedBytes) + " / " + formatBytes(d.totalBytes),
+        percent: d.percent,
+        subtitle: "data partition",
+      };
+    },
+    uptimeCard() {
+      const u = this.snapshot && this.snapshot.uptime;
+      const v = this.snapshot && this.snapshot.nextcloudVersion;
+      const subtitle = v ? "NC " + v : "since boot";
+      if (!u) {
+        return { key: "uptime", title: "Uptime", valueLine: "—", percent: null, subtitle };
+      }
+      return {
+        key: "uptime",
+        title: "Uptime",
+        valueLine: formatDuration(u.seconds),
+        percent: null,
+        subtitle,
+      };
+    },
     async fetch() {
       this.loading = true;
       this.error = null;
@@ -327,7 +318,7 @@ export default {
   height: 6px;
   border-radius: 999px;
   background: #f2f4f7;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .system-health__bar--empty {
@@ -343,15 +334,15 @@ export default {
   transition: width 0.2s ease, background-color 0.2s ease;
 }
 
-.system-health__bar-fill--ok     { background: #10b981; }
-.system-health__bar-fill--warn   { background: #f59e0b; }
-.system-health__bar-fill--danger { background: #ef4444; }
-.system-health__bar-fill--neutral{ background: #98a2b3; }
+.system-health__bar-fill--ok      { background: #10b981; }
+.system-health__bar-fill--warn    { background: #f59e0b; }
+.system-health__bar-fill--danger  { background: #ef4444; }
+.system-health__bar-fill--neutral { background: #98a2b3; }
 
 .system-health__bar-percent {
   position: absolute;
   right: 0;
-  top: 8px;
+  top: 10px;
   font-size: 11px;
   font-weight: 600;
   color: #475467;
@@ -360,7 +351,7 @@ export default {
 .system-health__card-sub {
   font-size: 11px;
   color: #667085;
-  margin-top: 10px;
+  margin-top: 14px;
   word-break: break-word;
 }
 
