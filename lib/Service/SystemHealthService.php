@@ -4,14 +4,24 @@ declare(strict_types=1);
 
 namespace OCA\SuperAdminPage\Service;
 
+use OCP\ICacheFactory;
 use OCP\IConfig;
+use OCP\IDBConnection;
 
 class SystemHealthService {
 
     private IConfig $config;
+    private ICacheFactory $cacheFactory;
+    private IDBConnection $db;
 
-    public function __construct(IConfig $config) {
+    public function __construct(
+        IConfig $config,
+        ICacheFactory $cacheFactory,
+        IDBConnection $db,
+    ) {
         $this->config = $config;
+        $this->cacheFactory = $cacheFactory;
+        $this->db = $db;
     }
 
     public function getSnapshot(): array {
@@ -21,6 +31,8 @@ class SystemHealthService {
             'swap'             => $this->gatherSwap(),
             'disk'             => $this->gatherDisk(),
             'uptime'           => $this->gatherUptime(),
+            'network'          => $this->gatherNetwork(),
+            'users'            => $this->gatherActiveUsers(),
             'nextcloudVersion' => $this->gatherNextcloudVersion(),
             'snapshotAt'       => time(),
         ];
@@ -152,5 +164,187 @@ class SystemHealthService {
             return $v !== '' ? $v : null;
         }
         return null;
+    }
+
+    private function gatherNetwork(): ?array {
+        $iface = $this->primaryInterface();
+        if ($iface === null) {
+            return null;
+        }
+        $counters = $this->readInterfaceCounters($iface);
+        if ($counters === null) {
+            return null;
+        }
+        [$rxBytes, $txBytes] = $counters;
+
+        $hostname = gethostname();
+        if ($hostname === false || $hostname === '') {
+            $hostname = null;
+        }
+
+        $rxRate = null;
+        $txRate = null;
+        if ($this->cacheFactory->isLocalCacheAvailable()) {
+            $cache = $this->cacheFactory->createLocal('oca_superadminpage_netstats');
+            $now = time();
+            $prev = $cache->get('snapshot');
+            if (is_array($prev)
+                && isset($prev['ts'], $prev['rx'], $prev['tx'], $prev['iface'])
+                && $prev['iface'] === $iface
+                && ($now - (int)$prev['ts']) >= 1
+            ) {
+                $dt = $now - (int)$prev['ts'];
+                $rxRate = max(0.0, ($rxBytes - (int)$prev['rx']) / $dt);
+                $txRate = max(0.0, ($txBytes - (int)$prev['tx']) / $dt);
+            }
+            $cache->set('snapshot', [
+                'ts'    => $now,
+                'rx'    => $rxBytes,
+                'tx'    => $txBytes,
+                'iface' => $iface,
+            ]);
+        }
+
+        return [
+            'hostname'      => $hostname,
+            'interface'     => $iface,
+            'rxBytesPerSec' => $rxRate,
+            'txBytesPerSec' => $txRate,
+            'rxBytesTotal'  => $rxBytes,
+            'txBytesTotal'  => $txBytes,
+        ];
+    }
+
+    private function primaryInterface(): ?string {
+        $route = @file_get_contents('/proc/net/route');
+        if (is_string($route) && $route !== '') {
+            $best = null;
+            $bestMetric = PHP_INT_MAX;
+            foreach (preg_split('/\r?\n/', $route) ?: [] as $i => $line) {
+                if ($i === 0 || $line === '') {
+                    continue; // header / blank
+                }
+                $cols = preg_split('/\s+/', trim($line));
+                if (!is_array($cols) || count($cols) < 7) {
+                    continue;
+                }
+                [$iface, $dest, $gateway] = [$cols[0], $cols[1], $cols[2]];
+                $metric = (int)$cols[6];
+                if ($dest !== '00000000' || $gateway === '00000000') {
+                    continue; // not a default route
+                }
+                if ($metric < $bestMetric) {
+                    $bestMetric = $metric;
+                    $best = $iface;
+                }
+            }
+            if ($best !== null) {
+                return $best;
+            }
+        }
+
+        // Fallback: first physical-looking iface in /proc/net/dev.
+        $dev = @file_get_contents('/proc/net/dev');
+        if (!is_string($dev) || $dev === '') {
+            return null;
+        }
+        foreach (preg_split('/\r?\n/', $dev) ?: [] as $line) {
+            if (strpos($line, ':') === false) {
+                continue;
+            }
+            $name = trim(strstr($line, ':', true));
+            if ($name === '' || $name === 'lo'
+                || strpos($name, 'docker') === 0
+                || strpos($name, 'veth') === 0
+                || strpos($name, 'br-') === 0) {
+                continue;
+            }
+            return $name;
+        }
+        return null;
+    }
+
+    /**
+     * @return array{0:int,1:int}|null  [rxBytes, txBytes]
+     */
+    private function readInterfaceCounters(string $iface): ?array {
+        $dev = @file_get_contents('/proc/net/dev');
+        if (!is_string($dev) || $dev === '') {
+            return null;
+        }
+        foreach (preg_split('/\r?\n/', $dev) ?: [] as $line) {
+            if (strpos($line, ':') === false) {
+                continue;
+            }
+            $name = trim(strstr($line, ':', true));
+            if ($name !== $iface) {
+                continue;
+            }
+            $rest = substr($line, strpos($line, ':') + 1);
+            $fields = preg_split('/\s+/', trim($rest));
+            if (!is_array($fields) || count($fields) < 16) {
+                return null;
+            }
+            // After the iface name: 0=rx_bytes, 1=rx_packets, ..., 8=tx_bytes
+            return [(int)$fields[0], (int)$fields[8]];
+        }
+        return null;
+    }
+
+    private function gatherActiveUsers(): ?array {
+        $cacheAvailable = $this->cacheFactory->isLocalCacheAvailable();
+        $cache = $cacheAvailable
+            ? $this->cacheFactory->createLocal('oca_superadminpage_userstats')
+            : null;
+
+        if ($cache !== null) {
+            $cached = $cache->get('snapshot');
+            if (is_array($cached)
+                && isset($cached['total'], $cached['last5min'], $cached['last1hour'], $cached['last24hour'])
+            ) {
+                return $cached;
+            }
+        }
+
+        try {
+            $now = time();
+            $payload = [
+                'total'      => $this->countAllUsers(),
+                'last5min'   => $this->countActiveUsersSince($now - 300),
+                'last1hour'  => $this->countActiveUsersSince($now - 3600),
+                'last24hour' => $this->countActiveUsersSince($now - 86400),
+            ];
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        if ($cache !== null) {
+            $cache->set('snapshot', $payload, 30);
+        }
+        return $payload;
+    }
+
+    private function countAllUsers(): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->func()->count('*'))
+            ->from('users');
+        $stmt = $qb->executeQuery();
+        $n = (int)$stmt->fetchOne();
+        $stmt->closeCursor();
+        return $n;
+    }
+
+    private function countActiveUsersSince(int $unixTs): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(DISTINCT uid)'))
+            ->from('authtoken')
+            ->where($qb->expr()->gte(
+                'last_activity',
+                $qb->createNamedParameter($unixTs, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)
+            ));
+        $stmt = $qb->executeQuery();
+        $n = (int)$stmt->fetchOne();
+        $stmt->closeCursor();
+        return $n;
     }
 }

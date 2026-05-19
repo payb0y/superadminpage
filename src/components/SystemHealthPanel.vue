@@ -46,31 +46,70 @@
       <button class="system-health__retry" @click="fetch">Retry</button>
     </div>
 
-    <div v-else class="system-health__grid">
-      <div
-        v-for="card in cards"
-        :key="card.key"
-        class="system-health__card"
-      >
-        <div class="system-health__card-title">{{ card.title }}</div>
-        <div class="system-health__card-value">{{ card.valueLine }}</div>
+    <template v-else>
+      <div class="system-health__subhead system-health__subhead--first">Resources</div>
+      <div class="system-health__grid">
         <div
-          v-if="card.percent !== null"
-          class="system-health__bar"
+          v-for="card in cards"
+          :key="card.key"
+          class="system-health__card"
         >
+          <div class="system-health__card-title">{{ card.title }}</div>
+          <div class="system-health__card-value">{{ card.valueLine }}</div>
           <div
-            class="system-health__bar-fill"
-            :class="'system-health__bar-fill--' + toneFor(card.percent)"
-            :style="{ width: clamp(card.percent) + '%' }"
-          ></div>
-          <span class="system-health__bar-percent">{{ card.percent }}%</span>
-        </div>
-        <div v-else class="system-health__bar system-health__bar--empty"></div>
-        <div v-if="card.subtitle" class="system-health__card-sub">
-          {{ card.subtitle }}
+            v-if="card.percent !== null"
+            class="system-health__bar"
+          >
+            <div
+              class="system-health__bar-fill"
+              :class="'system-health__bar-fill--' + toneFor(card.percent)"
+              :style="{ width: clamp(card.percent) + '%' }"
+            ></div>
+            <span class="system-health__bar-percent">{{ card.percent }}%</span>
+          </div>
+          <div v-else class="system-health__bar system-health__bar--empty"></div>
+          <div v-if="card.subtitle" class="system-health__card-sub">
+            {{ card.subtitle }}
+          </div>
         </div>
       </div>
-    </div>
+
+      <template v-if="networkVisible">
+        <div class="system-health__subhead">Network</div>
+        <div class="system-health__grid">
+          <div
+            v-for="card in networkCards"
+            :key="card.key"
+            class="system-health__card"
+          >
+            <div class="system-health__card-title">{{ card.title }}</div>
+            <div class="system-health__card-value">{{ card.valueLine }}</div>
+            <div class="system-health__bar system-health__bar--empty"></div>
+            <div v-if="card.subtitle" class="system-health__card-sub">
+              {{ card.subtitle }}
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template v-if="usersVisible">
+        <div class="system-health__subhead">Active Users</div>
+        <div class="system-health__grid">
+          <div
+            v-for="card in userCards"
+            :key="card.key"
+            class="system-health__card"
+          >
+            <div class="system-health__card-title">{{ card.title }}</div>
+            <div class="system-health__card-value">{{ card.valueLine }}</div>
+            <div class="system-health__bar system-health__bar--empty"></div>
+            <div v-if="card.subtitle" class="system-health__card-sub">
+              {{ card.subtitle }}
+            </div>
+          </div>
+        </div>
+      </template>
+    </template>
   </section>
 </template>
 
@@ -99,6 +138,21 @@ function formatDuration(seconds) {
   return mins + "m";
 }
 
+function formatRate(bytesPerSec) {
+  if (bytesPerSec === null || bytesPerSec === undefined || !Number.isFinite(bytesPerSec)) {
+    return "—";
+  }
+  if (bytesPerSec >= GIB) return (bytesPerSec / GIB).toFixed(2) + " GB/s";
+  if (bytesPerSec >= MIB) return (bytesPerSec / MIB).toFixed(2) + " MB/s";
+  if (bytesPerSec >= 1024) return (bytesPerSec / 1024).toFixed(1) + " KB/s";
+  return Math.round(bytesPerSec) + " B/s";
+}
+
+function formatCount(n) {
+  if (n === null || n === undefined || !Number.isFinite(n)) return "—";
+  return new Intl.NumberFormat().format(n);
+}
+
 export default {
   name: "SystemHealthPanel",
   data() {
@@ -108,6 +162,7 @@ export default {
       error: null,
       pollPaused: false,
       pollMs: POLL_MS,
+      latched: { network: false, users: false },
     };
   },
   computed: {
@@ -117,6 +172,74 @@ export default {
         this.memoryCard(),
         this.diskCard(),
         this.uptimeCard(),
+      ];
+    },
+    networkVisible() {
+      if (this.latched.network) return true;
+      return !!(this.snapshot && this.snapshot.network);
+    },
+    usersVisible() {
+      if (this.latched.users) return true;
+      return !!(this.snapshot && this.snapshot.users);
+    },
+    networkCards() {
+      const n = this.snapshot && this.snapshot.network;
+      return [
+        {
+          key: "host",
+          title: "Host",
+          valueLine: (n && n.hostname) ? n.hostname : "—",
+          subtitle: "Hostname",
+        },
+        {
+          key: "in",
+          title: "Inbound",
+          valueLine: formatRate(n && n.rxBytesPerSec),
+          subtitle: "Receive rate",
+        },
+        {
+          key: "out",
+          title: "Outbound",
+          valueLine: formatRate(n && n.txBytesPerSec),
+          subtitle: "Transmit rate",
+        },
+        {
+          key: "iface",
+          title: "Interface",
+          valueLine: (n && n.interface) ? n.interface : "—",
+          subtitle: n
+            ? "↓ " + formatBytes(n.rxBytesTotal) + " · ↑ " + formatBytes(n.txBytesTotal)
+            : "",
+        },
+      ];
+    },
+    userCards() {
+      const u = this.snapshot && this.snapshot.users;
+      return [
+        {
+          key: "u5",
+          title: "Last 5 min",
+          valueLine: formatCount(u && u.last5min),
+          subtitle: "Active sessions",
+        },
+        {
+          key: "u1h",
+          title: "Last hour",
+          valueLine: formatCount(u && u.last1hour),
+          subtitle: "Active sessions",
+        },
+        {
+          key: "u1d",
+          title: "Last 24 hours",
+          valueLine: formatCount(u && u.last24hour),
+          subtitle: "Active sessions",
+        },
+        {
+          key: "uall",
+          title: "Total",
+          valueLine: formatCount(u && u.total),
+          subtitle: "Accounts",
+        },
       ];
     },
   },
@@ -253,6 +376,12 @@ export default {
           generateUrl("/apps/superadminpage/api/super/system")
         );
         this.snapshot = res.data || null;
+        if (this.snapshot && this.snapshot.network && !this.latched.network) {
+          this.latched.network = true;
+        }
+        if (this.snapshot && this.snapshot.users && !this.latched.users) {
+          this.latched.users = true;
+        }
         if (silent && this.error) this.error = null;
       } catch (e) {
         // Surface errors only on foreground fetches; silent polls keep the
@@ -410,6 +539,21 @@ export default {
 
 .system-health__retry:hover {
   background: #fee4e2;
+}
+
+.system-health__subhead {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 20px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f2f4f7;
+}
+
+.system-health__subhead--first {
+  margin-top: 0;
 }
 
 .system-health__grid {
