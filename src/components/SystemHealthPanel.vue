@@ -109,6 +109,30 @@
           </div>
         </div>
       </template>
+
+      <template v-if="servicesVisible">
+        <div class="system-health__subhead">Services</div>
+        <div class="system-health__grid">
+          <div
+            v-for="card in serviceCards"
+            :key="card.key"
+            class="system-health__card"
+          >
+            <div class="system-health__card-title">{{ card.name }}</div>
+            <div class="system-health__card-value">
+              <span
+                class="system-health__status-dot"
+                :class="'system-health__status-dot--' + card.tone"
+              ></span>
+              {{ card.statusLabel }}
+            </div>
+            <div class="system-health__bar system-health__bar--empty"></div>
+            <div v-if="card.subtitle" class="system-health__card-sub">
+              {{ card.subtitle }}
+            </div>
+          </div>
+        </div>
+      </template>
     </template>
   </section>
 </template>
@@ -162,7 +186,7 @@ export default {
       error: null,
       pollPaused: false,
       pollMs: POLL_MS,
-      latched: { network: false, users: false },
+      latched: { network: false, users: false, services: false },
     };
   },
   computed: {
@@ -241,6 +265,26 @@ export default {
           subtitle: "Accounts",
         },
       ];
+    },
+    servicesVisible() {
+      if (this.latched.services) return true;
+      const list = this.snapshot && this.snapshot.services;
+      return Array.isArray(list) && list.length > 0;
+    },
+    serviceCards() {
+      const list = (this.snapshot && this.snapshot.services) || [];
+      return list.map((s) => {
+        const statusLabel =
+          s.status === "ok" ? "Healthy"
+            : s.status === "degraded" ? "Degraded"
+              : "Down";
+        const host = (s.url || "").replace(/^https?:\/\//, "");
+        const subtitle =
+          (s.status !== "down" && s.latencyMs != null)
+            ? s.latencyMs + " ms · " + host
+            : host;
+        return { key: s.key, name: s.name, statusLabel, tone: s.status, subtitle };
+      });
     },
   },
   mounted() {
@@ -381,6 +425,10 @@ export default {
         }
         if (this.snapshot && this.snapshot.users && !this.latched.users) {
           this.latched.users = true;
+        }
+        if (this.snapshot && Array.isArray(this.snapshot.services)
+            && this.snapshot.services.length > 0 && !this.latched.services) {
+          this.latched.services = true;
         }
         if (silent && this.error) this.error = null;
       } catch (e) {
@@ -555,6 +603,20 @@ export default {
 .system-health__subhead--first {
   margin-top: 0;
 }
+
+.system-health__status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  background: #98a2b3;
+}
+
+.system-health__status-dot--ok       { background: #10b981; }
+.system-health__status-dot--degraded { background: #f59e0b; }
+.system-health__status-dot--down     { background: #ef4444; }
 
 .system-health__grid {
   display: grid;
