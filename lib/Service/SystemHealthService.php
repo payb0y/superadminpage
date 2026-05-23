@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\SuperAdminPage\Service;
 
+use OCP\Http\Client\IClientService;
 use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IDBConnection;
@@ -13,15 +14,18 @@ class SystemHealthService {
     private IConfig $config;
     private ICacheFactory $cacheFactory;
     private IDBConnection $db;
+    private IClientService $clientService;
 
     public function __construct(
         IConfig $config,
         ICacheFactory $cacheFactory,
         IDBConnection $db,
+        IClientService $clientService,
     ) {
         $this->config = $config;
         $this->cacheFactory = $cacheFactory;
         $this->db = $db;
+        $this->clientService = $clientService;
     }
 
     public function getSnapshot(): array {
@@ -33,6 +37,7 @@ class SystemHealthService {
             'uptime'           => $this->gatherUptime(),
             'network'          => $this->gatherNetwork(),
             'users'            => $this->gatherActiveUsers(),
+            'services'         => $this->gatherServices(),
             'nextcloudVersion' => $this->gatherNextcloudVersion(),
             'snapshotAt'       => time(),
         ];
@@ -346,5 +351,73 @@ class SystemHealthService {
         $n = (int)$stmt->fetchOne();
         $stmt->closeCursor();
         return $n;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>  one entry per monitored service
+     */
+    private function gatherServices(): array {
+        $cache = $this->cacheFactory->isLocalCacheAvailable()
+            ? $this->cacheFactory->createLocal('oca_superadminpage_servicestats')
+            : null;
+
+        if ($cache !== null) {
+            $cached = $cache->get('snapshot');
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        $services = [$this->checkPdfToImage()];
+
+        if ($cache !== null) {
+            $cache->set('snapshot', $services, 15);
+        }
+        return $services;
+    }
+
+    private function checkPdfToImage(): array {
+        $base = rtrim(
+            (string)$this->config->getSystemValue('superadminpage.pdf_to_image_url', 'https://pdf2img.loket.site'),
+            '/'
+        );
+
+        $service = [
+            'key'       => 'pdf-to-image',
+            'name'      => 'PDF → Image',
+            'status'    => 'down',
+            'detail'    => 'unreachable',
+            'latencyMs' => null,
+            'url'       => $base,
+        ];
+
+        $start = microtime(true);
+        try {
+            $resp = $this->clientService->newClient()->get($base . '/health', [
+                'timeout'         => 3,
+                'connect_timeout' => 2,
+                'nocache'         => true,
+                'http_errors'     => false,
+            ]);
+            $service['latencyMs'] = (int)round((microtime(true) - $start) * 1000);
+
+            $code = $resp->getStatusCode();
+            $body = json_decode((string)$resp->getBody(), true);
+            $popplerOk = is_array($body) && ($body['poppler'] ?? null) === true;
+
+            if ($code === 200 && $popplerOk) {
+                $service['status'] = 'ok';
+                $service['detail'] = 'poppler available';
+            } else {
+                $service['status'] = 'degraded';
+                $service['detail'] = (is_array($body) && isset($body['status']))
+                    ? (string)$body['status']
+                    : 'unexpected response';
+            }
+        } catch (\Throwable $e) {
+            // Leave the default 'down' shape (latencyMs stays null).
+        }
+
+        return $service;
     }
 }
