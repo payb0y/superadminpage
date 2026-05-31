@@ -17,13 +17,17 @@
         </p>
       </header>
 
-      <PlatformKpiStrip v-if="platform" :kpis="platform.kpis" />
+      <PlatformKpiStrip
+        v-if="platform"
+        :kpis="platform.kpis"
+        @drill-down="onDrillDown"
+      />
 
       <AlertsPanel v-if="platform" :alerts="platform.alerts" />
 
       <SystemHealthPanel />
 
-      <OrgListPanel :orgs="orgs" />
+      <OrgListPanel ref="orgList" :orgs="orgs" />
     </template>
   </div>
 </template>
@@ -56,6 +60,16 @@ export default {
     this.fetchAll();
   },
   methods: {
+    onDrillDown(payload) {
+      if (!this.$refs.orgList) return;
+      this.$refs.orgList.applyDrillDown(payload);
+      this.$nextTick(() => {
+        const el = this.$refs.orgList.$el;
+        if (el && typeof el.scrollIntoView === "function") {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    },
     async fetchAll() {
       try {
         const [platformRes, orgsRes] = await Promise.all([
