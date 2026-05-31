@@ -19,12 +19,17 @@ class OrgOverviewService {
      * One row per org with counts + plan + subscription status.
      */
     public function listOrgs(): array {
+        // Per-org task rollup. Mirrors the task-count definitions used by
+        // getProjects() so the per-org numbers match the per-project drill-down.
         $sql = "
             SELECT
                 o.id,
                 o.name,
                 COUNT(DISTINCT m.user_uid) AS member_count,
                 COUNT(DISTINCT cp.id)      AS project_count,
+                COALESCE(tt.total_tasks,   0) AS total_tasks,
+                COALESCE(tt.done_tasks,    0) AS done_tasks,
+                COALESCE(tt.overdue_tasks, 0) AS overdue_tasks,
                 p.name                     AS plan_name,
                 s.status                   AS subscription_status
             FROM *PREFIX*organizations o
@@ -32,12 +37,34 @@ class OrgOverviewService {
                    ON m.organization_id = o.id
             LEFT JOIN *PREFIX*custom_projects cp
                    ON cp.organization_id = o.id
+            LEFT JOIN (
+                SELECT
+                    cp2.organization_id AS org_id,
+                    SUM(CASE WHEN c.deleted_at = 0 AND c.archived = 0
+                             THEN 1 ELSE 0 END) AS total_tasks,
+                    SUM(CASE WHEN s2.title = 'Approved/Done' AND c.deleted_at = 0
+                             THEN 1 ELSE 0 END) AS done_tasks,
+                    SUM(CASE WHEN s2.title != 'Approved/Done'
+                              AND c.duedate IS NOT NULL
+                              AND UNIX_TIMESTAMP(c.duedate) < UNIX_TIMESTAMP()
+                              AND c.deleted_at = 0
+                              AND c.archived  = 0
+                             THEN 1 ELSE 0 END) AS overdue_tasks
+                FROM *PREFIX*custom_projects cp2
+                INNER JOIN *PREFIX*deck_stacks s2
+                        ON s2.board_id = CAST(cp2.board_id AS UNSIGNED)
+                INNER JOIN *PREFIX*deck_cards c
+                        ON c.stack_id = s2.id
+                WHERE cp2.board_id IS NOT NULL
+                  AND cp2.board_id <> ''
+                GROUP BY cp2.organization_id
+            ) tt ON tt.org_id = o.id
             LEFT JOIN *PREFIX*subscriptions s
                    ON s.organization_id = o.id
                   AND (s.ended_at IS NULL OR s.ended_at > NOW())
             LEFT JOIN *PREFIX*plans p
                    ON p.id = s.plan_id
-            GROUP BY o.id, o.name, p.name, s.status
+            GROUP BY o.id, o.name, tt.total_tasks, tt.done_tasks, tt.overdue_tasks, p.name, s.status
             ORDER BY o.name
         ";
         $stmt = $this->db->prepare($sql);
@@ -50,6 +77,9 @@ class OrgOverviewService {
                 'name'               => $r['name'],
                 'memberCount'        => (int)$r['member_count'],
                 'projectCount'       => (int)$r['project_count'],
+                'totalTasks'         => (int)$r['total_tasks'],
+                'doneTasks'          => (int)$r['done_tasks'],
+                'overdueTasks'       => (int)$r['overdue_tasks'],
                 'planName'           => $r['plan_name'] ?? 'No plan',
                 'subscriptionStatus' => $r['subscription_status'] ?? 'none',
                 // TODO: storage rollup via oc_filecache + oc_group_folders (expensive, deferred)
