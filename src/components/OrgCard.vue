@@ -25,17 +25,53 @@
 
     <div class="org-card__metrics">
       <div class="org-card__metric">
-        <span class="org-card__metric-value">{{ org.memberCount }}</span>
+        <span
+          class="org-card__metric-value"
+          :class="{ 'org-card__metric-value--highlight': metricHighlight === 'members' }"
+        >{{ org.memberCount }}</span>
         <span class="org-card__metric-label">members</span>
       </div>
       <div class="org-card__metric">
-        <span class="org-card__metric-value">{{ org.projectCount }}</span>
+        <span
+          class="org-card__metric-value"
+          :class="{ 'org-card__metric-value--highlight': metricHighlight === 'projects' }"
+        >{{ org.projectCount }}</span>
         <span class="org-card__metric-label">projects</span>
       </div>
       <div class="org-card__metric">
         <span class="org-card__metric-value">{{ storageDisplay }}</span>
         <span class="org-card__metric-label">storage</span>
       </div>
+    </div>
+
+    <div class="org-card__tasks">
+      <span
+        class="org-card__task"
+        :class="{ 'org-card__task--highlight': metricHighlight === 'tasks' }"
+      >
+        <strong>{{ org.totalTasks || 0 }}</strong> tasks
+      </span>
+      <span class="org-card__task-sep">·</span>
+      <span
+        class="org-card__task"
+        :class="{ 'org-card__task--highlight': metricHighlight === 'done' }"
+      >
+        <strong>{{ org.doneTasks || 0 }}</strong> done
+      </span>
+      <span class="org-card__task-sep">·</span>
+      <span
+        class="org-card__task"
+        :class="{ 'org-card__task--highlight': metricHighlight === 'overdue' }"
+      >
+        <strong>{{ org.overdueTasks || 0 }}</strong> overdue
+      </span>
+      <span class="org-card__task-sep">·</span>
+      <span
+        class="org-card__task"
+        :class="{ 'org-card__task--highlight': metricHighlight === 'open' }"
+      >
+        <strong>{{ openTasks }}</strong> open
+      </span>
     </div>
   </div>
 </template>
@@ -52,8 +88,17 @@ export default {
       type: Boolean,
       default: false,
     },
+    metricHighlight: {
+      type: String,
+      default: null,
+    },
   },
   computed: {
+    openTasks() {
+      const total = Number(this.org.totalTasks) || 0;
+      const done = Number(this.org.doneTasks) || 0;
+      return Math.max(0, total - done);
+    },
     initial() {
       return (this.org.name || "?").charAt(0).toUpperCase();
     },
@@ -227,5 +272,41 @@ export default {
 .org-card__metric-label {
   font-size: 11px;
   color: var(--color-text-muted, #9ca3af);
+}
+
+.org-card__metric-value--highlight,
+.org-card__task--highlight {
+  background: #fef3cd;
+  color: #92400e;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.org-card__tasks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--color-text-secondary, #6b7280);
+  font-variant-numeric: tabular-nums;
+}
+
+.org-card__task {
+  display: inline-flex;
+  align-items: center;
+}
+
+.org-card__task strong {
+  color: var(--color-text-primary, #1a1a2e);
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.org-card__task-sep {
+  color: #cfd6e0;
+  user-select: none;
 }
 </style>
