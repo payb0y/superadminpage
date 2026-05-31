@@ -15,6 +15,12 @@
           >
             <option value="planDesc">Plan: high → low</option>
             <option value="planAsc">Plan: low → high</option>
+            <option value="membersDesc">Members ↓</option>
+            <option value="projectsDesc">Projects ↓</option>
+            <option value="tasksDesc">Tasks total ↓</option>
+            <option value="doneDesc">Tasks done ↓</option>
+            <option value="overdueDesc">Tasks overdue ↓</option>
+            <option value="openDesc">Tasks open ↓</option>
           </select>
         </div>
         <div
@@ -111,6 +117,7 @@
         v-for="org in paginatedOrgs"
         :key="'org-' + org.id"
         :org="org"
+        :metric-highlight="metricHighlight"
         @click="revealOrgInTable(org)"
       />
     </div>
@@ -123,6 +130,10 @@
         <div class="org-list__th org-list__th--plan" role="columnheader">Plan</div>
         <div class="org-list__th org-list__th--num" role="columnheader">Members</div>
         <div class="org-list__th org-list__th--num" role="columnheader">Projects</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">Tasks</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">Done</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">Overdue</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">Open</div>
         <div class="org-list__th org-list__th--num org-list__th--storage" role="columnheader">Storage</div>
       </div>
 
@@ -183,10 +194,40 @@
             </span>
           </div>
           <div class="org-list__cell org-list__cell--num" role="cell">
-            {{ org.memberCount }}
+            <span
+              class="org-list__metric"
+              :class="{ 'org-list__metric--highlight': metricHighlight === 'members' }"
+            >{{ org.memberCount }}</span>
           </div>
           <div class="org-list__cell org-list__cell--num" role="cell">
-            {{ org.projectCount }}
+            <span
+              class="org-list__metric"
+              :class="{ 'org-list__metric--highlight': metricHighlight === 'projects' }"
+            >{{ org.projectCount }}</span>
+          </div>
+          <div class="org-list__cell org-list__cell--num" role="cell">
+            <span
+              class="org-list__metric"
+              :class="{ 'org-list__metric--highlight': metricHighlight === 'tasks' }"
+            >{{ org.totalTasks || 0 }}</span>
+          </div>
+          <div class="org-list__cell org-list__cell--num" role="cell">
+            <span
+              class="org-list__metric"
+              :class="{ 'org-list__metric--highlight': metricHighlight === 'done' }"
+            >{{ org.doneTasks || 0 }}</span>
+          </div>
+          <div class="org-list__cell org-list__cell--num" role="cell">
+            <span
+              class="org-list__metric"
+              :class="{ 'org-list__metric--highlight': metricHighlight === 'overdue' }"
+            >{{ org.overdueTasks || 0 }}</span>
+          </div>
+          <div class="org-list__cell org-list__cell--num" role="cell">
+            <span
+              class="org-list__metric"
+              :class="{ 'org-list__metric--highlight': metricHighlight === 'open' }"
+            >{{ Math.max(0, (Number(org.totalTasks) || 0) - (Number(org.doneTasks) || 0)) }}</span>
           </div>
           <div
             class="org-list__cell org-list__cell--num org-list__cell--storage"
@@ -417,13 +458,44 @@ export default {
       });
     },
     sortedOrgs() {
-      const dir = this.sortBy === "planAsc" ? 1 : -1;
-      return this.filteredOrgs.slice().sort((a, b) => {
-        const ra = planRank(a.planName);
-        const rb = planRank(b.planName);
-        if (ra === rb) return 0;
-        return (ra - rb) * dir * -1;
-      });
+      const arr = this.filteredOrgs.slice();
+      const sb = this.sortBy;
+      const tieBreak = (a, b) => planRank(a.planName) - planRank(b.planName);
+      const openOf = (o) => Math.max(0, (Number(o.totalTasks) || 0) - (Number(o.doneTasks) || 0));
+      const byDesc = (key) => arr.sort(
+        (a, b) => ((Number(b[key]) || 0) - (Number(a[key]) || 0)) || tieBreak(a, b)
+      );
+      switch (sb) {
+        case "membersDesc":  return byDesc("memberCount");
+        case "projectsDesc": return byDesc("projectCount");
+        case "tasksDesc":    return byDesc("totalTasks");
+        case "doneDesc":     return byDesc("doneTasks");
+        case "overdueDesc":  return byDesc("overdueTasks");
+        case "openDesc":     return arr.sort((a, b) => (openOf(b) - openOf(a)) || tieBreak(a, b));
+        case "planAsc":
+        case "planDesc": {
+          const dir = sb === "planAsc" ? 1 : -1;
+          return arr.sort((a, b) => {
+            const ra = planRank(a.planName);
+            const rb = planRank(b.planName);
+            if (ra === rb) return 0;
+            return (ra - rb) * dir * -1;
+          });
+        }
+        default:
+          return arr;
+      }
+    },
+    metricHighlight() {
+      switch (this.sortBy) {
+        case "membersDesc":  return "members";
+        case "projectsDesc": return "projects";
+        case "tasksDesc":    return "tasks";
+        case "doneDesc":     return "done";
+        case "overdueDesc":  return "overdue";
+        case "openDesc":     return "open";
+        default:             return null;
+      }
     },
     totalPages() {
       return Math.max(1, Math.ceil(this.sortedOrgs.length / this.pageSize));
@@ -492,6 +564,11 @@ export default {
     },
   },
   methods: {
+    applyDrillDown({ statusFilter, sortBy } = {}) {
+      if (statusFilter !== undefined) this.statusFilter = statusFilter;
+      if (sortBy !== undefined) this.sortBy = sortBy;
+      this.currentPage = 1;
+    },
     readViewMode() {
       try {
         const v = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
@@ -777,9 +854,13 @@ export default {
     minmax(0, 2fr)
     minmax(0, 1fr)
     minmax(0, 1fr)
-    88px
-    96px
-    104px;
+    72px   /* Members */
+    72px   /* Projects */
+    64px   /* Tasks */
+    64px   /* Done */
+    72px   /* Overdue */
+    64px   /* Open */
+    104px; /* Storage */
   align-items: center;
   gap: 0;
   padding: 10px 14px;
@@ -850,6 +931,19 @@ export default {
 .org-list__cell--num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.org-list__metric {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+.org-list__metric--highlight {
+  background: #fef3cd;
+  color: #92400e;
+  padding: 1px 6px;
+  border-radius: 6px;
   font-weight: 600;
 }
 
