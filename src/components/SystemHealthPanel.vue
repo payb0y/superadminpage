@@ -110,7 +110,7 @@
         </div>
       </template>
 
-      <template v-if="servicesVisible">
+      <template v-if="servicesVisible || hpbHostVisible">
         <div class="system-health__subhead">Services</div>
         <div class="system-health__grid">
           <div
@@ -127,6 +127,29 @@
               {{ card.statusLabel }}
             </div>
             <div class="system-health__bar system-health__bar--empty"></div>
+            <div v-if="card.subtitle" class="system-health__card-sub">
+              {{ card.subtitle }}
+            </div>
+          </div>
+          <div
+            v-for="card in hpbCards"
+            :key="card.key"
+            class="system-health__card"
+          >
+            <div class="system-health__card-title">{{ card.title }}</div>
+            <div class="system-health__card-value">{{ card.valueLine }}</div>
+            <div
+              v-if="card.percent !== null"
+              class="system-health__bar"
+            >
+              <div
+                class="system-health__bar-fill"
+                :class="'system-health__bar-fill--' + toneFor(card.percent)"
+                :style="{ width: clamp(card.percent) + '%' }"
+              ></div>
+              <span class="system-health__bar-percent">{{ card.percent }}%</span>
+            </div>
+            <div v-else class="system-health__bar system-health__bar--empty"></div>
             <div v-if="card.subtitle" class="system-health__card-sub">
               {{ card.subtitle }}
             </div>
@@ -186,7 +209,7 @@ export default {
       error: null,
       pollPaused: false,
       pollMs: POLL_MS,
-      latched: { network: false, users: false, services: false },
+      latched: { network: false, users: false, services: false, hpbHost: false },
     };
   },
   computed: {
@@ -285,6 +308,69 @@ export default {
             : host;
         return { key: s.key, name: s.name, statusLabel, tone: s.status, subtitle };
       });
+    },
+    hpbHostVisible() {
+      if (this.latched.hpbHost) return true;
+      return !!(this.snapshot && this.snapshot.hpbHost);
+    },
+    hpbCards() {
+      const h = this.snapshot && this.snapshot.hpbHost;
+      const unreachable = !h || h.status === "down";
+
+      const mem = h && h.memory;
+      const memoryCard = mem
+        ? {
+            key: "hpb-mem",
+            title: "HPB Memory",
+            valueLine: formatBytes(mem.usedBytes) + " / " + formatBytes(mem.totalBytes),
+            percent: mem.percent,
+            subtitle: (h.network && h.network.hostname) ? h.network.hostname : "HPB host",
+          }
+        : {
+            key: "hpb-mem",
+            title: "HPB Memory",
+            valueLine: "—",
+            percent: null,
+            subtitle: unreachable ? "Monitor unreachable" : "HPB host",
+          };
+
+      const disk = h && h.disk;
+      const diskCard = disk
+        ? {
+            key: "hpb-disk",
+            title: "HPB Disk",
+            valueLine: formatBytes(disk.usedBytes) + " / " + formatBytes(disk.totalBytes),
+            percent: disk.percent,
+            subtitle: disk.path || "/",
+          }
+        : {
+            key: "hpb-disk",
+            title: "HPB Disk",
+            valueLine: "—",
+            percent: null,
+            subtitle: unreachable ? "Monitor unreachable" : "/",
+          };
+
+      const net = h && h.network;
+      const networkCard = net
+        ? {
+            key: "hpb-net",
+            title: "HPB Network",
+            valueLine: "↓ " + formatRate(net.rxBytesPerSec) + " · ↑ " + formatRate(net.txBytesPerSec),
+            percent: null,
+            subtitle: (net.interface || "—")
+              + " · ↓ " + formatBytes(net.rxBytesTotal)
+              + " · ↑ " + formatBytes(net.txBytesTotal),
+          }
+        : {
+            key: "hpb-net",
+            title: "HPB Network",
+            valueLine: "—",
+            percent: null,
+            subtitle: unreachable ? "Monitor unreachable" : "—",
+          };
+
+      return [memoryCard, diskCard, networkCard];
     },
   },
   mounted() {
@@ -429,6 +515,9 @@ export default {
         if (this.snapshot && Array.isArray(this.snapshot.services)
             && this.snapshot.services.length > 0 && !this.latched.services) {
           this.latched.services = true;
+        }
+        if (this.snapshot && this.snapshot.hpbHost && !this.latched.hpbHost) {
+          this.latched.hpbHost = true;
         }
         if (silent && this.error) this.error = null;
       } catch (e) {
