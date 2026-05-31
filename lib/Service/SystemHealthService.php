@@ -38,6 +38,7 @@ class SystemHealthService {
             'network'          => $this->gatherNetwork(),
             'users'            => $this->gatherActiveUsers(),
             'services'         => $this->gatherServices(),
+            'hpbHost'          => $this->gatherHpbHost(),
             'nextcloudVersion' => $this->gatherNextcloudVersion(),
             'snapshotAt'       => time(),
         ];
@@ -419,5 +420,73 @@ class SystemHealthService {
         }
 
         return $service;
+    }
+
+    /**
+     * @return array<string, mixed>  always present; status is one of ok|degraded|down
+     */
+    private function gatherHpbHost(): array {
+        $cache = $this->cacheFactory->isLocalCacheAvailable()
+            ? $this->cacheFactory->createLocal('oca_superadminpage_hpbhost')
+            : null;
+
+        if ($cache !== null) {
+            $cached = $cache->get('snapshot');
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        $result = $this->checkHpbHost();
+
+        if ($cache !== null) {
+            $cache->set('snapshot', $result, 15);
+        }
+        return $result;
+    }
+
+    private function checkHpbHost(): array {
+        $base = rtrim(
+            (string)$this->config->getSystemValue('superadminpage.hpb_monitor_url', 'https://signaling.loket.site/monitor'),
+            '/'
+        );
+
+        $result = [
+            'status'    => 'down',
+            'url'       => $base,
+            'latencyMs' => null,
+            'memory'    => null,
+            'disk'      => null,
+            'network'   => null,
+        ];
+
+        $start = microtime(true);
+        try {
+            $resp = $this->clientService->newClient()->get($base . '/stats', [
+                'timeout'         => 3,
+                'connect_timeout' => 2,
+                'nocache'         => true,
+                'http_errors'     => false,
+            ]);
+            $result['latencyMs'] = (int)round((microtime(true) - $start) * 1000);
+
+            $code = $resp->getStatusCode();
+            $body = json_decode((string)$resp->getBody(), true);
+
+            if ($code === 200 && is_array($body)) {
+                $result['memory']  = is_array($body['memory']  ?? null) ? $body['memory']  : null;
+                $result['disk']    = is_array($body['disk']    ?? null) ? $body['disk']    : null;
+                $result['network'] = is_array($body['network'] ?? null) ? $body['network'] : null;
+                $allGood = $result['memory'] !== null
+                        && $result['disk']   !== null
+                        && $result['network'] !== null;
+                $result['status'] = $allGood ? 'ok' : 'degraded';
+            }
+            // Any non-200 leaves status as the default 'down'.
+        } catch (\Throwable $e) {
+            // Network error / DNS / TLS / timeout — leave the default 'down' shape.
+        }
+
+        return $result;
     }
 }
