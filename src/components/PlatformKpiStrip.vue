@@ -1,34 +1,80 @@
 <template>
   <div class="platform-kpi-strip">
-    <KpiCard
-      title="Organizations"
-      icon-color="#4a90d9"
-      :metrics="[
-        { value: kpis.orgs.total, label: 'total' },
-        { value: kpis.orgs.active, label: 'active' },
-        { value: kpis.orgs.paused, label: 'paused' },
-      ]"
-    />
-    <KpiCard
-      title="Human Resources"
-      icon-color="#8b5cf6"
-      :metrics="[
-        { value: kpis.members.admins, label: 'admins' },
-        { value: kpis.members.members, label: 'members' },
-        { value: kpis.projects.active, label: 'projects' },
-      ]"
-    />
+    <KpiCard title="Organizations" icon-color="#4a90d9">
+      <div class="kpi-card__metrics">
+        <button
+          type="button"
+          class="kpi-link kpi-card__metric"
+          @click="$emit('drill-down', { statusFilter: 'all' })"
+        >
+          <span class="kpi-card__metric-value">{{ kpis.orgs.total }}</span>
+          <span class="kpi-card__metric-label">total</span>
+        </button>
+        <button
+          type="button"
+          class="kpi-link kpi-card__metric"
+          @click="$emit('drill-down', { statusFilter: 'active' })"
+        >
+          <span class="kpi-card__metric-value">{{ kpis.orgs.active }}</span>
+          <span class="kpi-card__metric-label">active</span>
+        </button>
+        <button
+          type="button"
+          class="kpi-link kpi-card__metric"
+          @click="$emit('drill-down', { statusFilter: 'paused' })"
+        >
+          <span class="kpi-card__metric-value">{{ kpis.orgs.paused }}</span>
+          <span class="kpi-card__metric-label">paused</span>
+        </button>
+      </div>
+    </KpiCard>
+    <KpiCard title="Human Resources" icon-color="#8b5cf6">
+      <div class="kpi-card__metrics">
+        <button
+          type="button"
+          class="kpi-link kpi-card__metric"
+          @click="$emit('drill-down', { sortBy: 'membersDesc' })"
+        >
+          <span class="kpi-card__metric-value">{{ kpis.members.admins }}</span>
+          <span class="kpi-card__metric-label">admins</span>
+        </button>
+        <button
+          type="button"
+          class="kpi-link kpi-card__metric"
+          @click="$emit('drill-down', { sortBy: 'membersDesc' })"
+        >
+          <span class="kpi-card__metric-value">{{ kpis.members.members }}</span>
+          <span class="kpi-card__metric-label">members</span>
+        </button>
+        <button
+          type="button"
+          class="kpi-link kpi-card__metric"
+          @click="$emit('drill-down', { sortBy: 'projectsDesc' })"
+        >
+          <span class="kpi-card__metric-value">{{ kpis.projects.active }}</span>
+          <span class="kpi-card__metric-label">projects</span>
+        </button>
+      </div>
+    </KpiCard>
     <KpiCard title="Projects" icon-color="#f59e0b">
       <div class="projects-kpi">
         <div class="projects-kpi__hero">
-          <span class="projects-kpi__hero-value">
-            {{ kpis.projects.total }}
-          </span>
-          <span class="projects-kpi__hero-label">projects</span>
+          <button
+            type="button"
+            class="kpi-link"
+            @click="$emit('drill-down', { sortBy: 'projectsDesc' })"
+          >
+            <span class="projects-kpi__hero-value">{{ kpis.projects.total }}</span>
+            <span class="projects-kpi__hero-label">projects</span>
+          </button>
           <span class="projects-kpi__hero-sep">·</span>
-          <span class="projects-kpi__hero-tasks">
+          <button
+            type="button"
+            class="kpi-link projects-kpi__hero-tasks"
+            @click="$emit('drill-down', { sortBy: 'tasksDesc' })"
+          >
             <strong>{{ kpis.tasks.total }}</strong> tasks
-          </span>
+          </button>
         </div>
 
         <div
@@ -57,18 +103,30 @@
         </div>
 
         <div class="projects-kpi__legend">
-          <span class="projects-kpi__legend-item">
+          <button
+            type="button"
+            class="kpi-link projects-kpi__legend-item"
+            @click="$emit('drill-down', { sortBy: 'doneDesc' })"
+          >
             <span class="projects-kpi__dot projects-kpi__dot--done"></span>
             <strong>{{ kpis.tasks.done }}</strong> done
-          </span>
-          <span class="projects-kpi__legend-item">
+          </button>
+          <button
+            type="button"
+            class="kpi-link projects-kpi__legend-item"
+            @click="$emit('drill-down', { sortBy: 'overdueDesc' })"
+          >
             <span class="projects-kpi__dot projects-kpi__dot--overdue"></span>
             <strong>{{ kpis.tasks.overdue }}</strong> overdue
-          </span>
-          <span class="projects-kpi__legend-item">
+          </button>
+          <button
+            type="button"
+            class="kpi-link projects-kpi__legend-item"
+            @click="$emit('drill-down', { sortBy: 'openDesc' })"
+          >
             <span class="projects-kpi__dot projects-kpi__dot--open"></span>
             <strong>{{ openTasks }}</strong> open
-          </span>
+          </button>
         </div>
       </div>
     </KpiCard>
@@ -256,5 +314,46 @@ export default {
   .platform-kpi-strip {
     grid-template-columns: 1fr;
   }
+}
+
+.kpi-link {
+  background: transparent;
+  border: 0;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  cursor: pointer;
+  border-radius: 8px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.kpi-link:hover {
+  background: rgba(74, 144, 217, 0.08);
+}
+
+.kpi-link:focus-visible {
+  outline: 2px solid #4a90d9;
+  outline-offset: 2px;
+}
+
+.kpi-link.kpi-card__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px;
+  margin: 0;
+  border-left: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 0;
+}
+
+.kpi-link.kpi-card__metric:hover {
+  background: rgba(74, 144, 217, 0.08);
+}
+
+.kpi-card__metrics > .kpi-link.kpi-card__metric:first-child {
+  padding-left: 0;
+  border-left: none;
 }
 </style>
