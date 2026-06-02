@@ -571,10 +571,13 @@ export default {
       this.currentPage = 1;
     },
     reloadOrgDetail(orgId) {
-      // Clear the cache so OrgDetailView (gated on detailCache[orgId])
-      // briefly shows the loading state while loadDetail re-fetches. Avoids
-      // the admin perceiving stale data right after a remove/add.
-      this.$delete(this.detailCache, orgId);
+      // Do NOT $delete(detailCache, orgId) here — that flips
+      // OrgDetailView's v-else-if guard to false, unmounting it. The
+      // component's internal activeTab would then reset to "overview" on
+      // remount, kicking the admin out of the Members tab right after they
+      // added/removed someone. loadDetail() overwrites detailCache[orgId]
+      // atomically when the fetch resolves, so the prop just updates in
+      // place and Vue diffs the rendered tree.
       this.loadDetail(orgId);
     },
     readViewMode() {
