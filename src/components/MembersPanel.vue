@@ -421,7 +421,16 @@
 
 <script>
 import axios from "@nextcloud/axios";
-import { generateUrl } from "@nextcloud/router";
+import { generateOcsUrl } from "@nextcloud/router";
+
+// The organization app exposes its member endpoints under
+// /ocs/v2.php/apps/organization/... — OCS protocol, not plain app routes.
+// `@nextcloud/axios` injects requesttoken automatically, but OCS also needs
+// these headers on each call:
+const OCS_HEADERS = {
+  "OCS-APIRequest": "true",
+  Accept: "application/json",
+};
 
 export default {
   name: "MembersPanel",
@@ -584,11 +593,15 @@ export default {
       this.addError = null;
       try {
         const res = await axios.get(
-          generateUrl("/apps/organization/organizations/" + this.orgId + "/available-users"),
-          { params: { search: term } }
+          generateOcsUrl("/apps/organization/organizations/" + this.orgId + "/available-users"),
+          {
+            params: { search: term, format: "json" },
+            headers: OCS_HEADERS,
+          }
         );
         if (token !== this._addSearchToken) return;
-        this.addSearchResults = (res.data && res.data.users) || [];
+        const data = (res.data && res.data.ocs && res.data.ocs.data) || res.data || {};
+        this.addSearchResults = data.users || [];
       } catch (e) {
         if (token !== this._addSearchToken) return;
         const code = (e && e.response && e.response.status) || "network";
@@ -606,9 +619,12 @@ export default {
       this.addError = null;
       try {
         await axios.post(
-          generateUrl("/apps/organization/organizations/" + this.orgId + "/members"),
+          generateOcsUrl("/apps/organization/organizations/" + this.orgId + "/members"),
           null,
-          { params: { userId: uid } }
+          {
+            params: { userId: uid, format: "json" },
+            headers: OCS_HEADERS,
+          }
         );
         this.closeAddMode();
         this.$emit("reload");
@@ -633,9 +649,13 @@ export default {
       this.removeError = null;
       try {
         await axios.delete(
-          generateUrl(
+          generateOcsUrl(
             "/apps/organization/organizations/" + this.orgId + "/members/" + encodeURIComponent(uid)
-          )
+          ),
+          {
+            params: { format: "json" },
+            headers: OCS_HEADERS,
+          }
         );
         this.confirmRemoveUid = null;
         this.$emit("reload");
