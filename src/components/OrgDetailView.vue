@@ -132,7 +132,10 @@
       <MembersPanel
         v-else-if="activeTab === 'members'"
         :members="org.members"
+        :org-id="org.profile.id"
+        :owner-uid="org.profile.adminUid"
         :embedded="true"
+        @reload="$emit('reload')"
       />
 
       <ProjectsPanel
