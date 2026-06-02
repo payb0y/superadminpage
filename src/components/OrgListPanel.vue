@@ -268,6 +268,7 @@
             v-else-if="detailCache[org.id]"
             :org="detailCache[org.id]"
             :embedded="true"
+            @reload="reloadOrgDetail(org.id)"
           />
         </div>
       </div>
@@ -568,6 +569,13 @@ export default {
       if (statusFilter !== undefined) this.statusFilter = statusFilter;
       if (sortBy !== undefined) this.sortBy = sortBy;
       this.currentPage = 1;
+    },
+    reloadOrgDetail(orgId) {
+      // Clear the cache so OrgDetailView (gated on detailCache[orgId])
+      // briefly shows the loading state while loadDetail re-fetches. Avoids
+      // the admin perceiving stale data right after a remove/add.
+      this.$delete(this.detailCache, orgId);
+      this.loadDetail(orgId);
     },
     readViewMode() {
       try {
