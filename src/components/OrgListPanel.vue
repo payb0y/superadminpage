@@ -656,7 +656,15 @@ export default {
       });
     },
     async loadDetail(orgId) {
-      this.$set(this.detailLoading, orgId, true);
+      // Only flip detailLoading on the first load. On reload the cache
+      // already exists, so we fetch silently and let Vue diff the props
+      // in place — flipping detailLoading=true mid-reload would knock
+      // OrgDetailView out of the v-else-if branch, unmount it, and reset
+      // its internal activeTab back to "overview" on remount.
+      const isFirstLoad = !this.detailCache[orgId];
+      if (isFirstLoad) {
+        this.$set(this.detailLoading, orgId, true);
+      }
       this.$set(this.detailError, orgId, null);
       try {
         const res = await axios.get(
@@ -670,7 +678,9 @@ export default {
           (e && e.message) || "Failed to load organization",
         );
       } finally {
-        this.$set(this.detailLoading, orgId, false);
+        if (isFirstLoad) {
+          this.$set(this.detailLoading, orgId, false);
+        }
       }
     },
   },
