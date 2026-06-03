@@ -321,8 +321,8 @@
                   <svg
                     v-if="newUserShowPassword"
                     xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
+                    width="20"
+                    height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -339,8 +339,8 @@
                   <svg
                     v-else
                     xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
+                    width="20"
+                    height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -1946,8 +1946,8 @@ export default {
   border-radius: 8px;
   color: var(--color-text-secondary, #6b7280);
   cursor: pointer;
-  font-size: 14px;
-  width: 32px;
+  font-size: 16px;
+  width: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
