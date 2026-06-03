@@ -46,6 +46,11 @@
     </div>
 
     <div v-show="embedded || !collapsed" class="members-panel__body">
+      <div v-if="toast" class="members-panel__toast">
+        <span aria-hidden="true">✓</span>
+        <span>{{ toast.message }}</span>
+      </div>
+
       <!-- Filters -->
       <div class="members-panel__filters">
         <input
@@ -104,58 +109,268 @@
             aria-label="Close add form"
           >×</button>
         </div>
-        <input
-          type="search"
-          class="members-panel__add-form-input"
-          :value="addSearchTerm"
-          @input="onAddSearchInput($event)"
-          placeholder="Search by name, email, or UID (min 2 characters)…"
-        />
-        <div v-if="addError" class="members-panel__add-form-error">
-          {{ addError }}
-        </div>
-        <div v-if="addSearchLoading" class="members-panel__add-form-state">
-          Searching…
-        </div>
-        <div
-          v-else-if="addSearchTerm.trim().length >= 2 && addSearchResults.length === 0"
-          class="members-panel__add-form-state"
-        >
-          No users match.
-        </div>
-        <ul
-          v-else-if="addSearchResults.length > 0"
-          class="members-panel__add-form-results"
-        >
-          <li
-            v-for="u in addSearchResults"
-            :key="'avail-' + u.uid"
-            class="members-panel__add-form-result"
-          >
-            <div class="members-panel__add-form-result-info">
-              <span class="members-panel__add-form-result-name">
-                {{ u.displayName || u.uid }}
-              </span>
-              <span class="members-panel__add-form-result-meta">
-                <template v-if="u.email">{{ u.email }} · </template>uid: {{ u.uid }}
-              </span>
-            </div>
+
+        <!-- Credentials reveal card (auto-generated success) -->
+        <div v-if="createdUser" class="members-panel__reveal">
+          <div class="members-panel__reveal-heading">
+            <span class="members-panel__reveal-check" aria-hidden="true">✓</span>
+            User created and added
+          </div>
+          <div class="members-panel__reveal-row">
+            <span class="members-panel__reveal-label">UID</span>
+            <span class="members-panel__reveal-value">{{ createdUser.uid }}</span>
             <button
               type="button"
-              class="members-panel__add-form-add-btn"
-              :disabled="addingUid !== null"
-              :aria-label="'Add ' + (u.displayName || u.uid)"
-              @click="addMember(u.uid)"
+              class="members-panel__reveal-btn"
+              @click="copyToClipboard(createdUser.uid, 'uid')"
+            >{{ copyFlags.uid ? "Copied!" : "Copy" }}</button>
+          </div>
+          <div class="members-panel__reveal-row">
+            <span class="members-panel__reveal-label">Password</span>
+            <span class="members-panel__reveal-value">
+              <template v-if="revealCreatedPassword">{{ createdUser.password }}</template>
+              <template v-else>{{ "•".repeat(createdUser.password.length) }}</template>
+            </span>
+            <button
+              type="button"
+              class="members-panel__reveal-btn"
+              @click="revealCreatedPassword = !revealCreatedPassword"
+            >{{ revealCreatedPassword ? "Hide" : "Show" }}</button>
+            <button
+              type="button"
+              class="members-panel__reveal-btn"
+              @click="copyToClipboard(createdUser.password, 'password')"
+            >{{ copyFlags.password ? "Copied!" : "Copy" }}</button>
+          </div>
+          <div class="members-panel__reveal-row members-panel__reveal-row--full">
+            <button
+              type="button"
+              class="members-panel__reveal-btn members-panel__reveal-btn--wide"
+              @click="copyToClipboard(createdUser.uid + ' / ' + createdUser.password, 'both')"
+            >{{ copyFlags.both ? "Copied!" : "Copy both" }}</button>
+          </div>
+          <p class="members-panel__reveal-warning">
+            Share these credentials with the user now — the password won't be visible again.
+          </p>
+          <div class="members-panel__reveal-actions">
+            <button
+              type="button"
+              class="members-panel__btn members-panel__btn--primary"
+              @click="confirmCreatedUser"
+            >Done</button>
+          </div>
+        </div>
+
+        <!-- Tabbed add UI (hidden while reveal card is showing) -->
+        <template v-else>
+          <div class="members-panel__add-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              class="members-panel__add-tab"
+              :class="{ 'members-panel__add-tab--active': addTab === 'existing' }"
+              :aria-selected="addTab === 'existing'"
+              @click="addTab = 'existing'"
+            >Existing user</button>
+            <button
+              type="button"
+              role="tab"
+              class="members-panel__add-tab"
+              :class="{ 'members-panel__add-tab--active': addTab === 'new' }"
+              :aria-selected="addTab === 'new'"
+              @click="addTab = 'new'"
+            >New user</button>
+          </div>
+
+          <!-- Existing user tab -->
+          <div v-if="addTab === 'existing'">
+            <input
+              type="search"
+              class="members-panel__add-form-input"
+              :value="addSearchTerm"
+              @input="onAddSearchInput($event)"
+              placeholder="Search by name, email, or UID (min 2 characters)…"
+            />
+            <div v-if="addError" class="members-panel__add-form-error">
+              {{ addError }}
+            </div>
+            <div v-if="addSearchLoading" class="members-panel__add-form-state">
+              Searching…
+            </div>
+            <div
+              v-else-if="addSearchTerm.trim().length >= 2 && addSearchResults.length === 0"
+              class="members-panel__add-form-state"
             >
-              <span
-                v-if="addingUid === u.uid"
-                class="members-panel__spinner"
-                aria-hidden="true"
-              ></span>
-              <span v-else aria-hidden="true">+</span>
-            </button>
-          </li>
-        </ul>
+              No users match.
+            </div>
+            <ul
+              v-else-if="addSearchResults.length > 0"
+              class="members-panel__add-form-results"
+            >
+              <li
+                v-for="u in addSearchResults"
+                :key="'avail-' + u.uid"
+                class="members-panel__add-form-result"
+              >
+                <div class="members-panel__add-form-result-info">
+                  <span class="members-panel__add-form-result-name">
+                    {{ u.displayName || u.uid }}
+                  </span>
+                  <span class="members-panel__add-form-result-meta">
+                    <template v-if="u.email">{{ u.email }} · </template>uid: {{ u.uid }}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="members-panel__add-form-add-btn"
+                  :disabled="addingUid !== null"
+                  :aria-label="'Add ' + (u.displayName || u.uid)"
+                  @click="addMember(u.uid)"
+                >
+                  <span
+                    v-if="addingUid === u.uid"
+                    class="members-panel__spinner"
+                    aria-hidden="true"
+                  ></span>
+                  <span v-else aria-hidden="true">+</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- New user tab -->
+          <div v-else-if="addTab === 'new'">
+            <div class="members-panel__field">
+              <label class="members-panel__field-label" for="newuser-uid">
+                UID <span class="members-panel__field-required">*</span>
+              </label>
+              <input
+                id="newuser-uid"
+                type="text"
+                class="members-panel__add-form-input"
+                v-model="newUser.uid"
+                autocomplete="off"
+                spellcheck="false"
+                :disabled="newUserSubmitting"
+                @blur="markBlurred('uid')"
+              />
+              <div
+                v-if="newUserBlurred.uid && newUserFieldErrors.uid"
+                class="members-panel__field-error"
+              >{{ newUserFieldErrors.uid }}</div>
+            </div>
+
+            <div class="members-panel__field">
+              <label class="members-panel__field-label" for="newuser-display">
+                Display name <span class="members-panel__field-required">*</span>
+              </label>
+              <input
+                id="newuser-display"
+                type="text"
+                class="members-panel__add-form-input"
+                v-model="newUser.displayName"
+                :disabled="newUserSubmitting"
+                @blur="markBlurred('displayName')"
+              />
+              <div
+                v-if="newUserBlurred.displayName && newUserFieldErrors.displayName"
+                class="members-panel__field-error"
+              >{{ newUserFieldErrors.displayName }}</div>
+            </div>
+
+            <div class="members-panel__field">
+              <label class="members-panel__field-label" for="newuser-email">Email</label>
+              <input
+                id="newuser-email"
+                type="email"
+                class="members-panel__add-form-input"
+                v-model="newUser.email"
+                autocomplete="off"
+                :disabled="newUserSubmitting"
+                @blur="markBlurred('email')"
+              />
+              <div
+                v-if="newUserBlurred.email && newUserFieldErrors.email"
+                class="members-panel__field-error"
+              >{{ newUserFieldErrors.email }}</div>
+            </div>
+
+            <div class="members-panel__field">
+              <label class="members-panel__field-label" for="newuser-password">
+                Password <span class="members-panel__field-required">*</span>
+              </label>
+              <div class="members-panel__password-row">
+                <input
+                  id="newuser-password"
+                  :type="newUserShowPassword ? 'text' : 'password'"
+                  class="members-panel__add-form-input members-panel__password-input"
+                  v-model="newUser.password"
+                  :readonly="newUser.autoGenerate"
+                  :disabled="newUserSubmitting"
+                  autocomplete="new-password"
+                  @blur="markBlurred('password')"
+                />
+                <button
+                  type="button"
+                  class="members-panel__icon-btn"
+                  :aria-label="newUserShowPassword ? 'Hide password' : 'Show password'"
+                  :title="newUserShowPassword ? 'Hide password' : 'Show password'"
+                  :disabled="newUserSubmitting"
+                  @click="newUserShowPassword = !newUserShowPassword"
+                >{{ newUserShowPassword ? "🙈" : "👁" }}</button>
+                <button
+                  v-if="newUser.autoGenerate"
+                  type="button"
+                  class="members-panel__icon-btn"
+                  aria-label="Regenerate password"
+                  title="Regenerate password"
+                  :disabled="newUserSubmitting"
+                  @click="newUser.password = generatePassword()"
+                >↻</button>
+              </div>
+              <label class="members-panel__autogen">
+                <input
+                  type="checkbox"
+                  v-model="newUser.autoGenerate"
+                  :disabled="newUserSubmitting"
+                  @change="onAutoGenerateChange"
+                />
+                Auto-generate
+              </label>
+              <div
+                v-if="newUserBlurred.password && newUserFieldErrors.password"
+                class="members-panel__field-error"
+              >{{ newUserFieldErrors.password }}</div>
+            </div>
+
+            <div
+              v-if="newUserError"
+              class="members-panel__add-form-error"
+            >{{ newUserError }}</div>
+
+            <div class="members-panel__form-actions">
+              <button
+                type="button"
+                class="members-panel__btn members-panel__btn--ghost"
+                :disabled="newUserSubmitting"
+                @click="closeAddMode"
+              >Cancel</button>
+              <button
+                type="button"
+                class="members-panel__btn members-panel__btn--primary"
+                :disabled="newUserSubmitting || !newUserFormValid"
+                @click="submitNewUser"
+              >
+                <span
+                  v-if="newUserSubmitting"
+                  class="members-panel__spinner members-panel__spinner--inline"
+                  aria-hidden="true"
+                ></span>
+                Create &amp; add member
+              </button>
+            </div>
+          </div>
+        </template>
       </div>
 
       <div v-if="filteredMembers.length === 0" class="members-panel__empty">
@@ -464,6 +679,7 @@ export default {
       currentPage: 1,
       pageSize: 5,
       addMode: false,
+      addTab: "existing",
       addSearchTerm: "",
       addSearchResults: [],
       addSearchLoading: false,
@@ -472,14 +688,36 @@ export default {
       confirmRemoveUid: null,
       removingUid: null,
       removeError: null,
+      newUser: {
+        uid: "",
+        displayName: "",
+        email: "",
+        password: "",
+        autoGenerate: true,
+      },
+      newUserFieldErrors: {},
+      newUserBlurred: {},
+      newUserSubmitting: false,
+      newUserError: null,
+      newUserShowPassword: false,
+      createdUser: null,
+      revealCreatedPassword: false,
+      copyFlags: {},
+      toast: null,
     };
   },
   created: function () {
     this._addSearchDebounce = null;
     this._addSearchToken = 0;
+    this._toastTimer = null;
+    this._copyTimers = {};
   },
   beforeDestroy: function () {
     if (this._addSearchDebounce) clearTimeout(this._addSearchDebounce);
+    if (this._toastTimer) clearTimeout(this._toastTimer);
+    Object.keys(this._copyTimers || {}).forEach((k) => {
+      clearTimeout(this._copyTimers[k]);
+    });
   },
   computed: {
     filteredMembers: function () {
@@ -517,6 +755,21 @@ export default {
       var start = (this.currentPage - 1) * this.pageSize;
       return this.filteredMembers.slice(start, start + this.pageSize);
     },
+    newUserFormValid: function () {
+      // Reactive validity check used to drive the submit-button disabled
+      // state. Mirrors validateNewUser() but without side effects so it can
+      // run on every keystroke.
+      var nu = this.newUser;
+      if (!nu.uid.trim()) return false;
+      if (!/^[A-Za-z0-9._@-]+$/.test(nu.uid.trim())) return false;
+      if (!nu.displayName.trim()) return false;
+      if (nu.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nu.email.trim())) {
+        return false;
+      }
+      if (!nu.autoGenerate && nu.password.length < 10) return false;
+      if (!nu.password) return false;
+      return true;
+    },
   },
   watch: {
     search: function () {
@@ -525,6 +778,13 @@ export default {
     filteredMembers: function () {
       if (this.currentPage > this.totalPages) {
         this.currentPage = this.totalPages;
+      }
+    },
+    addTab: function (val) {
+      // First time the New-user tab is opened (or after a successful submit
+      // reset cleared the password), seed a fresh auto-generated value.
+      if (val === "new" && this.newUser.autoGenerate && !this.newUser.password) {
+        this.newUser.password = this.generatePassword();
       }
     },
   },
@@ -574,6 +834,10 @@ export default {
       this.addSearchLoading = false;
       this.addError = null;
       this.addingUid = null;
+      this.addTab = "existing";
+      this.createdUser = null;
+      this.revealCreatedPassword = false;
+      this.resetNewUserForm();
     },
     onAddSearchInput: function (ev) {
       this.addSearchTerm = ev.target.value;
@@ -665,6 +929,171 @@ export default {
       } finally {
         this.removingUid = null;
       }
+    },
+    generatePassword: function () {
+      // 20 chars from a safe alphabet, sourced from window.crypto so values
+      // are unpredictable. crypto.getRandomValues is available in every
+      // browser this dashboard targets (Nextcloud requires it).
+      var alphabet =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*-_=+";
+      var len = 20;
+      var out = "";
+      var arr = new Uint32Array(len);
+      window.crypto.getRandomValues(arr);
+      for (var i = 0; i < len; i++) {
+        out += alphabet.charAt(arr[i] % alphabet.length);
+      }
+      return out;
+    },
+    onAutoGenerateChange: function () {
+      // false → true: regenerate fresh.
+      // true → false: keep current value as an editable starting point.
+      if (this.newUser.autoGenerate) {
+        this.newUser.password = this.generatePassword();
+      }
+    },
+    markBlurred: function (field) {
+      this.$set(this.newUserBlurred, field, true);
+      this.validateNewUser();
+    },
+    validateNewUser: function () {
+      var errs = {};
+      var nu = this.newUser;
+      var uid = nu.uid.trim();
+      if (!uid) {
+        errs.uid = "Required";
+      } else if (!/^[A-Za-z0-9._@-]+$/.test(uid)) {
+        errs.uid = "Use letters, digits, or . _ @ - (no spaces).";
+      }
+      if (!nu.displayName.trim()) {
+        errs.displayName = "Required";
+      }
+      var email = nu.email.trim();
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errs.email = "Invalid email address.";
+      }
+      if (!nu.autoGenerate) {
+        if (!nu.password) {
+          errs.password = "Required";
+        } else if (nu.password.length < 10) {
+          errs.password = "At least 10 characters.";
+        }
+      }
+      this.newUserFieldErrors = errs;
+      return Object.keys(errs).length === 0;
+    },
+    submitNewUser: async function () {
+      // Force-blur every field so any pending validation errors render.
+      this.newUserBlurred = {
+        uid: true,
+        displayName: true,
+        email: true,
+        password: true,
+      };
+      if (!this.validateNewUser()) return;
+      if (this.newUserSubmitting) return;
+
+      var nu = this.newUser;
+      var params = {
+        userId: nu.uid.trim(),
+        password: nu.password,
+        format: "json",
+      };
+      if (nu.displayName.trim()) params.displayName = nu.displayName.trim();
+      if (nu.email.trim()) params.email = nu.email.trim();
+
+      this.newUserSubmitting = true;
+      this.newUserError = null;
+      try {
+        await axios.post(
+          generateOcsUrl(
+            "/apps/organization/organizations/" + this.orgId + "/users"
+          ),
+          null,
+          { params: params, headers: OCS_HEADERS }
+        );
+        // Success branches on whether the password was auto-generated.
+        if (nu.autoGenerate) {
+          this.createdUser = { uid: params.userId, password: nu.password };
+          this.revealCreatedPassword = false;
+          // Members list is refreshed; the user will click Done to close.
+          this.$emit("reload");
+        } else {
+          var msg = "User " + params.userId + " created and added";
+          this.closeAddMode();
+          this.showToast(msg);
+          this.$emit("reload");
+        }
+      } catch (e) {
+        this.newUserError = this.extractServerError(
+          e,
+          "Couldn't create user. Please try again."
+        );
+      } finally {
+        this.newUserSubmitting = false;
+      }
+    },
+    extractServerError: function (err, fallback) {
+      if (!err) return fallback;
+      if (!err.response) return "Couldn't reach the server. Try again.";
+      var ocsMsg =
+        err.response.data &&
+        err.response.data.ocs &&
+        err.response.data.ocs.meta &&
+        err.response.data.ocs.meta.message;
+      if (ocsMsg) return ocsMsg;
+      return fallback + " (HTTP " + err.response.status + ")";
+    },
+    confirmCreatedUser: function () {
+      var uid = this.createdUser ? this.createdUser.uid : null;
+      this.closeAddMode();
+      if (uid) this.showToast("User " + uid + " created and added");
+    },
+    resetNewUserForm: function () {
+      this.newUser = {
+        uid: "",
+        displayName: "",
+        email: "",
+        password: "",
+        autoGenerate: true,
+      };
+      this.newUserFieldErrors = {};
+      this.newUserBlurred = {};
+      this.newUserError = null;
+      this.newUserShowPassword = false;
+      this.copyFlags = {};
+    },
+    copyToClipboard: function (text, key) {
+      var setFlag = (val) => {
+        this.$set(this.copyFlags, key, val);
+      };
+      var schedule = () => {
+        if (this._copyTimers[key]) clearTimeout(this._copyTimers[key]);
+        this._copyTimers[key] = setTimeout(() => {
+          setFlag(false);
+        }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            setFlag(true);
+            schedule();
+          })
+          .catch(() => {
+            // Fallback: leave the value visible so the admin can copy manually.
+            setFlag(false);
+          });
+      } else {
+        setFlag(false);
+      }
+    },
+    showToast: function (message) {
+      if (this._toastTimer) clearTimeout(this._toastTimer);
+      this.toast = { message: message };
+      this._toastTimer = setTimeout(() => {
+        this.toast = null;
+      }, 3000);
     },
   },
 };
@@ -1394,5 +1823,283 @@ export default {
   .members-panel__right {
     flex-wrap: wrap;
   }
+}
+
+/* ── Toast ──────────────────────────────────────────────────────────── */
+.members-panel__toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ecfdf3;
+  border: 1px solid #abefc6;
+  color: #067647;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* ── Add-form tabs ──────────────────────────────────────────────────── */
+.members-panel__add-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #eaecf0;
+}
+
+.members-panel__add-tab {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-muted, #9ca3af);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.members-panel__add-tab:hover {
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.members-panel__add-tab--active {
+  color: #4a90d9;
+  border-bottom-color: #4a90d9;
+}
+
+/* ── New-user form fields ───────────────────────────────────────────── */
+.members-panel__field {
+  margin-bottom: 10px;
+}
+
+.members-panel__field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #6b7280);
+  margin-bottom: 4px;
+}
+
+.members-panel__field-required {
+  color: #b42318;
+}
+
+.members-panel__field-error {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #b42318;
+}
+
+.members-panel__password-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.members-panel__password-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.members-panel__icon-btn {
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  color: var(--color-text-secondary, #6b7280);
+  cursor: pointer;
+  font-size: 14px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.members-panel__icon-btn:hover:not(:disabled) {
+  background: #f0f1f5;
+  color: var(--color-text-primary, #1a1a2e);
+  border-color: #b6bcc8;
+}
+
+.members-panel__icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.members-panel__autogen {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+  margin-top: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.members-panel__autogen input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.members-panel__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.members-panel__btn {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.members-panel__btn--ghost {
+  background: transparent;
+  color: var(--color-text-secondary, #6b7280);
+  border-color: #d0d5dd;
+}
+
+.members-panel__btn--ghost:hover:not(:disabled) {
+  background: #f0f1f5;
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.members-panel__btn--primary {
+  background: #4a90d9;
+  color: #fff;
+  border-color: #4a90d9;
+}
+
+.members-panel__btn--primary:hover:not(:disabled) {
+  background: #3a7bc3;
+  border-color: #3a7bc3;
+}
+
+.members-panel__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.members-panel__spinner--inline {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+}
+
+/* ── Credentials reveal card ────────────────────────────────────────── */
+.members-panel__reveal {
+  background: #fff;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.members-panel__reveal-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #067647;
+  margin-bottom: 12px;
+}
+
+.members-panel__reveal-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #d1fadf;
+  color: #067647;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.members-panel__reveal-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 13px;
+}
+
+.members-panel__reveal-row:last-of-type {
+  border-bottom: none;
+}
+
+.members-panel__reveal-row--full {
+  justify-content: flex-end;
+  border-bottom: none;
+  padding-top: 8px;
+}
+
+.members-panel__reveal-label {
+  font-weight: 600;
+  color: var(--color-text-secondary, #6b7280);
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.members-panel__reveal-value {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-text-primary, #1a1a2e);
+  word-break: break-all;
+}
+
+.members-panel__reveal-btn {
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  color: var(--color-text-secondary, #6b7280);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.members-panel__reveal-btn:hover {
+  background: #f0f1f5;
+  color: var(--color-text-primary, #1a1a2e);
+  border-color: #b6bcc8;
+}
+
+.members-panel__reveal-btn--wide {
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
+.members-panel__reveal-warning {
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: #b54708;
+  background: #fef0c7;
+  border: 1px solid #fec84b;
+  border-radius: 6px;
+  padding: 6px 10px;
+  line-height: 1.4;
+}
+
+.members-panel__reveal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 </style>
