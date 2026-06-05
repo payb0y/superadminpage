@@ -212,22 +212,9 @@
               v-if="addPanelByProject[project.id] && addPanelByProject[project.id].open"
               class="projects-panel__add-form"
             >
-              <select
-                v-model="addPanelByProject[project.id].drasciRole"
-                class="projects-panel__add-form-input projects-panel__add-form-select"
-                aria-label="DRASCI role for new member"
-              >
-                <option value="">Choose a DRASCI role…</option>
-                <option value="driver">Driver</option>
-                <option value="responsible">Responsible</option>
-                <option value="accountable">Accountable</option>
-                <option value="supportive">Supportive</option>
-                <option value="consulted">Consulted</option>
-                <option value="informed">Informed</option>
-              </select>
               <input
                 type="search"
-                class="projects-panel__add-form-input projects-panel__add-form-input--spaced"
+                class="projects-panel__add-form-input"
                 v-model="addPanelByProject[project.id].search"
                 placeholder="Search org members…"
               />
@@ -252,11 +239,25 @@
                       <template v-if="u.email">{{ u.email }} · </template>uid: {{ u.userId }}
                     </span>
                   </div>
+                  <select
+                    :value="rowRoleFor(project.id, u.userId)"
+                    @change="setRowRole(project.id, u.userId, $event.target.value)"
+                    class="projects-panel__add-form-role"
+                    :aria-label="'DRASCI role for ' + (u.displayName || u.userId)"
+                  >
+                    <option value="">DRASCI role…</option>
+                    <option value="driver">Driver</option>
+                    <option value="responsible">Responsible</option>
+                    <option value="accountable">Accountable</option>
+                    <option value="supportive">Supportive</option>
+                    <option value="consulted">Consulted</option>
+                    <option value="informed">Informed</option>
+                  </select>
                   <button
                     type="button"
                     class="projects-panel__add-form-add-btn"
-                    :disabled="addPanelByProject[project.id].addingUid !== null || !addPanelByProject[project.id].drasciRole"
-                    :title="addPanelByProject[project.id].drasciRole ? '' : 'Choose a DRASCI role first'"
+                    :disabled="addPanelByProject[project.id].addingUid !== null || !rowRoleFor(project.id, u.userId)"
+                    :title="rowRoleFor(project.id, u.userId) ? '' : 'Choose a DRASCI role first'"
                     :aria-label="'Add ' + (u.displayName || u.userId)"
                     @click="addProjectMember(project.id, u.userId)"
                   >
@@ -304,6 +305,13 @@
                     class="projects-panel__member-email projects-panel__member-email--muted"
                   >No email</span>
                 </div>
+                <span
+                  v-if="drasciLabelFor(project.id, m.userId)"
+                  class="projects-panel__member-drasci"
+                  :class="'projects-panel__member-drasci--' + (drasciRoleFor(project.id, m.userId) || 'unassigned')"
+                >
+                  {{ drasciLabelFor(project.id, m.userId) }}
+                </span>
                 <span
                   class="projects-panel__member-role"
                   :class="m.isOwner
@@ -374,8 +382,13 @@ export default {
       tasksLoadingByProject: {},
       tasksErrorByProject: {},
       // Per-project state for the inline "+ Add member" panel.
-      // Shape: { [projectId]: { open, search, addingUid, error } }
+      // Shape: { [projectId]: { open, search, rowRoles, addingUid, error } }
       addPanelByProject: {},
+      // DRASCI role labels per project member, fetched on project expand.
+      // Our own backend's payload doesn't include drasciRole, so we ask
+      // the projectcreatoraio API directly. Shape:
+      // { [projectId]: { [userId]: { role, label } } }
+      memberRolesByProject: {},
     };
   },
   computed: {
@@ -461,6 +474,9 @@ export default {
         ) {
           this.loadTasks(id);
         }
+        if (!this.memberRolesByProject[id]) {
+          this.loadProjectMemberRoles(id);
+        }
       } else {
         this.expandedIds.splice(i, 1);
       }
@@ -489,6 +505,52 @@ export default {
         this.$set(this.tasksLoadingByProject, projectId, false);
       }
     },
+    async loadProjectMemberRoles(projectId) {
+      try {
+        const res = await axios.get(
+          generateUrl(
+            "/apps/projectcreatoraio/api/v1/projects/" + projectId + "/members",
+          ),
+          {
+            headers: {
+              "OCS-APIRequest": "true",
+              Accept: "application/json",
+            },
+          },
+        );
+        const members = (res.data && res.data.members) || [];
+        const map = {};
+        for (let i = 0; i < members.length; i++) {
+          const m = members[i];
+          // The projectcreatoraio API returns `id` for the user identifier;
+          // our own backend uses `userId`. Index by both so lookups work
+          // regardless of which side we have in hand.
+          const uid = m.id || m.userId;
+          if (!uid) continue;
+          map[uid] = {
+            role: m.drasciRole || null,
+            label: m.drasciRoleLabel || "Unassigned",
+          };
+        }
+        this.$set(this.memberRolesByProject, projectId, map);
+      } catch (e) {
+        // Silent: badge falls back to "Unassigned" until next reload.
+        // Don't block the rest of the row from rendering.
+      }
+    },
+    drasciLabelFor(projectId, userId) {
+      const roles = this.memberRolesByProject[projectId];
+      if (!roles) return null;
+      const entry = roles[userId];
+      if (!entry) return null;
+      return entry.label || "Unassigned";
+    },
+    drasciRoleFor(projectId, userId) {
+      const roles = this.memberRolesByProject[projectId];
+      if (!roles) return null;
+      const entry = roles[userId];
+      return entry ? entry.role : null;
+    },
     getAddPanelState(projectId) {
       // Lazily create the entry so Vue's reactivity tracks subsequent
       // mutations (via $set on first access).
@@ -496,12 +558,20 @@ export default {
         this.$set(this.addPanelByProject, projectId, {
           open: false,
           search: "",
-          drasciRole: "",
+          rowRoles: {},
           addingUid: null,
           error: null,
         });
       }
       return this.addPanelByProject[projectId];
+    },
+    setRowRole(projectId, uid, role) {
+      const s = this.getAddPanelState(projectId);
+      this.$set(s.rowRoles, uid, role);
+    },
+    rowRoleFor(projectId, uid) {
+      const s = this.addPanelByProject[projectId];
+      return (s && s.rowRoles && s.rowRoles[uid]) || "";
     },
     toggleProjectAddPanel(projectId) {
       const s = this.getAddPanelState(projectId);
@@ -510,7 +580,7 @@ export default {
       } else {
         s.open = true;
         s.search = "";
-        s.drasciRole = "";
+        s.rowRoles = {};
         s.error = null;
       }
     },
@@ -518,7 +588,7 @@ export default {
       const s = this.getAddPanelState(projectId);
       s.open = false;
       s.search = "";
-      s.drasciRole = "";
+      s.rowRoles = {};
       s.error = null;
     },
     availableMembersForProject(project) {
@@ -556,7 +626,8 @@ export default {
     async addProjectMember(projectId, uid) {
       const s = this.getAddPanelState(projectId);
       if (s.addingUid !== null) return;
-      if (!s.drasciRole) {
+      const role = (s.rowRoles && s.rowRoles[uid]) || "";
+      if (!role) {
         // Should be unreachable — the [+] button is disabled when no role
         // is picked — but guard anyway so we never send an empty role.
         s.error = "Choose a DRASCI role before adding.";
@@ -571,7 +642,7 @@ export default {
           generateUrl(
             "/apps/projectcreatoraio/api/v1/projects/" + projectId + "/members",
           ),
-          { userId: uid, drasciRole: s.drasciRole },
+          { userId: uid, drasciRole: role },
           {
             headers: {
               "OCS-APIRequest": "true",
@@ -583,6 +654,10 @@ export default {
         // 201 (added) and 200 (alreadyMember) both end up here. Close and
         // reload; the new row will appear via the standard refresh chain.
         this.closeProjectAddPanel(projectId);
+        // Refetch DRASCI role labels so the new member's badge shows even
+        // before the full org reload completes. Fire-and-forget — failure
+        // just leaves the badge as "Unassigned" until the reload lands.
+        this.loadProjectMemberRoles(projectId);
         this.$emit("reload");
       } catch (e) {
         s.error = this.projectAddError(e);
@@ -1129,6 +1204,56 @@ export default {
   background: rgba(74, 144, 217, 0.12);
   color: #4a90d9;
 }
+.projects-panel__member-drasci {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+/* DRASCI role color palette — distinct hues for quick scanning */
+.projects-panel__member-drasci--driver {
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+}
+
+.projects-panel__member-drasci--responsible {
+  background: rgba(74, 144, 217, 0.14);
+  color: #1d4ed8;
+}
+
+.projects-panel__member-drasci--accountable {
+  background: rgba(220, 38, 38, 0.12);
+  color: #b91c1c;
+}
+
+.projects-panel__member-drasci--supportive {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+}
+
+.projects-panel__member-drasci--consulted {
+  background: rgba(139, 92, 246, 0.14);
+  color: #6d28d9;
+}
+
+.projects-panel__member-drasci--informed {
+  background: #eef2f7;
+  color: #4b5563;
+}
+
+.projects-panel__member-drasci--unassigned {
+  background: #f3f4f6;
+  color: #9ca3af;
+  font-style: italic;
+}
+
 .projects-panel__member-role--member {
   background: #eef2f7;
   color: #6b7280;
@@ -1190,14 +1315,21 @@ export default {
   border-color: #4a90d9;
 }
 
-.projects-panel__add-form-input--spaced {
-  margin-top: 8px;
+.projects-panel__add-form-role {
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-text-primary, #1a1a2e);
+  font-size: 12px;
+  padding: 5px 8px;
+  cursor: pointer;
+  max-width: 140px;
+  flex-shrink: 0;
 }
 
-.projects-panel__add-form-select {
-  appearance: auto;
-  cursor: pointer;
-  font-weight: 500;
+.projects-panel__add-form-role:focus {
+  outline: none;
+  border-color: #4a90d9;
 }
 
 .projects-panel__add-form-error {
