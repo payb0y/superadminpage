@@ -1,0 +1,133 @@
+[
+  {
+    "name": "List Project Members",
+    "method": "GET",
+    "url": "/apps/projectcreatoraio/api/v1/projects/{projectId}/members",
+    "auth": "Required (Nextcloud user session, OCS-APIRequest header)",
+    "description": "Returns all members of a project, sorted with owner first then alphabetically by displayName.",
+    "controller": "ProjectApiController::listMembers (line 133)",
+    "handler": "ProjectService::getProjectMembers (line 341)",
+    "request": {
+      "path_params": {
+        "projectId": { "type": "integer", "required": true, "description": "Project ID" }
+      }
+    },
+    "response": {
+      "200": {
+        "type": "object",
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "description": "Nextcloud user ID" },
+                "displayName": { "type": "string" },
+                "email": { "type": "string" },
+                "isOwner": { "type": "boolean" },
+                "drasciRole": { "type": ["string", "null"], "description": "One of: driver, responsible, accountable, supportive, consulted, informed" },
+                "drasciRoleLabel": { "type": "string", "description": "Human-readable role label, e.g. 'Driver', 'Unassigned'" }
+              }
+            }
+          }
+        }
+      },
+      "404": { "description": "Project not found" }
+    }
+  },
+  {
+    "name": "Add Project Member",
+    "method": "POST",
+    "url": "/apps/projectcreatoraio/api/v1/projects/{projectId}/members",
+    "auth": "Required (Nextcloud user session, OCS-APIRequest header, NoCSRFRequired, NoAdminRequired)",
+    "description": "Adds an organization member to the project group, provisions a private folder, and optionally adds to Talk conversation. The user must belong to the same organization as the project.",
+    "controller": "ProjectApiController::addMember (line 151)",
+    "handler": "ProjectService::addMemberToProject (line 392)",
+    "request": {
+      "path_params": {
+        "projectId": { "type": "integer", "required": true, "description": "Project ID" }
+      },
+      "body": {
+        "type": "object",
+        "required": ["userId", "drasciRole"],
+        "properties": {
+          "userId": { "type": "string", "description": "Nextcloud user ID to add" },
+          "drasciRole": { "type": "string", "enum": ["driver", "responsible", "accountable", "supportive", "consulted", "informed"], "description": "DRASCI role to assign" }
+        }
+      }
+    },
+    "response": {
+      "201": {
+        "description": "Member was newly added",
+        "type": "object",
+        "properties": {
+          "added": { "type": "boolean", "const": true },
+          "alreadyMember": { "type": "boolean", "const": false },
+          "member": { "$ref": "#/definitions/member" }
+        }
+      },
+      "200": {
+        "description": "User was already a member",
+        "type": "object",
+        "properties": {
+          "added": { "type": "boolean", "const": false },
+          "alreadyMember": { "type": "boolean", "const": true },
+          "member": { "$ref": "#/definitions/member" }
+        }
+      },
+      "400": { "description": "Missing userId or invalid drasciRole" },
+      "403": { "description": "User does not belong to this organization" },
+      "404": { "description": "Project not found, user not found, or group not found" },
+      "500": { "description": "Project member group not configured" }
+    }
+  },
+  {
+    "name": "Update Member DRASCI Role",
+    "method": "PUT",
+    "url": "/apps/projectcreatoraio/api/v1/projects/{projectId}/members/{userId}/role",
+    "auth": "Required (Nextcloud user session, OCS-APIRequest header, NoCSRFRequired, NoAdminRequired)",
+    "description": "Updates the DRASCI role for an existing project member. The user must be a member of the project's group (or the project owner) and belong to the same organization.",
+    "controller": "ProjectApiController::updateMemberRole (line 177)",
+    "handler": "ProjectService::updateProjectMemberDrasciRole (line 487)",
+    "request": {
+      "path_params": {
+        "projectId": { "type": "integer", "required": true, "description": "Project ID" },
+        "userId": { "type": "string", "required": true, "description": "Nextcloud user ID" }
+      },
+      "body": {
+        "type": "object",
+        "required": ["drasciRole"],
+        "properties": {
+          "drasciRole": { "type": "string", "enum": ["driver", "responsible", "accountable", "supportive", "consulted", "informed"], "description": "New DRASCI role" }
+        }
+      }
+    },
+    "response": {
+      "200": {
+        "type": "object",
+        "properties": {
+          "member": { "$ref": "#/definitions/member" }
+        }
+      },
+      "400": { "description": "Invalid or missing drasciRole" },
+      "403": { "description": "User does not belong to this organization" },
+      "404": { "description": "Project not found, user not a member, or user does not exist" }
+    }
+  }
+]
+Definitions:
+{
+  "definitions": {
+    "member": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "isOwner": { "type": "boolean" },
+        "drasciRole": { "type": ["string", "null"], "enum": [null, "driver", "responsible", "accountable", "supportive", "consulted", "informed"] },
+        "drasciRoleLabel": { "type": "string" }
+      }
+    }
+  }
+}

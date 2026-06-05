@@ -141,6 +141,8 @@
       <ProjectsPanel
         v-else-if="activeTab === 'projects'"
         :projects="org.projects"
+        :org-members="org.members || []"
+        @reload="$emit('reload')"
       />
 
       <BackupsPanel

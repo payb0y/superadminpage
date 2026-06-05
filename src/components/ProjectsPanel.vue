@@ -192,12 +192,82 @@
 
         <section class="projects-panel__section">
           <h4 class="projects-panel__section-title">
-            Team Members
-            <span class="projects-panel__section-count">
-              {{ (project.members || []).length }}
+            <span class="projects-panel__section-title-text">
+              Team Members
+              <span class="projects-panel__section-count">
+                {{ (project.members || []).length }}
+              </span>
             </span>
+            <button
+              type="button"
+              class="projects-panel__add-toggle"
+              @click="toggleProjectAddPanel(project.id)"
+            >
+              <span aria-hidden="true">{{ (addPanelByProject[project.id] && addPanelByProject[project.id].open) ? "×" : "+" }}</span>
+              {{ (addPanelByProject[project.id] && addPanelByProject[project.id].open) ? "Close" : "Add" }}
+            </button>
           </h4>
           <div class="projects-panel__section-body">
+            <div
+              v-if="addPanelByProject[project.id] && addPanelByProject[project.id].open"
+              class="projects-panel__add-form"
+            >
+              <input
+                type="search"
+                class="projects-panel__add-form-input"
+                v-model="addPanelByProject[project.id].search"
+                placeholder="Search org members…"
+              />
+              <div
+                v-if="addPanelByProject[project.id].error"
+                class="projects-panel__add-form-error"
+              >{{ addPanelByProject[project.id].error }}</div>
+              <ul
+                v-if="availableMembersForProject(project).length"
+                class="projects-panel__add-form-results"
+              >
+                <li
+                  v-for="u in availableMembersForProject(project)"
+                  :key="'avail-' + project.id + '-' + u.userId"
+                  class="projects-panel__add-form-result"
+                >
+                  <div class="projects-panel__add-form-result-info">
+                    <span class="projects-panel__add-form-result-name">
+                      {{ u.displayName || u.userId }}
+                    </span>
+                    <span class="projects-panel__add-form-result-meta">
+                      <template v-if="u.email">{{ u.email }} · </template>uid: {{ u.userId }}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    class="projects-panel__add-form-add-btn"
+                    :disabled="addPanelByProject[project.id].addingUid !== null"
+                    :aria-label="'Add ' + (u.displayName || u.userId)"
+                    @click="addProjectMember(project.id, u.userId)"
+                  >
+                    <span
+                      v-if="addPanelByProject[project.id].addingUid === u.userId"
+                      class="projects-panel__add-form-spinner"
+                      aria-hidden="true"
+                    ></span>
+                    <span v-else aria-hidden="true">+</span>
+                  </button>
+                </li>
+              </ul>
+              <div
+                v-else
+                class="projects-panel__add-form-state"
+              >
+                <template v-if="addPanelByProject[project.id].search.trim()">
+                  No matches.
+                </template>
+                <template v-else>
+                  All organization members are already on this project.
+                </template>
+              </div>
+            </div>
+
             <ul
               v-if="(project.members || []).length"
               class="projects-panel__members"
@@ -271,8 +341,13 @@ import ProjectTaskBrowser from "./ProjectTaskBrowser.vue";
 export default {
   name: "ProjectsPanel",
   components: { TimelineChart, ProjectTaskBrowser },
+  emits: ["reload"],
   props: {
     projects: {
+      type: Array,
+      default: () => [],
+    },
+    orgMembers: {
       type: Array,
       default: () => [],
     },
@@ -284,6 +359,9 @@ export default {
       tasksByProject: {},
       tasksLoadingByProject: {},
       tasksErrorByProject: {},
+      // Per-project state for the inline "+ Add member" panel.
+      // Shape: { [projectId]: { open, search, addingUid, error } }
+      addPanelByProject: {},
     };
   },
   computed: {
@@ -397,6 +475,113 @@ export default {
         this.$set(this.tasksLoadingByProject, projectId, false);
       }
     },
+    getAddPanelState(projectId) {
+      // Lazily create the entry so Vue's reactivity tracks subsequent
+      // mutations (via $set on first access).
+      if (!this.addPanelByProject[projectId]) {
+        this.$set(this.addPanelByProject, projectId, {
+          open: false,
+          search: "",
+          addingUid: null,
+          error: null,
+        });
+      }
+      return this.addPanelByProject[projectId];
+    },
+    toggleProjectAddPanel(projectId) {
+      const s = this.getAddPanelState(projectId);
+      if (s.open) {
+        this.closeProjectAddPanel(projectId);
+      } else {
+        s.open = true;
+        s.search = "";
+        s.error = null;
+      }
+    },
+    closeProjectAddPanel(projectId) {
+      const s = this.getAddPanelState(projectId);
+      s.open = false;
+      s.search = "";
+      s.error = null;
+    },
+    availableMembersForProject(project) {
+      const existing = (project.members || []).reduce((acc, m) => {
+        acc[m.userId] = true;
+        return acc;
+      }, {});
+      const state = this.addPanelByProject[project.id];
+      const q = state ? (state.search || "").trim().toLowerCase() : "";
+      const out = [];
+      for (let i = 0; i < this.orgMembers.length; i++) {
+        const om = this.orgMembers[i];
+        if (existing[om.userId]) continue;
+        if (q) {
+          const name = (om.displayName || "").toLowerCase();
+          const uid = (om.userId || "").toLowerCase();
+          const email = (om.email || "").toLowerCase();
+          if (
+            name.indexOf(q) === -1 &&
+            uid.indexOf(q) === -1 &&
+            email.indexOf(q) === -1
+          ) {
+            continue;
+          }
+        }
+        out.push(om);
+      }
+      out.sort((a, b) =>
+        (a.displayName || a.userId || "").localeCompare(
+          b.displayName || b.userId || "",
+        ),
+      );
+      return out;
+    },
+    async addProjectMember(projectId, uid) {
+      const s = this.getAddPanelState(projectId);
+      if (s.addingUid !== null) return;
+      s.addingUid = uid;
+      s.error = null;
+      try {
+        // projectcreatoraio uses a plain app route (not OCS) but still
+        // requires the OCS-APIRequest header per its controller attributes.
+        await axios.post(
+          generateUrl(
+            "/apps/projectcreatoraio/api/v1/projects/" + projectId + "/members",
+          ),
+          { userId: uid },
+          {
+            headers: {
+              "OCS-APIRequest": "true",
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          },
+        );
+        // 201 (added) and 200 (alreadyMember) both end up here. Close and
+        // reload; the new row will appear via the standard refresh chain.
+        this.closeProjectAddPanel(projectId);
+        this.$emit("reload");
+      } catch (e) {
+        s.error = this.projectAddError(e);
+        // 404 likely means the project itself is gone — surface the error
+        // and still reload so the row disappears from the parent.
+        if (e && e.response && e.response.status === 404) {
+          this.$emit("reload");
+        }
+      } finally {
+        s.addingUid = null;
+      }
+    },
+    projectAddError(err) {
+      if (!err) return "Couldn't add member. Try again.";
+      if (!err.response) return "Couldn't reach the server. Try again.";
+      const status = err.response.status;
+      if (status === 403) return "User no longer in this organization.";
+      if (status === 404) return "Project no longer exists.";
+      if (status === 400) return "Invalid request.";
+      if (status >= 500) return "Server error. Try again.";
+      return "Couldn't add member (HTTP " + status + ").";
+    },
   },
 };
 </script>
@@ -508,6 +693,16 @@ export default {
   color: var(--color-text-muted, #6b7280);
   background: #fafbfd;
   border-bottom: 1px solid var(--color-border, #eef1f5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.projects-panel__section-title-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .projects-panel__section-body {
@@ -921,5 +1116,161 @@ export default {
   color: #9ca3af;
   font-size: 13px;
   font-style: italic;
+}
+
+/* ── Inline "+ Add member" panel ────────────────────────────────────── */
+.projects-panel__add-toggle {
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  color: #4a90d9;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  padding: 3px 9px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.projects-panel__add-toggle:hover {
+  background: #4a90d9;
+  border-color: #4a90d9;
+  color: #fff;
+}
+
+.projects-panel__add-form {
+  background: #fafbfd;
+  border: 1px solid #eaecf0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.projects-panel__add-form-input {
+  width: 100%;
+  padding: 7px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a2e);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.projects-panel__add-form-input:focus {
+  border-color: #4a90d9;
+}
+
+.projects-panel__add-form-error {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.projects-panel__add-form-state {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--color-text-muted, #9ca3af);
+  font-style: italic;
+}
+
+.projects-panel__add-form-results {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.projects-panel__add-form-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.projects-panel__add-form-result:last-child {
+  border-bottom: none;
+}
+
+.projects-panel__add-form-result-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.projects-panel__add-form-result-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1a2e);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projects-panel__add-form-result-meta {
+  font-size: 11px;
+  color: var(--color-text-muted, #9ca3af);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projects-panel__add-form-add-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid #4a90d9;
+  background: #fff;
+  color: #4a90d9;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.projects-panel__add-form-add-btn:hover:not(:disabled) {
+  background: #4a90d9;
+  color: #fff;
+}
+
+.projects-panel__add-form-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.projects-panel__add-form-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #4a90d9;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: projects-panel-spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes projects-panel-spin {
+  to { transform: rotate(360deg); }
 }
 </style>
