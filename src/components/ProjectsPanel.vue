@@ -305,22 +305,43 @@
                     class="projects-panel__member-email projects-panel__member-email--muted"
                   >No email</span>
                 </div>
-                <span
-                  v-if="drasciLabelFor(project.id, m.userId)"
-                  class="projects-panel__member-drasci"
-                  :class="'projects-panel__member-drasci--' + (drasciRoleFor(project.id, m.userId) || 'unassigned')"
-                >
-                  {{ drasciLabelFor(project.id, m.userId) }}
-                </span>
-                <span
-                  class="projects-panel__member-role"
-                  :class="m.isOwner
-                    ? 'projects-panel__member-role--owner'
-                    : 'projects-panel__member-role--member'"
-                >
-                  <span v-if="m.isOwner" aria-hidden="true">★</span>
-                  {{ m.isOwner ? 'Owner' : 'Member' }}
-                </span>
+                <div class="projects-panel__member-badges">
+                  <select
+                    v-if="editingRoleKey === project.id + ':' + m.userId"
+                    :value="drasciRoleFor(project.id, m.userId) || ''"
+                    :disabled="savingRoleKey === project.id + ':' + m.userId"
+                    class="projects-panel__member-drasci-edit"
+                    @change="updateMemberRole(project.id, m.userId, $event.target.value)"
+                    @blur="cancelEditRole"
+                  >
+                    <option value="">Unassigned</option>
+                    <option value="driver">Driver</option>
+                    <option value="responsible">Responsible</option>
+                    <option value="accountable">Accountable</option>
+                    <option value="supportive">Supportive</option>
+                    <option value="consulted">Consulted</option>
+                    <option value="informed">Informed</option>
+                  </select>
+                  <button
+                    v-else-if="drasciLabelFor(project.id, m.userId)"
+                    type="button"
+                    class="projects-panel__member-drasci"
+                    :class="'projects-panel__member-drasci--' + (drasciRoleFor(project.id, m.userId) || 'unassigned')"
+                    :title="'Click to change DRASCI role'"
+                    @click="startEditRole(project.id, m.userId)"
+                  >
+                    {{ drasciLabelFor(project.id, m.userId) }}
+                  </button>
+                  <span
+                    class="projects-panel__member-role"
+                    :class="m.isOwner
+                      ? 'projects-panel__member-role--owner'
+                      : 'projects-panel__member-role--member'"
+                  >
+                    <span v-if="m.isOwner" aria-hidden="true">★</span>
+                    {{ m.isOwner ? 'Owner' : 'Member' }}
+                  </span>
+                </div>
               </li>
             </ul>
             <div
@@ -389,6 +410,10 @@ export default {
       // the projectcreatoraio API directly. Shape:
       // { [projectId]: { [userId]: { role, label } } }
       memberRolesByProject: {},
+      // Inline edit state for member DRASCI roles. Single-edit-at-a-time:
+      // both fields are "<projectId>:<userId>" strings, or null when idle.
+      editingRoleKey: null,
+      savingRoleKey: null,
     };
   },
   computed: {
@@ -550,6 +575,68 @@ export default {
       if (!roles) return null;
       const entry = roles[userId];
       return entry ? entry.role : null;
+    },
+    startEditRole(projectId, userId) {
+      const key = projectId + ":" + userId;
+      // Don't restart an edit that's currently saving.
+      if (this.savingRoleKey === key) return;
+      this.editingRoleKey = key;
+    },
+    cancelEditRole() {
+      // Don't cancel mid-save — the @blur fires before we know the result.
+      if (this.savingRoleKey) return;
+      this.editingRoleKey = null;
+    },
+    async updateMemberRole(projectId, userId, newRole) {
+      const key = projectId + ":" + userId;
+      const current = this.drasciRoleFor(projectId, userId) || "";
+      // Empty option ("Unassigned") is informational only — the API doesn't
+      // accept "" as a valid DRASCI role (it returns 400). Just close.
+      if (!newRole) {
+        this.editingRoleKey = null;
+        return;
+      }
+      // No-op if the role didn't change.
+      if (newRole === current) {
+        this.editingRoleKey = null;
+        return;
+      }
+      this.savingRoleKey = key;
+      try {
+        await axios.put(
+          generateUrl(
+            "/apps/projectcreatoraio/api/v1/projects/" +
+              projectId +
+              "/members/" +
+              encodeURIComponent(userId) +
+              "/role",
+          ),
+          { drasciRole: newRole },
+          {
+            headers: {
+              "OCS-APIRequest": "true",
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          },
+        );
+        // Refresh role labels for this project so the new badge text/color
+        // reflects the server-confirmed state (handles label capitalization
+        // differences from the API).
+        await this.loadProjectMemberRoles(projectId);
+        this.editingRoleKey = null;
+      } catch (e) {
+        // Surface a transient error and leave the editor open so the admin
+        // can try again. Window.alert is intentionally simple — a richer
+        // inline error UI can come later if this hits often.
+        const msg =
+          (e && e.response && e.response.data && e.response.data.message) ||
+          "Couldn't update DRASCI role. Try again.";
+        // eslint-disable-next-line no-alert
+        window.alert(msg);
+      } finally {
+        this.savingRoleKey = null;
+      }
     },
     getAddPanelState(projectId) {
       // Lazily create the entry so Vue's reactivity tracks subsequent
@@ -1204,6 +1291,13 @@ export default {
   background: rgba(74, 144, 217, 0.12);
   color: #4a90d9;
 }
+.projects-panel__member-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
 .projects-panel__member-drasci {
   display: inline-flex;
   align-items: center;
@@ -1213,8 +1307,39 @@ export default {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  margin-right: 4px;
   white-space: nowrap;
+  border: 0;
+  cursor: pointer;
+  transition: filter 0.15s, box-shadow 0.15s;
+}
+
+.projects-panel__member-drasci:hover {
+  filter: brightness(0.92);
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.18);
+}
+
+.projects-panel__member-drasci-edit {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 6px;
+  border-radius: 999px;
+  border: 1px solid #4a90d9;
+  background: #fff;
+  color: #1f2937;
+  cursor: pointer;
+  max-width: 140px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.projects-panel__member-drasci-edit:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.3);
+}
+
+.projects-panel__member-drasci-edit:disabled {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 /* DRASCI role color palette — distinct hues for quick scanning */
