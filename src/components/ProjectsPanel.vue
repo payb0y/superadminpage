@@ -212,9 +212,22 @@
               v-if="addPanelByProject[project.id] && addPanelByProject[project.id].open"
               class="projects-panel__add-form"
             >
+              <select
+                v-model="addPanelByProject[project.id].drasciRole"
+                class="projects-panel__add-form-input projects-panel__add-form-select"
+                aria-label="DRASCI role for new member"
+              >
+                <option value="">Choose a DRASCI role…</option>
+                <option value="driver">Driver</option>
+                <option value="responsible">Responsible</option>
+                <option value="accountable">Accountable</option>
+                <option value="supportive">Supportive</option>
+                <option value="consulted">Consulted</option>
+                <option value="informed">Informed</option>
+              </select>
               <input
                 type="search"
-                class="projects-panel__add-form-input"
+                class="projects-panel__add-form-input projects-panel__add-form-input--spaced"
                 v-model="addPanelByProject[project.id].search"
                 placeholder="Search org members…"
               />
@@ -242,7 +255,8 @@
                   <button
                     type="button"
                     class="projects-panel__add-form-add-btn"
-                    :disabled="addPanelByProject[project.id].addingUid !== null"
+                    :disabled="addPanelByProject[project.id].addingUid !== null || !addPanelByProject[project.id].drasciRole"
+                    :title="addPanelByProject[project.id].drasciRole ? '' : 'Choose a DRASCI role first'"
                     :aria-label="'Add ' + (u.displayName || u.userId)"
                     @click="addProjectMember(project.id, u.userId)"
                   >
@@ -482,6 +496,7 @@ export default {
         this.$set(this.addPanelByProject, projectId, {
           open: false,
           search: "",
+          drasciRole: "",
           addingUid: null,
           error: null,
         });
@@ -495,6 +510,7 @@ export default {
       } else {
         s.open = true;
         s.search = "";
+        s.drasciRole = "";
         s.error = null;
       }
     },
@@ -502,6 +518,7 @@ export default {
       const s = this.getAddPanelState(projectId);
       s.open = false;
       s.search = "";
+      s.drasciRole = "";
       s.error = null;
     },
     availableMembersForProject(project) {
@@ -539,6 +556,12 @@ export default {
     async addProjectMember(projectId, uid) {
       const s = this.getAddPanelState(projectId);
       if (s.addingUid !== null) return;
+      if (!s.drasciRole) {
+        // Should be unreachable — the [+] button is disabled when no role
+        // is picked — but guard anyway so we never send an empty role.
+        s.error = "Choose a DRASCI role before adding.";
+        return;
+      }
       s.addingUid = uid;
       s.error = null;
       try {
@@ -548,7 +571,7 @@ export default {
           generateUrl(
             "/apps/projectcreatoraio/api/v1/projects/" + projectId + "/members",
           ),
-          { userId: uid },
+          { userId: uid, drasciRole: s.drasciRole },
           {
             headers: {
               "OCS-APIRequest": "true",
@@ -1165,6 +1188,16 @@ export default {
 
 .projects-panel__add-form-input:focus {
   border-color: #4a90d9;
+}
+
+.projects-panel__add-form-input--spaced {
+  margin-top: 8px;
+}
+
+.projects-panel__add-form-select {
+  appearance: auto;
+  cursor: pointer;
+  font-weight: 500;
 }
 
 .projects-panel__add-form-error {
