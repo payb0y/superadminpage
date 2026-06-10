@@ -197,6 +197,7 @@ class OrgOverviewService {
         if (!$row) {
             return [
                 'status'           => 'none',
+                'planId'           => null,
                 'planName'         => 'No plan',
                 'price'            => 0.0,
                 'currency'         => 'EUR',
@@ -212,6 +213,7 @@ class OrgOverviewService {
 
         return [
             'status'           => $row['status'],
+            'planId'           => (int)$row['plan_id'],
             'planName'         => $row['plan_name'],
             'price'            => (float)$row['price'],
             'currency'         => $row['currency'] ?? 'EUR',

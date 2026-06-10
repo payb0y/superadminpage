@@ -1,0 +1,283 @@
+[
+  {
+    "method": "GET",
+    "url": "/apps/organization/plans",
+    "controller": "Plan#getPlans",
+    "auth": "Admin (PasswordConfirmationRequired not set, but admin assumed)",
+    "description": "List all plans for admin management",
+    "queryParams": {
+      "search": { "type": "string", "required": false, "default": "" },
+      "limit": { "type": "int", "required": false, "default": null },
+      "offset": { "type": "int", "required": false, "default": 0 }
+    },
+    "response": {
+      "plans": [
+        {
+          "id": "int",
+          "name": "string",
+          "maxProjects": "int",
+          "maxMembers": "int",
+          "sharedStoragePerProject": "int",
+          "privateStoragePerUser": "int",
+          "price": "float|null",
+          "isPublic": "bool",
+          "currency": "string"
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "url": "/apps/organization/plans/{planId}",
+    "controller": "Plan#getPlan",
+    "auth": "Admin",
+    "description": "Get a single plan by ID with subscriptionCount",
+    "pathParams": {
+      "planId": { "type": "int", "required": true }
+    },
+    "response": {
+      "id": "int",
+      "name": "string",
+      "maxProjects": "int",
+      "maxMembers": "int",
+      "sharedStoragePerProject": "int",
+      "privateStoragePerUser": "int",
+      "price": "float|null",
+      "isPublic": "bool",
+      "currency": "string",
+      "subscriptionCount": "int"
+    },
+    "errors": {
+      "404": "Plan not found"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "/apps/organization/plans",
+    "controller": "Plan#createPlan",
+    "auth": "Admin (PasswordConfirmationRequired)",
+    "description": "Create a new plan",
+    "bodyParams": {
+      "name": { "type": "string", "required": true },
+      "maxMembers": { "type": "int", "required": true },
+      "maxProjects": { "type": "int", "required": true },
+      "sharedStoragePerProject": { "type": "int", "required": true },
+      "privateStoragePerUser": { "type": "int", "required": true },
+      "price": { "type": "float", "required": false, "default": null },
+      "currency": { "type": "string", "required": false, "default": "EUR" },
+      "isPublic": { "type": "bool", "required": false, "default": false }
+    },
+    "response": {
+      "id": "int",
+      "name": "string",
+      "maxProjects": "int",
+      "maxMembers": "int",
+      "sharedStoragePerProject": "int",
+      "privateStoragePerUser": "int",
+      "price": "float|null",
+      "isPublic": "bool",
+      "currency": "string"
+    },
+    "errors": {
+      "400": "Failed to create plan: <reason>"
+    }
+  },
+  {
+    "method": "PUT",
+    "url": "/apps/organization/plans/{planId}",
+    "controller": "Plan#updatePlan",
+    "auth": "Admin (PasswordConfirmationRequired)",
+    "description": "Update an existing plan",
+    "pathParams": {
+      "planId": { "type": "int", "required": true }
+    },
+    "bodyParams": {
+      "name": { "type": "string", "required": true },
+      "maxMembers": { "type": "int", "required": true },
+      "maxProjects": { "type": "int", "required": true },
+      "sharedStoragePerProject": { "type": "int", "required": true },
+      "privateStoragePerUser": { "type": "int", "required": true },
+      "price": { "type": "float", "required": false, "default": null },
+      "currency": { "type": "string", "required": false, "default": "EUR" },
+      "isPublic": { "type": "bool", "required": false, "default": false }
+    },
+    "response": {
+      "id": "int",
+      "name": "string",
+      "maxProjects": "int",
+      "maxMembers": "int",
+      "sharedStoragePerProject": "int",
+      "privateStoragePerUser": "int",
+      "price": "float|null",
+      "isPublic": "bool",
+      "currency": "string"
+    },
+    "errors": {
+      "404": "Plan not found",
+      "400": "Failed to update plan: <reason>"
+    }
+  },
+  {
+    "method": "DELETE",
+    "url": "/apps/organization/plans/{planId}",
+    "controller": "Plan#deletePlan",
+    "auth": "Admin (PasswordConfirmationRequired)",
+    "description": "Delete a plan (fails if used by any subscription)",
+    "pathParams": {
+      "planId": { "type": "int", "required": true }
+    },
+    "response": {
+      "status": "success"
+    },
+    "errors": {
+      "404": "Plan not found",
+      "400": "Cannot delete plan: it is used by <N> subscriptions"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "/apps/organization/organizations/{organizationId}",
+    "controller": "Organization#getOrganization",
+    "auth": "NoAdminRequired (org admin or global admin)",
+    "description": "Get organization details including subscription and plan objects",
+    "pathParams": {
+      "organizationId": { "type": "int", "required": true }
+    },
+    "response": {
+      "organization": "Organization entity",
+      "subscription": "Subscription entity",
+      "plan": "Plan entity",
+      "members": [
+        {
+          "uid": "string",
+          "displayName": "string",
+          "email": "string|null",
+          "role": "string"
+        }
+      ]
+    },
+    "errors": {
+      "404": "Organization does not exist | No active subscription found | Plan not found"
+    }
+  },
+  {
+    "method": "PUT",
+    "url": "/apps/organization/organizations/{organizationId}/subscription",
+    "controller": "Organization#updateSubscription",
+    "auth": "Admin (PasswordConfirmationRequired)",
+    "description": "Update an organization's subscription (plan, status, limits, extend duration)",
+    "pathParams": {
+      "organizationId": { "type": "int", "required": true }
+    },
+    "bodyParams": {
+      "displayName": { "type": "string", "required": true },
+      "planId": { "type": "int", "required": true },
+      "maxMembers": { "type": "int", "required": true },
+      "maxProjects": { "type": "int", "required": true },
+      "sharedStoragePerProject": { "type": "int", "required": true },
+      "privateStoragePerUser": { "type": "int", "required": true },
+      "status": {
+        "type": "string",
+        "required": true,
+        "enum": ["active", "paused", "cancelled"]
+      },
+      "extendDuration": {
+        "type": "string",
+        "required": false,
+        "default": null,
+        "description": "e.g. '+1 month', '+30 days'"
+      },
+      "price": { "type": "float", "required": false, "default": null },
+      "currency": { "type": "string", "required": false, "default": null }
+    },
+    "response": {
+      "subscription": {
+        "id": "int",
+        "organizationId": "int",
+        "planId": "int",
+        "status": "string",
+        "startedAt": "string",
+        "endedAt": "string|null",
+        "pausedAt": "string|null",
+        "cancelledAt": "string|null"
+      }
+    },
+    "errors": {
+      "404": "Organization does not exist | Active subscription for this organization does not exist",
+      "400": "Failed to update organization: <reason>"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "/apps/organization/organizations/{organizationId}/convert-trial",
+    "controller": "Organization#convertTrialToStandard",
+    "auth": "Admin (PasswordConfirmationRequired)",
+    "description": "Convert a trial organization to standard with a new plan and subscription dates",
+    "pathParams": {
+      "organizationId": { "type": "int", "required": true }
+    },
+    "bodyParams": {
+      "planId": { "type": "int", "required": true },
+      "validity": {
+        "type": "string",
+        "required": true,
+        "description": "e.g. '1 month', '30 days', '1 year'"
+      },
+      "adminUserId": { "type": "string", "required": false, "default": null }
+    },
+    "response": {
+      "organization": "Organization entity (type now 'standard')",
+      "subscription": {
+        "id": "int",
+        "organizationId": "int",
+        "planId": "int",
+        "status": "active",
+        "startedAt": "string",
+        "endedAt": "string",
+        "pausedAt": null,
+        "cancelledAt": null
+      }
+    },
+    "errors": {
+      "404": "Organization does not exist | Plan not found | No subscription found",
+      "400": "Only trial organizations can be converted (code 104) | Invalid validity duration (code 104)"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "/apps/organization/organizations",
+    "controller": "Organization#getOrganizations",
+    "auth": "NoAdminRequired (org admin sees own org, global admin sees all)",
+    "description": "List all organizations with subscription summary included",
+    "queryParams": {
+      "search": { "type": "string", "required": false, "default": "" },
+      "limit": { "type": "int", "required": false, "default": null },
+      "offset": { "type": "int", "required": false, "default": 0 }
+    },
+    "response": {
+      "organizations": [
+        {
+          "id": "int",
+          "displayname": "string",
+          "usercount": "int",
+          "disabled": 0,
+          "canAdd": true,
+          "canRemove": true,
+          "isOrganization": true,
+          "type": "string",
+          "adminUid": "string|null",
+          "subscription": {
+            "id": "int",
+            "status": "string",
+            "startedAt": "string",
+            "endedAt": "string",
+            "planId": "int",
+            "planName": "string",
+            "maxMembers": "int",
+            "maxProjects": "int"
+          }
+        }
+      ]
+    }
+  }
+]
