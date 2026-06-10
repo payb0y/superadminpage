@@ -273,17 +273,38 @@
             @click="closeConfirm"
           >×</button>
         </div>
-        <div class="sub-panel__modal-body">
+        <form
+          class="sub-panel__modal-body"
+          autocomplete="on"
+          @submit.prevent="saveChanges"
+        >
           <p class="sub-panel__modal-body-text">
             Nextcloud requires re-confirming your admin password before
             applying subscription changes.
           </p>
+          <!--
+            Hidden username companion: password managers pair a password
+            input with the nearest preceding username/text field. Without
+            this companion, managers walked up the DOM and dumped the
+            username into the org-list search box. Keep this readonly
+            input in the same <form> so the pair stays inside the modal.
+          -->
+          <input
+            type="text"
+            :value="currentUserUid"
+            name="username"
+            autocomplete="username"
+            class="sub-panel__modal-hidden-username"
+            tabindex="-1"
+            aria-hidden="true"
+            readonly
+          />
           <input
             ref="confirmPasswordInput"
             type="password"
             v-model="confirmPassword"
             class="sub-panel__modal-password"
-            name="sub-panel-confirm-password"
+            name="password"
             placeholder="Your admin password"
             :disabled="saving"
             autocomplete="current-password"
@@ -293,7 +314,7 @@
             v-if="saveError"
             class="sub-panel__field-error sub-panel__modal-error"
           >{{ saveError }}</div>
-        </div>
+        </form>
         <div class="sub-panel__modal-actions">
           <button
             type="button"
@@ -484,6 +505,20 @@ export default {
     },
     canConfirm() {
       return !this.saving && this.confirmPassword.length > 0;
+    },
+    currentUserUid() {
+      // Used only to populate the hidden username field paired with the
+      // password input, so password managers fill the credentials inside
+      // the modal instead of treating the visible search box as a target.
+      const oc = typeof window !== "undefined" ? window.OC : null;
+      if (oc) {
+        if (oc.currentUser) return oc.currentUser;
+        if (typeof oc.getCurrentUser === "function") {
+          const u = oc.getCurrentUser();
+          if (u && u.uid) return u.uid;
+        }
+      }
+      return "";
     },
   },
   methods: {
@@ -1204,6 +1239,18 @@ export default {
 
 .sub-panel__modal-password:focus {
   border-color: #4a90d9;
+}
+
+/* Hidden username companion for password managers. Must remain in the
+   DOM (display:none would be ignored by autofill) but invisible to the
+   user. position:absolute keeps it off-flow. */
+.sub-panel__modal-hidden-username {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .sub-panel__modal-error {

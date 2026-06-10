@@ -410,6 +410,7 @@ function planRank(planName) {
 export default {
   name: "OrgListPanel",
   components: { OrgCard, OrgDetailView },
+  emits: ["list-stale"],
   props: {
     orgs: {
       type: Array,
@@ -584,6 +585,12 @@ export default {
       // atomically when the fetch resolves, so the prop just updates in
       // place and Vue diffs the rendered tree.
       this.loadDetail(orgId);
+      // The detail cache update keeps the expanded panel in sync, but
+      // the row's summary cells (planName, subscriptionStatus, member
+      // count, etc.) are bound to the parent `orgs` prop owned by
+      // Dashboard. Ask the parent to refetch the list so those stay in
+      // sync after add-member / subscription edit / etc.
+      this.$emit("list-stale");
     },
     readViewMode() {
       try {

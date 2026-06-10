@@ -27,7 +27,11 @@
 
       <SystemHealthPanel />
 
-      <OrgListPanel ref="orgList" :orgs="orgs" />
+      <OrgListPanel
+        ref="orgList"
+        :orgs="orgs"
+        @list-stale="refreshOrgs"
+      />
     </template>
   </div>
 </template>
@@ -83,6 +87,22 @@ export default {
         this.error = e.message || "Failed to load dashboard";
       } finally {
         this.loading = false;
+      }
+    },
+    async refreshOrgs() {
+      // Triggered by OrgListPanel after any child reload (member add/
+      // remove, project member change, subscription edit). Refetches just
+      // the orgs list so row summary cells stay in sync with the now-
+      // refreshed detail.
+      try {
+        const res = await axios.get(
+          generateUrl("/apps/superadminpage/api/super/orgs"),
+        );
+        this.orgs = (res.data && res.data.orgs) || this.orgs;
+      } catch (e) {
+        // Silent — the detail panel is the authoritative view; the row
+        // summary will catch up on the next user-triggered refresh.
+        console.warn("Failed to refresh orgs list", e);
       }
     },
   },
