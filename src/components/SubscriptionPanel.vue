@@ -327,20 +327,6 @@
             </div>
           </div>
 
-          <label class="sub-panel__custom-checkbox">
-            <input
-              type="checkbox"
-              v-model="customPlan.isPublic"
-              :disabled="saving"
-            />
-            <span>
-              Make plan reusable
-              <span class="sub-panel__field-optional">
-                (public — visible in other orgs' dropdowns)
-              </span>
-            </span>
-          </label>
-
           <div
             v-if="customPlanError"
             class="sub-panel__field-error sub-panel__custom-error"
@@ -616,7 +602,12 @@ export default {
         privateStorageGb: 0,
         price: "",
         currency: "EUR",
-        isPublic: false,
+        // Always public — private plans hit a server-side bug
+        // ("Cannot assign null to property Plan::$currency") and surface
+        // no real value for our use case. Keep this in state (rather than
+        // hardcoded in the body) so it remains visible in the submit
+        // preview and easy to expose again if needed.
+        isPublic: true,
       },
       customPlanFieldErrors: {},
       customPlanBlurred: {},
@@ -885,7 +876,7 @@ export default {
         privateStorageGb: Math.round(privateGb * 100) / 100,
         price: sp && sp.price != null ? sp.price : "",
         currency: (sp && sp.currency) || "EUR",
-        isPublic: false,
+        isPublic: true,
       };
       this.customPlanError = null;
       this.customPlanFieldErrors = {};
