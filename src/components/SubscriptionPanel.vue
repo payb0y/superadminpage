@@ -279,9 +279,11 @@
             applying subscription changes.
           </p>
           <input
+            ref="confirmPasswordInput"
             type="password"
             v-model="confirmPassword"
             class="sub-panel__modal-password"
+            name="sub-panel-confirm-password"
             placeholder="Your admin password"
             :disabled="saving"
             autocomplete="current-password"
@@ -545,9 +547,23 @@ export default {
       this.confirmPassword = "";
       this.saveError = null;
       this.confirmOpen = true;
-      this.$nextTick(() => {
-        const el = this.$el.querySelector(".sub-panel__modal-password");
-        if (el && el.focus) el.focus();
+      this.focusConfirmInput();
+    },
+    focusConfirmInput() {
+      // Two RAFs to clear Vue's nextTick AND let the browser paint the
+      // newly-mounted modal before we call focus(). Calling focus() on a
+      // freshly-inserted node in the same tick sometimes silently no-ops,
+      // leaving keystrokes to land on whatever was focused before — which
+      // is how the admin's password ended up in the org search box.
+      const tryFocus = () => {
+        const el = this.$refs.confirmPasswordInput;
+        if (el && el.focus) {
+          el.focus();
+          if (el.select) el.select();
+        }
+      };
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(tryFocus);
       });
     },
     closeConfirm() {
@@ -627,10 +643,7 @@ export default {
           // Keep the modal open so the admin can retype the password.
           this.saveError = "Wrong password. Try again.";
           this.confirmPassword = "";
-          this.$nextTick(() => {
-            const el = this.$el.querySelector(".sub-panel__modal-password");
-            if (el && el.focus) el.focus();
-          });
+          this.focusConfirmInput();
         } else if (status === 404) {
           this.saveError =
             "Subscription no longer exists. The organization may have been deleted.";

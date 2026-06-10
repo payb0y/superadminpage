@@ -88,6 +88,11 @@
         v-model="searchQuery"
         class="org-list__search"
         type="text"
+        name="superadminpage-org-search"
+        autocomplete="off"
+        data-1p-ignore
+        data-bwignore
+        data-lpignore="true"
         placeholder="Search organizations…"
       />
       <div class="org-list__filter-group">
