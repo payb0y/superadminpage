@@ -416,6 +416,8 @@
           <span>planId</span><span>(new plan id)</span>
           <span>maxMembers</span><span>{{ customPlan.maxMembers }}</span>
           <span>maxProjects</span><span>{{ customPlan.maxProjects }}</span>
+          <span>price</span><span>{{ customPlan.price !== "" && customPlan.price !== null ? customPlan.price : 0 }}</span>
+          <span>currency</span><span>{{ customPlan.currency || "EUR" }}</span>
           <span>status</span><span>{{ form.status }}</span>
           <span v-if="form.extendDuration">extendDuration</span><span v-if="form.extendDuration">{{ form.extendDuration }}</span>
         </div>
@@ -428,6 +430,8 @@
           <span>maxProjects</span><span>{{ selectedPlan.maxProjects }}</span>
           <span>sharedStoragePerProject</span><span>{{ selectedPlan.sharedStoragePerProject }}</span>
           <span>privateStoragePerUser</span><span>{{ selectedPlan.privateStoragePerUser }}</span>
+          <span>price</span><span>{{ selectedPlan.price != null ? selectedPlan.price : 0 }}</span>
+          <span>currency</span><span>{{ selectedPlan.currency || "EUR" }}</span>
           <span v-if="form.extendDuration">extendDuration</span><span v-if="form.extendDuration">{{ form.extendDuration }}</span>
         </div>
       </div>
@@ -978,7 +982,13 @@ export default {
 
         // Step 3 — actual subscription update. All caps fields ride along
         // from the chosen (or just-created) plan to satisfy the API's
-        // all-fields-required body.
+        // all-fields-required body. We also send price + currency: the
+        // server's SubscriptionService::updateSubscription calls
+        // PlanService::handlePlanUpdate, which can create a derivative
+        // plan internally — and that path fails ("Cannot assign null to
+        // property Plan::$currency of type string") when currency is
+        // omitted/null. Match the chosen plan's values so the derivation
+        // doesn't see nulls.
         const body = {
           displayName: this.org.profile.name,
           planId: planToUse.id,
@@ -987,7 +997,13 @@ export default {
           sharedStoragePerProject: planToUse.sharedStoragePerProject,
           privateStoragePerUser: planToUse.privateStoragePerUser,
           status: this.form.status,
+          currency: planToUse.currency || "EUR",
         };
+        if (planToUse.price != null) {
+          body.price = Number(planToUse.price);
+        } else {
+          body.price = 0;
+        }
         if (this.form.extendDuration) {
           body.extendDuration = this.form.extendDuration;
         }
