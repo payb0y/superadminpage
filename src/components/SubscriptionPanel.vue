@@ -152,23 +152,199 @@
             @click="loadPlans"
           >Retry</button>
         </div>
-        <select
-          v-else
-          id="sub-plan"
-          v-model.number="form.planId"
-          class="sub-panel__input"
-          :disabled="saving"
-        >
-          <option
-            v-for="p in plans"
-            :key="p.id"
-            :value="p.id"
+        <div v-else class="sub-panel__plan-row">
+          <select
+            id="sub-plan"
+            v-model.number="form.planId"
+            class="sub-panel__input sub-panel__plan-select"
+            :disabled="saving || customPlanOpen"
           >
-            {{ p.name }} — {{ planSummary(p) }}
-          </option>
-        </select>
+            <option
+              v-for="p in plans"
+              :key="p.id"
+              :value="p.id"
+            >
+              {{ p.name }} — {{ planSummary(p) }}
+            </option>
+          </select>
+          <button
+            type="button"
+            class="sub-panel__plan-custom-btn"
+            :class="{ 'sub-panel__plan-custom-btn--active': customPlanOpen }"
+            :disabled="saving"
+            @click="customPlanOpen ? closeCustomPlan() : openCustomPlan()"
+          >{{ customPlanOpen ? "Cancel custom" : "+ Create custom" }}</button>
+        </div>
         <div class="sub-panel__field-hint">
           Changing the plan auto-fills caps and pricing from the chosen plan.
+        </div>
+
+        <!-- Custom plan sub-form -->
+        <div v-if="customPlanOpen" class="sub-panel__custom">
+          <div class="sub-panel__custom-header">
+            <span class="sub-panel__custom-title">NEW CUSTOM PLAN</span>
+            <button
+              type="button"
+              class="sub-panel__custom-close"
+              :disabled="saving"
+              aria-label="Cancel custom plan"
+              @click="closeCustomPlan"
+            >×</button>
+          </div>
+
+          <div class="sub-panel__custom-field">
+            <label class="sub-panel__custom-label">
+              Plan name <span class="sub-panel__field-required">*</span>
+            </label>
+            <input
+              type="text"
+              v-model="customPlan.name"
+              class="sub-panel__input"
+              :disabled="saving"
+              @blur="markCustomBlurred('name')"
+            />
+            <div
+              v-if="customPlanBlurred.name && customPlanFieldErrors.name"
+              class="sub-panel__field-error sub-panel__custom-field-error"
+            >{{ customPlanFieldErrors.name }}</div>
+          </div>
+
+          <div class="sub-panel__custom-grid">
+            <div class="sub-panel__custom-field">
+              <label class="sub-panel__custom-label">
+                Members <span class="sub-panel__field-required">*</span>
+              </label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                v-model.number="customPlan.maxMembers"
+                class="sub-panel__input"
+                :disabled="saving"
+                @blur="markCustomBlurred('maxMembers')"
+              />
+              <div
+                v-if="customPlanBlurred.maxMembers && customPlanFieldErrors.maxMembers"
+                class="sub-panel__field-error sub-panel__custom-field-error"
+              >{{ customPlanFieldErrors.maxMembers }}</div>
+            </div>
+            <div class="sub-panel__custom-field">
+              <label class="sub-panel__custom-label">
+                Projects <span class="sub-panel__field-required">*</span>
+              </label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                v-model.number="customPlan.maxProjects"
+                class="sub-panel__input"
+                :disabled="saving"
+                @blur="markCustomBlurred('maxProjects')"
+              />
+              <div
+                v-if="customPlanBlurred.maxProjects && customPlanFieldErrors.maxProjects"
+                class="sub-panel__field-error sub-panel__custom-field-error"
+              >{{ customPlanFieldErrors.maxProjects }}</div>
+            </div>
+          </div>
+
+          <div class="sub-panel__custom-grid">
+            <div class="sub-panel__custom-field">
+              <label class="sub-panel__custom-label">
+                Shared/project <span class="sub-panel__field-required">*</span>
+              </label>
+              <div class="sub-panel__unit-row">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  v-model.number="customPlan.sharedStorageGb"
+                  class="sub-panel__input"
+                  :disabled="saving"
+                  @blur="markCustomBlurred('sharedStorageGb')"
+                />
+                <span class="sub-panel__unit-suffix">GB</span>
+              </div>
+              <div
+                v-if="customPlanBlurred.sharedStorageGb && customPlanFieldErrors.sharedStorageGb"
+                class="sub-panel__field-error sub-panel__custom-field-error"
+              >{{ customPlanFieldErrors.sharedStorageGb }}</div>
+            </div>
+            <div class="sub-panel__custom-field">
+              <label class="sub-panel__custom-label">
+                Private/user <span class="sub-panel__field-required">*</span>
+              </label>
+              <div class="sub-panel__unit-row">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  v-model.number="customPlan.privateStorageGb"
+                  class="sub-panel__input"
+                  :disabled="saving"
+                  @blur="markCustomBlurred('privateStorageGb')"
+                />
+                <span class="sub-panel__unit-suffix">GB</span>
+              </div>
+              <div
+                v-if="customPlanBlurred.privateStorageGb && customPlanFieldErrors.privateStorageGb"
+                class="sub-panel__field-error sub-panel__custom-field-error"
+              >{{ customPlanFieldErrors.privateStorageGb }}</div>
+            </div>
+          </div>
+
+          <div class="sub-panel__custom-grid">
+            <div class="sub-panel__custom-field">
+              <label class="sub-panel__custom-label">
+                Price <span class="sub-panel__field-optional">(optional)</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                v-model="customPlan.price"
+                class="sub-panel__input"
+                :disabled="saving"
+                @blur="markCustomBlurred('price')"
+              />
+              <div
+                v-if="customPlanBlurred.price && customPlanFieldErrors.price"
+                class="sub-panel__field-error sub-panel__custom-field-error"
+              >{{ customPlanFieldErrors.price }}</div>
+            </div>
+            <div class="sub-panel__custom-field">
+              <label class="sub-panel__custom-label">Currency</label>
+              <select
+                v-model="customPlan.currency"
+                class="sub-panel__input"
+                :disabled="saving"
+              >
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+                <option value="GBP">GBP</option>
+                <option value="CHF">CHF</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="sub-panel__custom-checkbox">
+            <input
+              type="checkbox"
+              v-model="customPlan.isPublic"
+              :disabled="saving"
+            />
+            <span>
+              Make plan reusable
+              <span class="sub-panel__field-optional">
+                (public — visible in other orgs' dropdowns)
+              </span>
+            </span>
+          </label>
+
+          <div
+            v-if="customPlanError"
+            class="sub-panel__field-error sub-panel__custom-error"
+          >{{ customPlanError }}</div>
         </div>
       </div>
 
@@ -218,7 +394,33 @@
       </div>
 
       <!-- Submit preview -->
-      <div v-if="selectedPlan" class="sub-panel__preview">
+      <div
+        v-if="customPlanOpen && canCreateCustomPlan"
+        class="sub-panel__preview"
+      >
+        <div class="sub-panel__label">VALUES THAT WILL BE SUBMITTED</div>
+        <div class="sub-panel__preview-section">NEW PLAN</div>
+        <div class="sub-panel__preview-grid">
+          <span>name</span><span>{{ customPlan.name }}</span>
+          <span>maxMembers</span><span>{{ customPlan.maxMembers }}</span>
+          <span>maxProjects</span><span>{{ customPlan.maxProjects }}</span>
+          <span>sharedStoragePerProject</span><span>{{ Math.round(customPlan.sharedStorageGb * 1073741824) }}</span>
+          <span>privateStoragePerUser</span><span>{{ Math.round(customPlan.privateStorageGb * 1073741824) }}</span>
+          <span v-if="customPlan.price !== '' && customPlan.price !== null">price</span>
+          <span v-if="customPlan.price !== '' && customPlan.price !== null">{{ customPlan.price }}</span>
+          <span>currency</span><span>{{ customPlan.currency }}</span>
+          <span>isPublic</span><span>{{ customPlan.isPublic }}</span>
+        </div>
+        <div class="sub-panel__preview-section">SUBSCRIPTION</div>
+        <div class="sub-panel__preview-grid">
+          <span>planId</span><span>(new plan id)</span>
+          <span>maxMembers</span><span>{{ customPlan.maxMembers }}</span>
+          <span>maxProjects</span><span>{{ customPlan.maxProjects }}</span>
+          <span>status</span><span>{{ form.status }}</span>
+          <span v-if="form.extendDuration">extendDuration</span><span v-if="form.extendDuration">{{ form.extendDuration }}</span>
+        </div>
+      </div>
+      <div v-else-if="!customPlanOpen && selectedPlan" class="sub-panel__preview">
         <div class="sub-panel__label">VALUES THAT WILL BE SUBMITTED</div>
         <div class="sub-panel__preview-grid">
           <span>Plan ID</span><span>{{ selectedPlan.id }}</span>
@@ -399,6 +601,22 @@ export default {
       confirmPassword: "",
       saving: false,
       saveError: null,
+      // Inline "create custom plan" sub-form, expanded under the Plan field.
+      // Mutually exclusive with the regular plan dropdown.
+      customPlanOpen: false,
+      customPlan: {
+        name: "",
+        maxMembers: 1,
+        maxProjects: 1,
+        sharedStorageGb: 0,
+        privateStorageGb: 0,
+        price: "",
+        currency: "EUR",
+        isPublic: false,
+      },
+      customPlanFieldErrors: {},
+      customPlanBlurred: {},
+      customPlanError: null,
       statusOptions: STATUS_OPTIONS,
       extendOptions: EXTEND_OPTIONS,
     };
@@ -499,8 +717,25 @@ export default {
     canSave() {
       if (this.saving) return false;
       if (this.plansLoading || this.plansError) return false;
+      if (this.customPlanOpen) {
+        // Custom plan path: dropdown is irrelevant, must validate the
+        // sub-form fields instead.
+        return this.canCreateCustomPlan;
+      }
       if (!this.form.planId) return false;
       if (!this.selectedPlan) return false;
+      return true;
+    },
+    canCreateCustomPlan() {
+      const cp = this.customPlan;
+      if (!cp.name || !cp.name.trim()) return false;
+      if (!Number.isFinite(+cp.maxMembers) || +cp.maxMembers < 1) return false;
+      if (!Number.isFinite(+cp.maxProjects) || +cp.maxProjects < 1) return false;
+      if (!Number.isFinite(+cp.sharedStorageGb) || +cp.sharedStorageGb <= 0) return false;
+      if (!Number.isFinite(+cp.privateStorageGb) || +cp.privateStorageGb <= 0) return false;
+      if (cp.price !== "" && cp.price !== null) {
+        if (!Number.isFinite(+cp.price) || +cp.price < 0) return false;
+      }
       return true;
     },
     canConfirm() {
@@ -567,6 +802,10 @@ export default {
       this.confirmPassword = "";
       this.confirmOpen = false;
       this.saveError = null;
+      this.customPlanOpen = false;
+      this.customPlanError = null;
+      this.customPlanFieldErrors = {};
+      this.customPlanBlurred = {};
       if (this.plans.length === 0 && !this.plansLoading) {
         this.loadPlans();
       }
@@ -576,6 +815,8 @@ export default {
       this.confirmPassword = "";
       this.confirmOpen = false;
       this.saveError = null;
+      this.customPlanOpen = false;
+      this.customPlanError = null;
     },
     openConfirm() {
       if (!this.canSave) return;
@@ -625,29 +866,126 @@ export default {
         this.plansLoading = false;
       }
     },
+    openCustomPlan() {
+      // Seed defaults from the currently-selected plan so the admin has
+      // sensible starting values (in GB for storage). If the dropdown
+      // isn't usable (e.g., fresh edit, no plan picked yet), seed zeros.
+      const sp = this.selectedPlan;
+      const sharedGb = sp ? sp.sharedStoragePerProject / 1073741824 : 0;
+      const privateGb = sp ? sp.privateStoragePerUser / 1073741824 : 0;
+      this.customPlan = {
+        name: "",
+        maxMembers: sp ? sp.maxMembers : 1,
+        maxProjects: sp ? sp.maxProjects : 1,
+        sharedStorageGb: Math.round(sharedGb * 100) / 100,
+        privateStorageGb: Math.round(privateGb * 100) / 100,
+        price: sp && sp.price != null ? sp.price : "",
+        currency: (sp && sp.currency) || "EUR",
+        isPublic: false,
+      };
+      this.customPlanError = null;
+      this.customPlanFieldErrors = {};
+      this.customPlanBlurred = {};
+      this.customPlanOpen = true;
+    },
+    closeCustomPlan() {
+      this.customPlanOpen = false;
+      this.customPlanError = null;
+    },
+    markCustomBlurred(field) {
+      this.$set(this.customPlanBlurred, field, true);
+      this.validateCustomPlan();
+    },
+    validateCustomPlan() {
+      const cp = this.customPlan;
+      const errs = {};
+      if (!cp.name || !cp.name.trim()) errs.name = "Required";
+      if (!Number.isFinite(+cp.maxMembers) || +cp.maxMembers < 1) {
+        errs.maxMembers = "Must be at least 1";
+      }
+      if (!Number.isFinite(+cp.maxProjects) || +cp.maxProjects < 1) {
+        errs.maxProjects = "Must be at least 1";
+      }
+      if (!Number.isFinite(+cp.sharedStorageGb) || +cp.sharedStorageGb <= 0) {
+        errs.sharedStorageGb = "Must be greater than 0";
+      }
+      if (!Number.isFinite(+cp.privateStorageGb) || +cp.privateStorageGb <= 0) {
+        errs.privateStorageGb = "Must be greater than 0";
+      }
+      if (cp.price !== "" && cp.price !== null) {
+        if (!Number.isFinite(+cp.price) || +cp.price < 0) {
+          errs.price = "Must be a non-negative number";
+        }
+      }
+      this.customPlanFieldErrors = errs;
+      return Object.keys(errs).length === 0;
+    },
+    customPlanBodyForPost() {
+      const cp = this.customPlan;
+      const body = {
+        name: cp.name.trim(),
+        maxMembers: parseInt(cp.maxMembers, 10),
+        maxProjects: parseInt(cp.maxProjects, 10),
+        sharedStoragePerProject: Math.round(+cp.sharedStorageGb * 1073741824),
+        privateStoragePerUser: Math.round(+cp.privateStorageGb * 1073741824),
+        isPublic: !!cp.isPublic,
+      };
+      if (cp.price !== "" && cp.price !== null) {
+        body.price = +cp.price;
+      }
+      if (cp.currency) body.currency = cp.currency;
+      return body;
+    },
     onPasswordEnter() {
       if (this.canConfirm) this.saveChanges();
     },
     async saveChanges() {
       if (!this.canConfirm) return;
+      if (this.customPlanOpen && !this.validateCustomPlan()) return;
       this.saving = true;
       this.saveError = null;
+      this.customPlanError = null;
+      let createdPlanId = null;
       try {
-        // Step 1 — Nextcloud's PasswordConfirmationRequired gate.
+        // Step 1 — Nextcloud's PasswordConfirmationRequired gate. One
+        // confirmation covers both the plan POST and the subscription PUT.
         await axios.post(generateUrl("/login/confirm"), {
           password: this.confirmPassword,
         });
-        // Step 2 — actual subscription update. All caps fields ride along
-        // from the chosen plan so the API's all-fields-required body is
-        // satisfied without exposing a per-org cap override in this round.
-        const p = this.selectedPlan;
+
+        // Step 2 — if the custom-plan sub-form is open, create the plan
+        // first. On success, push it into this.plans and select it so the
+        // subscription PUT body below pulls caps from the just-created plan.
+        let planToUse = this.selectedPlan;
+        if (this.customPlanOpen) {
+          const res = await axios.post(
+            generateOcsUrl("/apps/organization/plans"),
+            this.customPlanBodyForPost(),
+            {
+              params: { format: "json" },
+              headers: ORG_OCS_HEADERS,
+            },
+          );
+          planToUse = unwrapOcs(res);
+          if (!planToUse || !planToUse.id) {
+            throw new Error("Plan create returned no id");
+          }
+          this.plans.push(planToUse);
+          this.form.planId = planToUse.id;
+          createdPlanId = planToUse.id;
+          this.customPlanOpen = false;
+        }
+
+        // Step 3 — actual subscription update. All caps fields ride along
+        // from the chosen (or just-created) plan to satisfy the API's
+        // all-fields-required body.
         const body = {
           displayName: this.org.profile.name,
-          planId: p.id,
-          maxMembers: p.maxMembers,
-          maxProjects: p.maxProjects,
-          sharedStoragePerProject: p.sharedStoragePerProject,
-          privateStoragePerUser: p.privateStoragePerUser,
+          planId: planToUse.id,
+          maxMembers: planToUse.maxMembers,
+          maxProjects: planToUse.maxProjects,
+          sharedStoragePerProject: planToUse.sharedStoragePerProject,
+          privateStoragePerUser: planToUse.privateStoragePerUser,
           status: this.form.status,
         };
         if (this.form.extendDuration) {
@@ -670,26 +1008,43 @@ export default {
         this.mode = "read";
         this.$emit("reload");
       } catch (e) {
-        // Distinguish wrong-password (from /login/confirm) from PUT errors.
+        // Distinguish wrong-password (from /login/confirm), plan-create
+        // failure (from POST /plans, only if no createdPlanId yet) and
+        // generic PUT errors.
         const status = e && e.response && e.response.status;
         const url =
-          e && e.response && e.response.config && e.response.config.url;
-        if (url && url.indexOf("/login/confirm") !== -1 && status === 403) {
-          // Keep the modal open so the admin can retype the password.
+          (e && e.response && e.response.config && e.response.config.url) ||
+          "";
+        if (url.indexOf("/login/confirm") !== -1 && status === 403) {
           this.saveError = "Wrong password. Try again.";
           this.confirmPassword = "";
           this.focusConfirmInput();
+        } else if (
+          url.indexOf("/apps/organization/plans") !== -1 &&
+          !createdPlanId
+        ) {
+          // Plan creation failed — surface inside the sub-form, leave the
+          // password modal closed so the admin can fix the inputs first.
+          this.customPlanError = this.extractServerError(
+            e,
+            "Couldn't create plan. Try again.",
+          );
+          this.confirmOpen = false;
+          this.confirmPassword = "";
         } else if (status === 404) {
           this.saveError =
             "Subscription no longer exists. The organization may have been deleted.";
           this.confirmOpen = false;
           this.$emit("reload");
         } else {
+          // Includes the case where the plan WAS created (createdPlanId
+          // set) but the subscription PUT failed. The plan is selected;
+          // the admin can retype the password and retry — only the PUT
+          // re-runs, no duplicate plan.
           this.saveError = this.extractServerError(
             e,
             "Couldn't save changes. Try again.",
           );
-          // Network/server error: keep the modal open so the admin can retry.
         }
       } finally {
         this.saving = false;
@@ -1153,6 +1508,177 @@ export default {
   text-align: right;
   font-weight: 600;
   color: var(--color-text-primary, #1a1a2e);
+}
+
+.sub-panel__preview-section {
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 8px 0 4px;
+}
+
+.sub-panel__preview-section:first-of-type {
+  margin-top: 0;
+}
+
+/* ── Plan field — dropdown + create-custom button ────────────────────── */
+.sub-panel__plan-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.sub-panel__plan-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.sub-panel__plan-custom-btn {
+  background: #fff;
+  border: 1px solid #4a90d9;
+  color: #4a90d9;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sub-panel__plan-custom-btn:hover:not(:disabled) {
+  background: #4a90d9;
+  color: #fff;
+}
+
+.sub-panel__plan-custom-btn--active {
+  background: rgba(74, 144, 217, 0.08);
+}
+
+.sub-panel__plan-custom-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Custom plan sub-form ────────────────────────────────────────────── */
+.sub-panel__custom {
+  background: #f9fafb;
+  border: 1px solid #eaecf0;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 10px;
+}
+
+.sub-panel__custom-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.sub-panel__custom-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4a90d9;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.sub-panel__custom-close {
+  background: transparent;
+  border: 0;
+  color: #9ca3af;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 6px;
+  border-radius: 6px;
+}
+
+.sub-panel__custom-close:hover:not(:disabled) {
+  background: #f0f1f5;
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.sub-panel__custom-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sub-panel__custom-field {
+  margin-bottom: 10px;
+}
+
+.sub-panel__custom-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #6b7280);
+  margin-bottom: 4px;
+}
+
+.sub-panel__custom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.sub-panel__unit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sub-panel__unit-row .sub-panel__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.sub-panel__unit-suffix {
+  font-size: 11px;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.sub-panel__custom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+  margin-top: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sub-panel__custom-checkbox input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.sub-panel__custom-field-error {
+  margin-top: 4px;
+  margin-bottom: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font-size: 11px;
+}
+
+.sub-panel__custom-error {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
+@media (max-width: 720px) {
+  .sub-panel__custom-grid {
+    grid-template-columns: 1fr;
+  }
+  .sub-panel__plan-row {
+    flex-direction: column;
+  }
 }
 
 /* ── Password confirmation modal ─────────────────────────────────────── */
