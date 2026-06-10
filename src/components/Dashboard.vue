@@ -17,21 +17,46 @@
         </p>
       </header>
 
-      <PlatformKpiStrip
-        v-if="platform"
-        :kpis="platform.kpis"
-        @drill-down="onDrillDown"
-      />
+      <div class="superadmin-dashboard__tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          class="superadmin-dashboard__tab"
+          :class="{
+            'superadmin-dashboard__tab--active': activeTab === 'health',
+          }"
+          :aria-selected="activeTab === 'health'"
+          @click="setActiveTab('health')"
+        >System Health</button>
+        <button
+          type="button"
+          role="tab"
+          class="superadmin-dashboard__tab"
+          :class="{
+            'superadmin-dashboard__tab--active': activeTab === 'orgs',
+          }"
+          :aria-selected="activeTab === 'orgs'"
+          @click="setActiveTab('orgs')"
+        >Organizations</button>
+      </div>
 
-      <AlertsPanel v-if="platform" :alerts="platform.alerts" />
+      <template v-if="activeTab === 'health'">
+        <AlertsPanel v-if="platform" :alerts="platform.alerts" />
+        <SystemHealthPanel />
+      </template>
 
-      <SystemHealthPanel />
-
-      <OrgListPanel
-        ref="orgList"
-        :orgs="orgs"
-        @list-stale="refreshOrgs"
-      />
+      <template v-else-if="activeTab === 'orgs'">
+        <PlatformKpiStrip
+          v-if="platform"
+          :kpis="platform.kpis"
+          @drill-down="onDrillDown"
+        />
+        <OrgListPanel
+          ref="orgList"
+          :orgs="orgs"
+          @list-stale="refreshOrgs"
+        />
+      </template>
     </template>
   </div>
 </template>
@@ -58,16 +83,50 @@ export default {
       platform: null,
       loading: true,
       error: null,
+      activeTab: "health",
     };
   },
   mounted() {
+    this.hydrateActiveTab();
     this.fetchAll();
   },
+  watch: {
+    activeTab(val) {
+      try {
+        window.localStorage.setItem("superadminpage:activeTab", val);
+      } catch (e) {
+        // localStorage may be unavailable (private mode, security policy);
+        // tab choice just won't persist across reloads in that case.
+      }
+    },
+  },
   methods: {
+    hydrateActiveTab() {
+      try {
+        const stored = window.localStorage.getItem(
+          "superadminpage:activeTab",
+        );
+        if (stored === "health" || stored === "orgs") {
+          this.activeTab = stored;
+        }
+      } catch (e) {
+        // ignore — defaults to 'health'
+      }
+    },
+    setActiveTab(tab) {
+      if (tab !== "health" && tab !== "orgs") return;
+      this.activeTab = tab;
+    },
     onDrillDown(payload) {
-      if (!this.$refs.orgList) return;
-      this.$refs.orgList.applyDrillDown(payload);
+      // Drill-down originates from the KPI strip which lives in the Orgs
+      // tab — but if a future trigger fires it while we're on Health,
+      // switch over first so the org list is mounted before we scroll.
+      if (this.activeTab !== "orgs") {
+        this.activeTab = "orgs";
+      }
       this.$nextTick(() => {
+        if (!this.$refs.orgList) return;
+        this.$refs.orgList.applyDrillDown(payload);
         const el = this.$refs.orgList.$el;
         if (el && typeof el.scrollIntoView === "function") {
           el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -206,5 +265,36 @@ export default {
 
 .superadmin-dashboard__error {
   color: var(--color-danger);
+}
+
+.superadmin-dashboard__tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #eaecf0;
+  margin-bottom: calc(-1 * var(--spacing-lg) + 4px);
+}
+
+.superadmin-dashboard__tab {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-muted);
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+
+.superadmin-dashboard__tab:hover {
+  color: var(--color-text-primary);
+}
+
+.superadmin-dashboard__tab--active {
+  color: #4a90d9;
+  border-bottom-color: #4a90d9;
 }
 </style>
