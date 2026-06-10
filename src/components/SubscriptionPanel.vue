@@ -230,26 +230,11 @@
         </div>
       </div>
 
-      <!-- Password confirmation -->
-      <div class="sub-panel__password-box">
-        <div class="sub-panel__password-title">⚠ Admin password required</div>
-        <div class="sub-panel__password-body">
-          Nextcloud requires re-confirming your password for subscription
-          changes.
-        </div>
-        <input
-          type="password"
-          v-model="form.password"
-          class="sub-panel__password-input"
-          placeholder="Your admin password"
-          :disabled="saving"
-          autocomplete="current-password"
-          @keydown.enter="onPasswordEnter"
-        />
-      </div>
-
-      <!-- Server error -->
-      <div v-if="saveError" class="sub-panel__field-error">{{ saveError }}</div>
+      <!-- Server error (when modal is closed) -->
+      <div
+        v-if="saveError && !confirmOpen"
+        class="sub-panel__field-error"
+      >{{ saveError }}</div>
 
       <!-- Actions -->
       <div class="sub-panel__actions">
@@ -263,15 +248,71 @@
           type="button"
           class="sub-panel__btn sub-panel__btn--primary"
           :disabled="!canSave"
-          @click="saveChanges"
-        >
-          <span
-            v-if="saving"
-            class="sub-panel__spinner"
-            aria-hidden="true"
-          ></span>
-          Save changes
-        </button>
+          @click="openConfirm"
+        >Save changes</button>
+      </div>
+    </div>
+
+    <!-- ── Password confirmation modal ─────────────────────────────── -->
+    <div
+      v-if="confirmOpen"
+      class="sub-panel__modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      @click.self="closeConfirm"
+      @keydown.esc="closeConfirm"
+    >
+      <div class="sub-panel__modal">
+        <div class="sub-panel__modal-header">
+          <span>Confirm with your password</span>
+          <button
+            type="button"
+            class="sub-panel__modal-close"
+            aria-label="Close"
+            :disabled="saving"
+            @click="closeConfirm"
+          >×</button>
+        </div>
+        <div class="sub-panel__modal-body">
+          <p class="sub-panel__modal-body-text">
+            Nextcloud requires re-confirming your admin password before
+            applying subscription changes.
+          </p>
+          <input
+            type="password"
+            v-model="confirmPassword"
+            class="sub-panel__modal-password"
+            placeholder="Your admin password"
+            :disabled="saving"
+            autocomplete="current-password"
+            @keydown.enter="onPasswordEnter"
+          />
+          <div
+            v-if="saveError"
+            class="sub-panel__field-error sub-panel__modal-error"
+          >{{ saveError }}</div>
+        </div>
+        <div class="sub-panel__modal-actions">
+          <button
+            type="button"
+            class="sub-panel__btn sub-panel__btn--ghost"
+            :disabled="saving"
+            @click="closeConfirm"
+          >Cancel</button>
+          <button
+            type="button"
+            class="sub-panel__btn sub-panel__btn--primary"
+            :disabled="!canConfirm"
+            @click="saveChanges"
+          >
+            <span
+              v-if="saving"
+              class="sub-panel__spinner"
+              aria-hidden="true"
+            ></span>
+            Confirm &amp; save
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -279,16 +320,22 @@
 
 <script>
 import axios from "@nextcloud/axios";
-import { generateUrl } from "@nextcloud/router";
+import { generateUrl, generateOcsUrl } from "@nextcloud/router";
 
-// Org-app endpoints are plain Nextcloud app routes (not OCS), but the
-// controllers still require the OCS-APIRequest header per their attribute
-// set. Matches the pattern we already use in MembersPanel and ProjectsPanel.
-const ORG_APP_HEADERS = {
+// Org-app endpoints are exposed over OCS — use generateOcsUrl + the
+// OCS-APIRequest header + format=json query, then unwrap res.data.ocs.data.
+// Matches the pattern MembersPanel already uses for /apps/organization/...
+const ORG_OCS_HEADERS = {
   "OCS-APIRequest": "true",
   Accept: "application/json",
   "Content-Type": "application/json",
 };
+
+function unwrapOcs(res) {
+  const d = res && res.data;
+  if (d && d.ocs && d.ocs.data) return d.ocs.data;
+  return d || {};
+}
 
 const STATUS_OPTIONS = [
   { value: "active", label: "Active" },
@@ -323,8 +370,10 @@ export default {
         planId: null,
         status: "active",
         extendDuration: "",
-        password: "",
       },
+      // Password confirmation modal — opened by Save, owns its own state.
+      confirmOpen: false,
+      confirmPassword: "",
       saving: false,
       saveError: null,
       statusOptions: STATUS_OPTIONS,
@@ -428,9 +477,11 @@ export default {
       if (this.saving) return false;
       if (this.plansLoading || this.plansError) return false;
       if (!this.form.planId) return false;
-      if (!this.form.password) return false;
       if (!this.selectedPlan) return false;
       return true;
+    },
+    canConfirm() {
+      return !this.saving && this.confirmPassword.length > 0;
     },
   },
   methods: {
@@ -476,7 +527,8 @@ export default {
       this.form.planId = this.sub.planId || null;
       this.form.status = this.sub.status || "active";
       this.form.extendDuration = "";
-      this.form.password = "";
+      this.confirmPassword = "";
+      this.confirmOpen = false;
       this.saveError = null;
       if (this.plans.length === 0 && !this.plansLoading) {
         this.loadPlans();
@@ -484,21 +536,38 @@ export default {
     },
     cancelEdit() {
       this.mode = "read";
-      this.form.password = "";
+      this.confirmPassword = "";
+      this.confirmOpen = false;
       this.saveError = null;
+    },
+    openConfirm() {
+      if (!this.canSave) return;
+      this.confirmPassword = "";
+      this.saveError = null;
+      this.confirmOpen = true;
+      this.$nextTick(() => {
+        const el = this.$el.querySelector(".sub-panel__modal-password");
+        if (el && el.focus) el.focus();
+      });
+    },
+    closeConfirm() {
+      if (this.saving) return;
+      this.confirmOpen = false;
+      this.confirmPassword = "";
     },
     async loadPlans() {
       this.plansLoading = true;
       this.plansError = null;
       try {
         const res = await axios.get(
-          generateUrl("/apps/organization/plans"),
+          generateOcsUrl("/apps/organization/plans"),
           {
-            params: { limit: 200 },
-            headers: ORG_APP_HEADERS,
+            params: { limit: 200, format: "json" },
+            headers: ORG_OCS_HEADERS,
           },
         );
-        this.plans = (res.data && res.data.plans) || [];
+        const data = unwrapOcs(res);
+        this.plans = data.plans || [];
       } catch (e) {
         this.plansError = this.extractServerError(e, "Couldn't load plans.");
       } finally {
@@ -506,16 +575,16 @@ export default {
       }
     },
     onPasswordEnter() {
-      if (this.canSave) this.saveChanges();
+      if (this.canConfirm) this.saveChanges();
     },
     async saveChanges() {
-      if (!this.canSave) return;
+      if (!this.canConfirm) return;
       this.saving = true;
       this.saveError = null;
       try {
         // Step 1 — Nextcloud's PasswordConfirmationRequired gate.
         await axios.post(generateUrl("/login/confirm"), {
-          password: this.form.password,
+          password: this.confirmPassword,
         });
         // Step 2 — actual subscription update. All caps fields ride along
         // from the chosen plan so the API's all-fields-required body is
@@ -534,14 +603,19 @@ export default {
           body.extendDuration = this.form.extendDuration;
         }
         await axios.put(
-          generateUrl(
+          generateOcsUrl(
             "/apps/organization/organizations/" +
               this.org.profile.id +
               "/subscription",
           ),
           body,
-          { headers: ORG_APP_HEADERS },
+          {
+            params: { format: "json" },
+            headers: ORG_OCS_HEADERS,
+          },
         );
+        this.confirmOpen = false;
+        this.confirmPassword = "";
         this.mode = "read";
         this.$emit("reload");
       } catch (e) {
@@ -550,20 +624,27 @@ export default {
         const url =
           e && e.response && e.response.config && e.response.config.url;
         if (url && url.indexOf("/login/confirm") !== -1 && status === 403) {
+          // Keep the modal open so the admin can retype the password.
           this.saveError = "Wrong password. Try again.";
+          this.confirmPassword = "";
+          this.$nextTick(() => {
+            const el = this.$el.querySelector(".sub-panel__modal-password");
+            if (el && el.focus) el.focus();
+          });
         } else if (status === 404) {
           this.saveError =
             "Subscription no longer exists. The organization may have been deleted.";
+          this.confirmOpen = false;
           this.$emit("reload");
         } else {
           this.saveError = this.extractServerError(
             e,
             "Couldn't save changes. Try again.",
           );
+          // Network/server error: keep the modal open so the admin can retry.
         }
       } finally {
         this.saving = false;
-        this.form.password = "";
       }
     },
     extractServerError(err, fallback) {
@@ -1026,42 +1107,103 @@ export default {
   color: var(--color-text-primary, #1a1a2e);
 }
 
-/* ── Password block ──────────────────────────────────────────────────── */
-.sub-panel__password-box {
-  background: #fffaeb;
-  border: 1px solid #fec84b;
-  border-radius: 8px;
-  padding: 14px;
-  margin-bottom: 14px;
+/* ── Password confirmation modal ─────────────────────────────────────── */
+.sub-panel__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+  padding: 16px;
 }
 
-.sub-panel__password-title {
-  font-size: 12px;
+.sub-panel__modal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+  animation: sub-panel-modal-in 0.15s ease-out;
+}
+
+@keyframes sub-panel-modal-in {
+  from { transform: scale(0.96); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.sub-panel__modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eaecf0;
+  font-size: 14px;
   font-weight: 700;
-  color: #b54708;
-  margin-bottom: 6px;
+  color: var(--color-text-primary, #1a1a2e);
 }
 
-.sub-panel__password-body {
-  font-size: 11px;
-  color: #b54708;
-  margin-bottom: 10px;
+.sub-panel__modal-close {
+  background: transparent;
+  border: 0;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--color-text-muted, #9ca3af);
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.sub-panel__modal-close:hover:not(:disabled) {
+  background: #f0f1f5;
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.sub-panel__modal-close:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sub-panel__modal-body {
+  padding: 16px 18px;
+}
+
+.sub-panel__modal-body-text {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
   line-height: 1.5;
 }
 
-.sub-panel__password-input {
+.sub-panel__modal-password {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #fec84b;
-  border-radius: 6px;
+  padding: 9px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
   font-size: 13px;
   background: #fff;
   box-sizing: border-box;
   outline: none;
+  transition: border-color 0.15s;
 }
 
-.sub-panel__password-input:focus {
-  border-color: #b54708;
+.sub-panel__modal-password:focus {
+  border-color: #4a90d9;
+}
+
+.sub-panel__modal-error {
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+.sub-panel__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 18px 16px;
+  border-top: 1px solid #eaecf0;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
