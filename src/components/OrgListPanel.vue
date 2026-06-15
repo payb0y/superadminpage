@@ -6,6 +6,11 @@
         <span class="org-list__count">{{ orgs.length }}</span>
       </h2>
       <div class="org-list__header-controls">
+        <button
+          type="button"
+          class="org-list__create-btn"
+          @click="openCreate"
+        >+ Create organization</button>
         <div class="org-list__sort">
           <label class="org-list__sort-label" :for="sortSelectId">Sort</label>
           <select
@@ -365,6 +370,12 @@
         </select>
       </div>
     </div>
+
+    <CreateOrgModal
+      v-if="createOpen"
+      @close="closeCreate"
+      @created="onCreated"
+    />
   </section>
 </template>
 
@@ -373,6 +384,7 @@ import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import OrgCard from "./OrgCard.vue";
 import OrgDetailView from "./OrgDetailView.vue";
+import CreateOrgModal from "./CreateOrgModal.vue";
 
 const VIEW_MODE_STORAGE_KEY = "superadminpage.orgListView";
 const SORT_STORAGE_KEY = "superadminpage.orgListSort";
@@ -409,7 +421,7 @@ function planRank(planName) {
 
 export default {
   name: "OrgListPanel",
-  components: { OrgCard, OrgDetailView },
+  components: { OrgCard, OrgDetailView, CreateOrgModal },
   emits: ["list-stale"],
   props: {
     orgs: {
@@ -437,6 +449,7 @@ export default {
       detailCache: {},
       detailLoading: {},
       detailError: {},
+      createOpen: false,
     };
   },
   computed: {
@@ -592,6 +605,20 @@ export default {
       // sync after add-member / subscription edit / etc.
       this.$emit("list-stale");
     },
+    openCreate() {
+      this.createOpen = true;
+    },
+    closeCreate() {
+      this.createOpen = false;
+    },
+    onCreated() {
+      // CreateOrgModal fires this after success (or after the admin
+      // clicks Done on the credentials reveal). Close the modal and
+      // bubble up the staleness signal so Dashboard refetches the orgs
+      // list and the new row shows up.
+      this.createOpen = false;
+      this.$emit("list-stale");
+    },
     readViewMode() {
       try {
         const v = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
@@ -738,6 +765,23 @@ export default {
   align-items: center;
   gap: var(--spacing-sm, 8px);
   flex-wrap: wrap;
+}
+
+.org-list__create-btn {
+  background: #4a90d9;
+  color: #fff;
+  border: 1px solid #4a90d9;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.org-list__create-btn:hover {
+  background: #3a7bc3;
+  border-color: #3a7bc3;
 }
 
 .org-list__sort {

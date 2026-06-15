@@ -1,0 +1,118 @@
+{
+  "endpoint": "POST /apps/organization/organizations",
+  "ocs": true,
+  "auth": "Admin/root with PasswordConfirmationRequired",
+  "request": {
+    "validity": {
+      "type": "string",
+      "required": true,
+      "description": "Duration string (e.g. \"1 year\", \"1 month\")"
+    },
+    "memberLimit": {
+      "type": "int",
+      "required": false,
+      "nullable": true,
+      "description": "Max members"
+    },
+    "projectsLimit": {
+      "type": "int",
+      "required": false,
+      "nullable": true,
+      "description": "Max projects"
+    },
+    "sharedStoragePerProject": {
+      "type": "int",
+      "required": false,
+      "nullable": true,
+      "description": "Shared storage per project in bytes"
+    },
+    "privateStorage": {
+      "type": "int",
+      "required": false,
+      "nullable": true,
+      "description": "Private storage in bytes"
+    },
+    "planId": {
+      "type": "int",
+      "required": false,
+      "nullable": true,
+      "description": "Plan ID (null for custom plan)"
+    },
+    "price": {
+      "type": "float",
+      "required": false,
+      "nullable": true,
+      "description": "Price"
+    },
+    "currency": {
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "default": "EUR",
+      "description": "Currency code"
+    },
+    "displayname": {
+      "type": "string",
+      "required": false,
+      "default": "",
+      "description": "Organization display name"
+    },
+    "contactFirstName": {
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "description": "Contact first name"
+    },
+    "contactLastName": {
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "description": "Contact last name"
+    },
+    "contactEmail": {
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "description": "Contact email"
+    },
+    "contactPhone": {
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "description": "Contact phone"
+    },
+    "adminUserId": {
+      "type": "string",
+      "required": true,
+      "nullable": true,
+      "description": "Admin user ID (required when trial=false)"
+    },
+    "adminPassword": {
+      "type": "string",
+      "required": true,
+      "nullable": true,
+      "description": "Admin password (required when trial=false)"
+    },
+    "adminDisplayName": {
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "description": "Admin display name"
+    },
+    "adminEmail": {
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "description": "Admin email"
+    },
+    "trial": {
+      "type": "bool",
+      "required": false,
+      "default": false,
+      "description": "If true, creates a trial org with pre-configured limits"
+    }
+  },
+  "response": {
+    "description": "DataResponse containing the created Subscription entity"
+  }
+}
