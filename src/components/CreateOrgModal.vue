@@ -1139,10 +1139,15 @@ export default {
   inset: 0;
   background: rgba(15, 23, 42, 0.45);
   display: flex;
-  align-items: center;
+  /* Top-aligned with a padding that clears the Nextcloud header (~50px)
+     so a tall modal never slides up underneath it. */
+  align-items: flex-start;
   justify-content: center;
   z-index: 9000;
-  padding: 16px;
+  padding: 70px 16px 24px;
+  /* If for some reason the modal is somehow taller than the viewport,
+     allow page-level scroll instead of clipping it. */
+  overflow-y: auto;
 }
 
 .co-modal {
@@ -1151,7 +1156,9 @@ export default {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   width: 100%;
   max-width: 540px;
-  max-height: calc(100vh - 32px);
+  /* Cap to the visible area between the NC header and the bottom edge
+     so header + footer stay pinned and the body scrolls. */
+  max-height: calc(100vh - 94px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1657,10 +1664,10 @@ export default {
   inset: 0;
   background: rgba(15, 23, 42, 0.45);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 9100;
-  padding: 16px;
+  padding: 120px 16px 24px;
 }
 
 .co-modal__confirm {
