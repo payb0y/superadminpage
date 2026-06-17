@@ -15,9 +15,10 @@ use Psr\Log\LoggerInterface;
  * GeocodeService but drops the org-scope check — a super-admin can read
  * any project across the platform.
  *
- * Persists positive AND negative results in superadminpage_geocode_cache
- * so we never send the same address to Nominatim twice (per the OSMF
- * usage policy).
+ * Persists positive AND negative results in oc_superadminpage_geocache
+ * (the table name had to shorten "geocode_cache" → "geocache" to fit
+ * Nextcloud's 30-char identifier limit) so we never send the same address
+ * to Nominatim twice (per the OSMF usage policy).
  */
 class GeocodeService {
 
@@ -138,7 +139,7 @@ class GeocodeService {
     private function lookupCache(string $addrHash): ?array {
         $stmt = $this->db->prepare(
             "SELECT lat, lng, display_name, source
-             FROM *PREFIX*superadminpage_geocode_cache
+             FROM *PREFIX*superadminpage_geocache
              WHERE addr_hash = ? LIMIT 1"
         );
         $stmt->bindValue(1, $addrHash, \PDO::PARAM_STR);
@@ -160,7 +161,7 @@ class GeocodeService {
         // it. matches adminpage's approach.
         try {
             $stmt = $this->db->prepare(
-                "INSERT INTO *PREFIX*superadminpage_geocode_cache
+                "INSERT INTO *PREFIX*superadminpage_geocache
                  (addr_hash, lat, lng, display_name, source, created_at)
                  VALUES (?, ?, ?, ?, ?, ?)"
             );

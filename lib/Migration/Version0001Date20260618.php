@@ -16,8 +16,12 @@ class Version0001Date20260618 extends SimpleMigrationStep {
         /** @var ISchemaWrapper $schema */
         $schema = $schemaClosure();
 
-        if (!$schema->hasTable('superadminpage_geocode_cache')) {
-            $table = $schema->createTable('superadminpage_geocode_cache');
+        // Nextcloud caps table identifiers at 30 chars including the `oc_`
+        // prefix, so `superadminpage_geocode_cache` (31 with prefix) is out.
+        // Shorten "geocode_cache" → "geocache" to fit: final table name is
+        // `oc_superadminpage_geocache` (26 chars).
+        if (!$schema->hasTable('superadminpage_geocache')) {
+            $table = $schema->createTable('superadminpage_geocache');
 
             $table->addColumn('addr_hash', Types::STRING, [
                 'notnull' => true,
@@ -49,9 +53,8 @@ class Version0001Date20260618 extends SimpleMigrationStep {
             ]);
 
             // Explicit short PK name — Nextcloud enforces a 30-char limit
-            // on index identifiers, and the auto-generated PK name for this
-            // table ('superadminpage_geocode_cache_pkey') would exceed it.
-            $table->setPrimaryKey(['addr_hash'], 'superadmpage_geocache_pk');
+            // on index identifiers.
+            $table->setPrimaryKey(['addr_hash'], 'sap_geocache_pk');
         }
 
         return $schema;
