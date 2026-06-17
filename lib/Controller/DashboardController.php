@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\SuperAdminPage\Controller;
 
 use OCA\SuperAdminPage\Service\ActivityService;
+use OCA\SuperAdminPage\Service\GeocodeService;
 use OCA\SuperAdminPage\Service\OrgOverviewService;
 use OCA\SuperAdminPage\Service\PlatformService;
 use OCA\SuperAdminPage\Service\ProjectTasksService;
@@ -25,6 +26,7 @@ class DashboardController extends Controller {
     private ProjectTasksService $projectTasks;
     private ActivityService $activity;
     private SystemHealthService $systemHealth;
+    private GeocodeService $geocode;
 
     public function __construct(
         string $appName,
@@ -36,6 +38,7 @@ class DashboardController extends Controller {
         ProjectTasksService $projectTasks,
         ActivityService $activity,
         SystemHealthService $systemHealth,
+        GeocodeService $geocode,
     ) {
         parent::__construct($appName, $request);
         $this->userSession = $userSession;
@@ -45,6 +48,7 @@ class DashboardController extends Controller {
         $this->projectTasks = $projectTasks;
         $this->activity = $activity;
         $this->systemHealth = $systemHealth;
+        $this->geocode = $geocode;
     }
 
     /**
@@ -93,6 +97,39 @@ class DashboardController extends Controller {
             return new JSONResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
         }
         return new JSONResponse($data);
+    }
+
+    /**
+     * @NoCSRFRequired
+     */
+    public function getProjectGeocode(int $projectId): JSONResponse {
+        if (($forbidden = $this->requireAdmin()) !== null) {
+            return $forbidden;
+        }
+        $result = $this->geocode->geocodeProject($projectId);
+        switch ($result['status']) {
+            case 'no_project':
+                return new JSONResponse(['reason' => 'no_project'], Http::STATUS_NOT_FOUND);
+            case 'no_address':
+                return new JSONResponse(['reason' => 'no_address'], Http::STATUS_NOT_FOUND);
+            case 'not_found':
+                return new JSONResponse(['reason' => 'not_found'], Http::STATUS_NOT_FOUND);
+            case 'unavailable':
+                return new JSONResponse(
+                    ['error' => 'geocoding_unavailable'],
+                    Http::STATUS_SERVICE_UNAVAILABLE,
+                );
+            case 'ok':
+                return new JSONResponse([
+                    'lat'         => $result['lat'],
+                    'lng'         => $result['lng'],
+                    'displayName' => $result['displayName'] ?? null,
+                    'source'      => $result['source'] ?? 'nominatim',
+                    'fromCache'   => $result['fromCache'] ?? false,
+                ]);
+            default:
+                return new JSONResponse(['error' => 'internal'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

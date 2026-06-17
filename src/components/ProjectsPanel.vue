@@ -88,6 +88,13 @@
                 <span class="projects-panel__info-label">Description</span>
                 <span class="projects-panel__info-value">{{ project.description }}</span>
               </div>
+              <div
+                v-if="project.location && project.location !== ','"
+                class="projects-panel__info-item"
+              >
+                <span class="projects-panel__info-label">Project Address</span>
+                <span class="projects-panel__info-value">{{ project.location }}</span>
+              </div>
               <div class="projects-panel__info-item">
                 <span class="projects-panel__info-label">Created</span>
                 <span class="projects-panel__info-value">{{ formatDate(project.createdAt) }}</span>
@@ -137,11 +144,11 @@
                 >{{ project.clientPhone }}</a>
               </div>
               <div
-                v-if="project.location && project.location !== ','"
+                v-if="project.clientAddress"
                 class="projects-panel__info-item"
               >
-                <span class="projects-panel__info-label">Location</span>
-                <span class="projects-panel__info-value">{{ project.location }}</span>
+                <span class="projects-panel__info-label">Client Address</span>
+                <span class="projects-panel__info-value projects-panel__info-value--multiline">{{ project.clientAddress }}</span>
               </div>
             </div>
             <div v-else class="projects-panel__no-client">
@@ -162,6 +169,36 @@
                 <span class="projects-panel__resource-label">Notes</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div class="projects-panel__map-row">
+          <div class="projects-panel__card projects-panel__card--full">
+            <div class="projects-panel__card-header">
+              <h4 class="projects-panel__card-title">Project Location</h4>
+            </div>
+            <ProjectMap
+              v-if="geocodeStatus[project.id] === 'loaded' && geocodeByProject[project.id]"
+              :lat="Number(geocodeByProject[project.id].lat)"
+              :lng="Number(geocodeByProject[project.id].lng)"
+              :display-name="geocodeByProject[project.id].displayName || null"
+            />
+            <div
+              v-else-if="geocodeStatus[project.id] === 'no_address'"
+              class="projects-panel__map-state"
+            >No address available for this project.</div>
+            <div
+              v-else-if="geocodeStatus[project.id] === 'not_found'"
+              class="projects-panel__map-state"
+            >Couldn't locate this address on the map.</div>
+            <div
+              v-else-if="geocodeStatus[project.id] === 'unavailable'"
+              class="projects-panel__map-state projects-panel__map-state--error"
+            >{{ geocodeError[project.id] || "Map unavailable." }}</div>
+            <div
+              v-else
+              class="projects-panel__map-state"
+            >Loading map…</div>
           </div>
         </div>
 
@@ -380,10 +417,11 @@ import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import TimelineChart from "./TimelineChart.vue";
 import ProjectTaskBrowser from "./ProjectTaskBrowser.vue";
+import ProjectMap from "./ProjectMap.vue";
 
 export default {
   name: "ProjectsPanel",
-  components: { TimelineChart, ProjectTaskBrowser },
+  components: { TimelineChart, ProjectTaskBrowser, ProjectMap },
   emits: ["reload"],
   props: {
     projects: {
@@ -410,6 +448,11 @@ export default {
       // the projectcreatoraio API directly. Shape:
       // { [projectId]: { [userId]: { role, label } } }
       memberRolesByProject: {},
+      // Geocode result per project, fetched on project expand. Mirrors
+      // adminpage's per-project lookup but without the org scope check.
+      geocodeByProject: {},   // { [projectId]: { lat, lng, displayName, source, fromCache } }
+      geocodeStatus: {},      // 'loading' | 'loaded' | 'no_address' | 'not_found' | 'unavailable'
+      geocodeError: {},
       // Inline edit state for member DRASCI roles. Single-edit-at-a-time:
       // both fields are "<projectId>:<userId>" strings, or null when idle.
       editingRoleKey: null,
@@ -449,7 +492,7 @@ export default {
         p.clientName ||
         p.clientEmail ||
         p.clientPhone ||
-        (p.location && p.location !== ",")
+        p.clientAddress
       );
     },
     statusClass(p) {
@@ -502,8 +545,53 @@ export default {
         if (!this.memberRolesByProject[id]) {
           this.loadProjectMemberRoles(id);
         }
+        if (!this.geocodeStatus[id]) {
+          this.loadProjectGeocode(id);
+        }
       } else {
         this.expandedIds.splice(i, 1);
+      }
+    },
+    async loadProjectGeocode(projectId) {
+      if (!projectId) return;
+      if (this.geocodeStatus[projectId] === "loading") return;
+      this.$set(this.geocodeStatus, projectId, "loading");
+      this.$set(this.geocodeError, projectId, null);
+      try {
+        const res = await axios.get(
+          generateUrl(
+            "/apps/superadminpage/api/super/projects/" + projectId + "/geocode",
+          ),
+        );
+        const d = (res && res.data) || {};
+        if (d.lat != null && d.lng != null) {
+          this.$set(this.geocodeByProject, projectId, d);
+          this.$set(this.geocodeStatus, projectId, "loaded");
+        } else {
+          this.$set(this.geocodeStatus, projectId, "not_found");
+        }
+      } catch (e) {
+        const code = (e && e.response && e.response.status) || 0;
+        const reason =
+          (e && e.response && e.response.data && e.response.data.reason) || "";
+        if (code === 404 && reason === "no_address") {
+          this.$set(this.geocodeStatus, projectId, "no_address");
+        } else if (code === 404 && reason === "not_found") {
+          this.$set(this.geocodeStatus, projectId, "not_found");
+        } else if (code === 404 && reason === "no_project") {
+          this.$set(this.geocodeStatus, projectId, "unavailable");
+          this.$set(this.geocodeError, projectId, "Project no longer exists.");
+        } else if (code === 503) {
+          this.$set(this.geocodeStatus, projectId, "unavailable");
+          this.$set(
+            this.geocodeError,
+            projectId,
+            "Geocoding service unavailable.",
+          );
+        } else {
+          this.$set(this.geocodeStatus, projectId, "unavailable");
+          this.$set(this.geocodeError, projectId, "Couldn't load map.");
+        }
       }
     },
     async loadTasks(projectId) {
@@ -968,6 +1056,10 @@ export default {
   gap: 14px;
 }
 
+.projects-panel__map-row {
+  margin-top: 14px;
+}
+
 .projects-panel__card {
   background: #fff;
   border: 1px solid var(--color-border, #e5e7eb);
@@ -976,6 +1068,28 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.projects-panel__card--full {
+  width: 100%;
+}
+
+.projects-panel__map-state {
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted, #9ca3af);
+  font-size: 13px;
+  background: #f9fafb;
+  border-radius: 8px;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.projects-panel__map-state--error {
+  color: #b91c1c;
+  background: #fef3f2;
 }
 
 .projects-panel__card-header {
@@ -1050,6 +1164,10 @@ export default {
   font-size: 13px;
   color: var(--color-text-primary, #1a1a2e);
   word-break: break-word;
+}
+
+.projects-panel__info-value--multiline {
+  white-space: pre-wrap;
 }
 
 .projects-panel__info-link {
