@@ -151,6 +151,12 @@
         @reload="$emit('reload')"
       />
 
+      <HandoverPanel
+        v-else-if="activeTab === 'handover'"
+        :org="org"
+        @reload="$emit('reload')"
+      />
+
       <BackupsPanel
         v-else-if="activeTab === 'backups'"
         :jobs="org.backups || []"
@@ -175,10 +181,11 @@ import ProjectsPanel from "./ProjectsPanel.vue";
 import BackupsPanel from "./BackupsPanel.vue";
 import ActivityFeed from "./ActivityFeed.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
+import HandoverPanel from "./HandoverPanel.vue";
 
 export default {
   name: "OrgDetailView",
-  components: { KpiCard, MembersPanel, ProjectsPanel, BackupsPanel, ActivityFeed, SubscriptionPanel },
+  components: { KpiCard, MembersPanel, ProjectsPanel, BackupsPanel, ActivityFeed, SubscriptionPanel, HandoverPanel },
   props: {
     org: {
       type: Object,
@@ -205,6 +212,7 @@ export default {
           count: this.org.projects.length,
         },
         { key: "subscription", label: "Subscription", count: null },
+        { key: "handover", label: "Handover", count: null },
         {
           key: "backups",
           label: "Backups",
