@@ -42,7 +42,7 @@ class OrgOverviewService {
             LEFT JOIN (
                 SELECT
                     cp2.organization_id AS org_id,
-                    SUM(CASE WHEN c.deleted_at = 0 AND c.archived = 0
+                    SUM(CASE WHEN c.deleted_at = 0 AND c.archived = false
                              THEN 1 ELSE 0 END) AS total_tasks,
                     SUM(CASE WHEN s2.title = 'Approved/Done' AND c.deleted_at = 0
                              THEN 1 ELSE 0 END) AS done_tasks,
@@ -50,7 +50,7 @@ class OrgOverviewService {
                               AND c.duedate IS NOT NULL
                               AND {$this->toEpoch('c.duedate')} < {$this->nowEpoch()}
                               AND c.deleted_at = 0
-                              AND c.archived  = 0
+                              AND c.archived  = false
                              THEN 1 ELSE 0 END) AS overdue_tasks
                 FROM *PREFIX*custom_projects cp2
                 INNER JOIN *PREFIX*deck_stacks s2
@@ -385,7 +385,7 @@ class OrgOverviewService {
             FROM *PREFIX*deck_stacks s
             INNER JOIN *PREFIX*deck_cards c ON c.stack_id = s.id
             WHERE s.board_id IN ($placeholders)
-              AND c.deleted_at = 0 AND c.archived = 0
+              AND c.deleted_at = 0 AND c.archived = false
             GROUP BY s.board_id
         ";
         $stmt = $this->db->prepare($totalSql);
@@ -420,7 +420,7 @@ class OrgOverviewService {
               AND s.title != 'Approved/Done'
               AND c.duedate IS NOT NULL
               AND {$this->toEpoch('c.duedate')} < ?
-              AND c.deleted_at = 0 AND c.archived = 0
+              AND c.deleted_at = 0 AND c.archived = false
             GROUP BY s.board_id
         ";
         $stmt3 = $this->db->prepare($overdueSql);
@@ -434,7 +434,7 @@ class OrgOverviewService {
             SELECT s.board_id, s.title AS stack_title, s.order AS stack_order, COUNT(c.id) AS card_count
             FROM *PREFIX*deck_stacks s
             LEFT JOIN *PREFIX*deck_cards c
-                ON c.stack_id = s.id AND c.deleted_at = 0 AND c.archived = 0
+                ON c.stack_id = s.id AND c.deleted_at = 0 AND c.archived = false
             WHERE s.board_id IN ($placeholders)
             GROUP BY s.board_id, s.id, s.title, s.order
             ORDER BY s.board_id, s.order
@@ -668,7 +668,7 @@ class OrgOverviewService {
                    SUM(CASE WHEN s.title = 'Approved/Done' AND c.deleted_at = 0 THEN 1 ELSE 0 END) AS done_tasks
             FROM *PREFIX*custom_projects cp
             INNER JOIN *PREFIX*deck_stacks s  ON s.board_id = {$this->castInt('cp.board_id')}
-            INNER JOIN *PREFIX*deck_cards  c  ON c.stack_id = s.id AND c.deleted_at = 0 AND c.archived = 0
+            INNER JOIN *PREFIX*deck_cards  c  ON c.stack_id = s.id AND c.deleted_at = 0 AND c.archived = false
             WHERE cp.organization_id = ?
         ";
         $stmt3 = $this->db->prepare($taskSql);

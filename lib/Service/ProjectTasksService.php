@@ -88,7 +88,7 @@ class ProjectTasksService {
                 c.archived,
                 c.created_at    AS card_created_at,
                 CASE
-                    WHEN c.archived = 1                                       THEN 'archived'
+                    WHEN c.archived = true                                    THEN 'archived'
                     WHEN s.title = 'Approved/Done' OR c.done IS NOT NULL      THEN 'done'
                     ELSE 'open'
                 END AS task_status,

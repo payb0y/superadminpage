@@ -98,7 +98,7 @@ class PlatformService {
             INNER JOIN *PREFIX*deck_cards c
                     ON c.stack_id = s.id
                    AND c.deleted_at = 0
-                   AND c.archived = 0
+                   AND c.archived = false
         ";
         $stmt = $this->db->prepare($taskSql);
         $stmt->execute();
