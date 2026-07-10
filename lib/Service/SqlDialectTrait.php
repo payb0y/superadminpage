@@ -36,9 +36,13 @@ trait SqlDialectTrait {
      * `custom_projects.board_id` to the INT `deck_*.board_id`/`deck_boards.id`.
      */
     private function castInt(string $expr): string {
+        // NULLIF guards empty-string board_ids: Postgres errors on
+        // CAST('' AS INTEGER) (invalid input syntax), and MySQL would coerce
+        // '' to 0. Empty -> NULL -> the join simply doesn't match (correct).
+        // Assumes $expr is a text column that is either empty or numeric.
         return $this->isPostgres()
-            ? "CAST($expr AS INTEGER)"
-            : "CAST($expr AS UNSIGNED)";
+            ? "CAST(NULLIF($expr, '') AS INTEGER)"
+            : "CAST(NULLIF($expr, '') AS UNSIGNED)";
     }
 
     /**
