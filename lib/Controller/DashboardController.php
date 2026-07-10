@@ -16,6 +16,7 @@ use OCP\AppFramework\Http\JSONResponse;
 use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IUserSession;
+use Psr\Log\LoggerInterface;
 
 class DashboardController extends Controller {
 
@@ -27,6 +28,7 @@ class DashboardController extends Controller {
     private ActivityService $activity;
     private SystemHealthService $systemHealth;
     private GeocodeService $geocode;
+    private LoggerInterface $logger;
 
     public function __construct(
         string $appName,
@@ -39,6 +41,7 @@ class DashboardController extends Controller {
         ActivityService $activity,
         SystemHealthService $systemHealth,
         GeocodeService $geocode,
+        LoggerInterface $logger,
     ) {
         parent::__construct($appName, $request);
         $this->userSession = $userSession;
@@ -49,63 +52,54 @@ class DashboardController extends Controller {
         $this->activity = $activity;
         $this->systemHealth = $systemHealth;
         $this->geocode = $geocode;
+        $this->logger = $logger;
     }
 
     /**
      * @NoCSRFRequired
      */
     public function getData(): JSONResponse {
-        if (($forbidden = $this->requireAdmin()) !== null) {
-            return $forbidden;
-        }
-        return new JSONResponse($this->platform->getOverview());
+        return $this->guard(fn () => new JSONResponse($this->platform->getOverview()));
     }
 
     /**
      * @NoCSRFRequired
      */
     public function listOrgs(): JSONResponse {
-        if (($forbidden = $this->requireAdmin()) !== null) {
-            return $forbidden;
-        }
-        return new JSONResponse(['orgs' => $this->orgOverview->listOrgs()]);
+        return $this->guard(fn () => new JSONResponse(['orgs' => $this->orgOverview->listOrgs()]));
     }
 
     /**
      * @NoCSRFRequired
      */
     public function getOrg(int $orgId): JSONResponse {
-        if (($forbidden = $this->requireAdmin()) !== null) {
-            return $forbidden;
-        }
-        $data = $this->orgOverview->getOrgOverview($orgId);
-        if ($data === null) {
-            return new JSONResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
-        }
-        return new JSONResponse($data);
+        return $this->guard(function () use ($orgId) {
+            $data = $this->orgOverview->getOrgOverview($orgId);
+            if ($data === null) {
+                return new JSONResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
+            }
+            return new JSONResponse($data);
+        });
     }
 
     /**
      * @NoCSRFRequired
      */
     public function getProjectTasks(int $projectId): JSONResponse {
-        if (($forbidden = $this->requireAdmin()) !== null) {
-            return $forbidden;
-        }
-        $data = $this->projectTasks->getTasksForProject($projectId);
-        if ($data === null) {
-            return new JSONResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
-        }
-        return new JSONResponse($data);
+        return $this->guard(function () use ($projectId) {
+            $data = $this->projectTasks->getTasksForProject($projectId);
+            if ($data === null) {
+                return new JSONResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
+            }
+            return new JSONResponse($data);
+        });
     }
 
     /**
      * @NoCSRFRequired
      */
     public function getProjectGeocode(int $projectId): JSONResponse {
-        if (($forbidden = $this->requireAdmin()) !== null) {
-            return $forbidden;
-        }
+        return $this->guard(function () use ($projectId) {
         $result = $this->geocode->geocodeProject($projectId);
         switch ($result['status']) {
             case 'no_project':
@@ -130,73 +124,60 @@ class DashboardController extends Controller {
             default:
                 return new JSONResponse(['error' => 'internal'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
+        });
     }
 
     /**
      * @NoCSRFRequired
      */
     public function listBackups(): JSONResponse {
-        if (($forbidden = $this->requireAdmin()) !== null) {
-            return $forbidden;
-        }
-        return new JSONResponse([]);
+        return $this->guard(fn () => new JSONResponse([]));
     }
 
     /**
      * @NoCSRFRequired
      */
     public function listAho(): JSONResponse {
-        if (($forbidden = $this->requireAdmin()) !== null) {
-            return $forbidden;
-        }
-        return new JSONResponse([]);
+        return $this->guard(fn () => new JSONResponse([]));
     }
 
     /**
      * @NoCSRFRequired
      */
     public function listSubscriptions(): JSONResponse {
-        if (($forbidden = $this->requireAdmin()) !== null) {
-            return $forbidden;
-        }
-        return new JSONResponse([]);
+        return $this->guard(fn () => new JSONResponse([]));
     }
 
     /**
      * @NoCSRFRequired
      */
     public function getSystemHealth(): JSONResponse {
-        if (($forbidden = $this->requireAdmin()) !== null) {
-            return $forbidden;
-        }
-        return new JSONResponse($this->systemHealth->getSnapshot());
+        return $this->guard(fn () => new JSONResponse($this->systemHealth->getSnapshot()));
     }
 
     /**
      * @NoCSRFRequired
      */
     public function getOrgActivity(int $orgId): JSONResponse {
-        if (($forbidden = $this->requireAdmin()) !== null) {
-            return $forbidden;
-        }
-        [$sources, $page, $size, $filters] = $this->parseActivityQuery();
-        return new JSONResponse($this->activity->listForOrg($orgId, $page, $size, $sources, $filters));
+        return $this->guard(function () use ($orgId) {
+            [$sources, $page, $size, $filters] = $this->parseActivityQuery();
+            return new JSONResponse($this->activity->listForOrg($orgId, $page, $size, $sources, $filters));
+        });
     }
 
     /**
      * @NoCSRFRequired
      */
     public function getProjectActivity(int $orgId, int $projectId): JSONResponse {
-        if (($forbidden = $this->requireAdmin()) !== null) {
-            return $forbidden;
-        }
-        [$sources, $page, $size, $filters] = $this->parseActivityQuery();
-        $stream = (string)$this->request->getParam('stream', 'in_project');
+        return $this->guard(function () use ($orgId, $projectId) {
+            [$sources, $page, $size, $filters] = $this->parseActivityQuery();
+            $stream = (string)$this->request->getParam('stream', 'in_project');
 
-        if ($stream === 'org_wide') {
-            return new JSONResponse($this->activity->listOrgWideForProjectView($orgId, $page, $size, $sources, $filters));
-        }
-        return new JSONResponse($this->activity->listForProject($orgId, $projectId, $page, $size, $sources, $filters));
+            if ($stream === 'org_wide') {
+                return new JSONResponse($this->activity->listOrgWideForProjectView($orgId, $page, $size, $sources, $filters));
+            }
+            return new JSONResponse($this->activity->listForProject($orgId, $projectId, $page, $size, $sources, $filters));
+        });
     }
 
     /**
@@ -235,5 +216,35 @@ class DashboardController extends Controller {
             return new JSONResponse(['error' => 'forbidden'], Http::STATUS_FORBIDDEN);
         }
         return null;
+    }
+
+    /**
+     * Gate + error boundary for every action. Enforces the admin check, then
+     * runs the handler. Any exception is logged server-side and returned as a
+     * sanitized JSON 500 — we never leak the exception message or stack trace
+     * to the client (Nextcloud would otherwise serialize the full trace into
+     * the response body for a plain Controller).
+     *
+     * @param callable(): JSONResponse $handler
+     */
+    private function guard(callable $handler): JSONResponse {
+        if (($forbidden = $this->requireAdmin()) !== null) {
+            return $forbidden;
+        }
+        try {
+            return $handler();
+        } catch (\Throwable $e) {
+            $this->logger->error('superadminpage request failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'app' => 'superadminpage',
+            ]);
+            return new JSONResponse(
+                [
+                    'error' => 'internal',
+                    'message' => 'Something went wrong loading this data. Please try again in a moment.',
+                ],
+                Http::STATUS_INTERNAL_SERVER_ERROR,
+            );
+        }
     }
 }

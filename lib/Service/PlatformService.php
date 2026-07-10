@@ -8,6 +8,8 @@ use OCP\IDBConnection;
 
 class PlatformService {
 
+    use SqlDialectTrait;
+
     private IDBConnection $db;
 
     public function __construct(IDBConnection $db) {
@@ -92,7 +94,7 @@ class PlatformService {
                 END) AS overdue_tasks
             FROM *PREFIX*custom_projects cp
             INNER JOIN *PREFIX*deck_stacks s
-                    ON s.board_id = CAST(cp.board_id AS UNSIGNED)
+                    ON s.board_id = {$this->castInt('cp.board_id')}
             INNER JOIN *PREFIX*deck_cards c
                     ON c.stack_id = s.id
                    AND c.deleted_at = 0
@@ -145,7 +147,7 @@ class PlatformService {
             SELECT COUNT(*) AS cnt
             FROM *PREFIX*org_backup_jobs
             WHERE status = 'failed'
-              AND created_at >= UNIX_TIMESTAMP(NOW()) - 7 * 86400
+              AND created_at >= {$this->nowEpoch()} - 7 * 86400
         ";
         try {
             $stmt = $this->db->prepare($sql);
@@ -187,7 +189,7 @@ class PlatformService {
             FROM *PREFIX*custom_projects
             WHERE archived_at IS NULL
               AND (last_deck_move_at IS NULL
-                   OR last_deck_move_at < UNIX_TIMESTAMP(NOW()) - ? * 86400)
+                   OR last_deck_move_at < {$this->nowEpoch()} - ? * 86400)
         ";
         try {
             $stmt = $this->db->prepare($sql);

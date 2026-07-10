@@ -28,6 +28,8 @@ class ActivityService {
 
     public const SOURCES_PROJECT_ANCHORED = ['deck', 'talk', 'files', 'project'];
 
+    use SqlDialectTrait;
+
     private IDBConnection $db;
 
     public function __construct(IDBConnection $db) {
@@ -150,9 +152,9 @@ class ActivityService {
          LEFT JOIN *PREFIX*deck_stacks    ds
                 ON ds.id = dc.stack_id
          LEFT JOIN *PREFIX*custom_projects cp_card
-                ON CAST(cp_card.board_id AS UNSIGNED) = ds.board_id
+                ON {$this->castInt('cp_card.board_id')} = ds.board_id
          LEFT JOIN *PREFIX*custom_projects cp_board
-                ON CAST(cp_board.board_id AS UNSIGNED) = a.object_id
+                ON {$this->castInt('cp_board.board_id')} = a.object_id
              WHERE a.app = 'deck'
                AND a.user <> ''
                " . ($sinceTs !== null ? " AND a.timestamp < :sinceTs " : '') . "
@@ -340,7 +342,8 @@ class ActivityService {
     private function fromSubscription(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) { return []; }
 
-        $extra = $this->buildFilterClauses($filters, 'UNIX_TIMESTAMP(h.change_timestamp)', 'h.changed_by_user_id');
+        $tsExpr = $this->toEpoch('h.change_timestamp');
+        $extra = $this->buildFilterClauses($filters, $tsExpr, 'h.changed_by_user_id');
         $sql = "
             SELECT h.id, h.subscription_id, h.changed_by_user_id,
                    h.change_timestamp, h.previous_status, h.new_status,
@@ -351,7 +354,7 @@ class ActivityService {
          LEFT JOIN *PREFIX*plans pp ON pp.id = h.previous_plan_id
          LEFT JOIN *PREFIX*plans np ON np.id = h.new_plan_id
              WHERE s.organization_id = :orgId
-               " . ($sinceTs !== null ? " AND UNIX_TIMESTAMP(h.change_timestamp) < :sinceTs " : '') . "
+               " . ($sinceTs !== null ? " AND $tsExpr < :sinceTs " : '') . "
                " . $extra['sql'] . "
              ORDER BY h.change_timestamp DESC
              LIMIT " . (int)$limit;
@@ -402,7 +405,7 @@ class ActivityService {
     private function fromBackup(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) { return []; }
 
-        $tsExpr = 'UNIX_TIMESTAMP(COALESCE(finished_at, started_at, created_at))';
+        $tsExpr = $this->toEpoch('COALESCE(finished_at, started_at, created_at)');
         $extra = $this->buildFilterClauses($filters, $tsExpr, 'requested_by_uid');
         $sql = "
             SELECT id, requested_by_uid, status, backup_type, trigger_source,
@@ -448,7 +451,7 @@ class ActivityService {
     private function fromAho(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) { return []; }
 
-        $tsExpr = 'UNIX_TIMESTAMP(COALESCE(finished_at, started_at, created_at))';
+        $tsExpr = $this->toEpoch('COALESCE(finished_at, started_at, created_at)');
         $extra = $this->buildFilterClauses($filters, $tsExpr, 'requested_by_uid');
         $sql = "
             SELECT id, requested_by_uid, source_user_uid, target_user_uid, status,
@@ -495,12 +498,13 @@ class ActivityService {
     private function fromMember(int $orgId, ?int $projectId, ?int $sinceTs, int $limit, array $filters = []): array {
         if ($projectId !== null) { return []; }
 
-        $extra = $this->buildFilterClauses($filters, 'UNIX_TIMESTAMP(created_at)', 'user_uid');
+        $tsExpr = $this->toEpoch('created_at');
+        $extra = $this->buildFilterClauses($filters, $tsExpr, 'user_uid');
         $sql = "
             SELECT id, user_uid, role, created_at
               FROM *PREFIX*organization_members
              WHERE organization_id = :orgId
-               " . ($sinceTs !== null ? " AND UNIX_TIMESTAMP(created_at) < :sinceTs " : '') . "
+               " . ($sinceTs !== null ? " AND $tsExpr < :sinceTs " : '') . "
                " . $extra['sql'] . "
              ORDER BY created_at DESC
              LIMIT " . (int)$limit;
@@ -551,8 +555,8 @@ class ActivityService {
               FROM *PREFIX*custom_projects cp
               $where
              ORDER BY GREATEST(
-                 COALESCE(UNIX_TIMESTAMP(cp.created_at), 0),
-                 COALESCE(UNIX_TIMESTAMP(cp.archived_at), 0)
+                 COALESCE({$this->toEpoch('cp.created_at')}, 0),
+                 COALESCE({$this->toEpoch('cp.archived_at')}, 0)
              ) DESC
              LIMIT " . (int)$limit;
 

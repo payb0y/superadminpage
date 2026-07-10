@@ -8,6 +8,8 @@ use OCP\IDBConnection;
 
 class ProjectTasksService {
 
+    use SqlDialectTrait;
+
     private IDBConnection $db;
 
     public function __construct(IDBConnection $db) {
@@ -60,7 +62,7 @@ class ProjectTasksService {
             SELECT cp.id, cp.name, cp.organization_id, cp.board_id
             FROM *PREFIX*custom_projects cp
             INNER JOIN *PREFIX*deck_boards b
-                ON b.id = CAST(cp.board_id AS UNSIGNED)
+                ON b.id = {$this->castInt('cp.board_id')}
                 AND b.deleted_at = 0
             WHERE cp.id = ?
             LIMIT 1
@@ -91,11 +93,11 @@ class ProjectTasksService {
                     ELSE 'open'
                 END AS task_status,
                 CASE
-                    WHEN c.duedate IS NULL                                     THEN 'nodue'
-                    WHEN DATE(c.duedate) < CURDATE()                           THEN 'overdue'
-                    WHEN DATE(c.duedate) = CURDATE()                           THEN 'today'
-                    WHEN DATE(c.duedate) = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN 'tomorrow'
-                    WHEN DATE(c.duedate) <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 'nextSevenDays'
+                    WHEN c.duedate IS NULL                                        THEN 'nodue'
+                    WHEN CAST(c.duedate AS DATE) < CURRENT_DATE                    THEN 'overdue'
+                    WHEN CAST(c.duedate AS DATE) = CURRENT_DATE                    THEN 'today'
+                    WHEN CAST(c.duedate AS DATE) = {$this->dateAddDays('CURRENT_DATE', 1)}  THEN 'tomorrow'
+                    WHEN CAST(c.duedate AS DATE) <= {$this->dateAddDays('CURRENT_DATE', 7)} THEN 'nextSevenDays'
                     ELSE 'later'
                 END AS due_bucket
             FROM *PREFIX*deck_cards c

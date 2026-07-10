@@ -8,6 +8,8 @@ use OCP\IDBConnection;
 
 class OrgOverviewService {
 
+    use SqlDialectTrait;
+
     private IDBConnection $db;
 
     public function __construct(IDBConnection $db) {
@@ -46,13 +48,13 @@ class OrgOverviewService {
                              THEN 1 ELSE 0 END) AS done_tasks,
                     SUM(CASE WHEN s2.title != 'Approved/Done'
                               AND c.duedate IS NOT NULL
-                              AND UNIX_TIMESTAMP(c.duedate) < UNIX_TIMESTAMP()
+                              AND {$this->toEpoch('c.duedate')} < {$this->nowEpoch()}
                               AND c.deleted_at = 0
                               AND c.archived  = 0
                              THEN 1 ELSE 0 END) AS overdue_tasks
                 FROM *PREFIX*custom_projects cp2
                 INNER JOIN *PREFIX*deck_stacks s2
-                        ON s2.board_id = CAST(cp2.board_id AS UNSIGNED)
+                        ON s2.board_id = {$this->castInt('cp2.board_id')}
                 INNER JOIN *PREFIX*deck_cards c
                         ON c.stack_id = s2.id
                 WHERE cp2.board_id IS NOT NULL
@@ -182,8 +184,8 @@ class OrgOverviewService {
                 p.max_projects,
                 p.max_members,
                 p.is_public,
-                ROUND(p.shared_storage_per_project / 1073741824, 2) AS shared_storage_gb,
-                ROUND(p.private_storage_per_user   / 1073741824, 2) AS private_storage_gb
+                ROUND(p.shared_storage_per_project / 1073741824.0, 2) AS shared_storage_gb,
+                ROUND(p.private_storage_per_user   / 1073741824.0, 2) AS private_storage_gb
             FROM *PREFIX*subscriptions sub
             INNER JOIN *PREFIX*plans p ON p.id = sub.plan_id
             WHERE sub.organization_id = ?
@@ -265,7 +267,7 @@ class OrgOverviewService {
             JOIN *PREFIX*deck_cards  c  ON c.id = au.card_id AND c.deleted_at = 0
             JOIN *PREFIX*deck_stacks s  ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b  ON b.id = s.board_id AND b.deleted_at = 0
-            JOIN *PREFIX*custom_projects cp ON cp.board_id = CAST(b.id AS CHAR)
+            JOIN *PREFIX*custom_projects cp ON cp.board_id = {$this->castText('b.id')}
                 AND cp.organization_id = ?
             WHERE au.type = 0
             GROUP BY au.participant
@@ -289,7 +291,7 @@ class OrgOverviewService {
             JOIN *PREFIX*deck_cards  c  ON c.id = au.card_id
             JOIN *PREFIX*deck_stacks s  ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b  ON b.id = s.board_id AND b.deleted_at = 0
-            JOIN *PREFIX*custom_projects cp ON cp.board_id = CAST(b.id AS CHAR)
+            JOIN *PREFIX*custom_projects cp ON cp.board_id = {$this->castText('b.id')}
                 AND cp.organization_id = ?
             WHERE au.type = 0
             GROUP BY au.participant
@@ -417,7 +419,7 @@ class OrgOverviewService {
             WHERE s.board_id IN ($placeholders)
               AND s.title != 'Approved/Done'
               AND c.duedate IS NOT NULL
-              AND UNIX_TIMESTAMP(c.duedate) < ?
+              AND {$this->toEpoch('c.duedate')} < ?
               AND c.deleted_at = 0 AND c.archived = 0
             GROUP BY s.board_id
         ";
@@ -665,7 +667,7 @@ class OrgOverviewService {
             SELECT COUNT(c.id) AS total_tasks,
                    SUM(CASE WHEN s.title = 'Approved/Done' AND c.deleted_at = 0 THEN 1 ELSE 0 END) AS done_tasks
             FROM *PREFIX*custom_projects cp
-            INNER JOIN *PREFIX*deck_stacks s  ON s.board_id = CAST(cp.board_id AS UNSIGNED)
+            INNER JOIN *PREFIX*deck_stacks s  ON s.board_id = {$this->castInt('cp.board_id')}
             INNER JOIN *PREFIX*deck_cards  c  ON c.stack_id = s.id AND c.deleted_at = 0 AND c.archived = 0
             WHERE cp.organization_id = ?
         ";

@@ -6,7 +6,12 @@
     </div>
 
     <div v-else-if="error" class="superadmin-dashboard__error">
-      <p>{{ error }}</p>
+      <p class="superadmin-dashboard__error-msg">{{ error }}</p>
+      <button
+        type="button"
+        class="superadmin-dashboard__retry"
+        @click="retry"
+      >Try again</button>
     </div>
 
     <template v-else>
@@ -143,10 +148,37 @@ export default {
         this.orgs = (orgsRes.data && orgsRes.data.orgs) || [];
       } catch (e) {
         console.error("Failed to load dashboard", e);
-        this.error = e.message || "Failed to load dashboard";
+        this.error = this.friendlyError(e);
       } finally {
         this.loading = false;
       }
+    },
+    retry() {
+      this.error = null;
+      this.loading = true;
+      this.fetchAll();
+    },
+    // Turn an axios error into a message a human can act on, never the raw
+    // "Request failed with status code 500". Prefers a message the server
+    // deliberately sent (controller error boundary), then falls back to
+    // status-based copy.
+    friendlyError(e) {
+      const status = e && e.response && e.response.status;
+      const serverMsg =
+        e && e.response && e.response.data && e.response.data.message;
+      if (status === 403) {
+        return "You don't have permission to view this dashboard — super-admin access is required.";
+      }
+      if (serverMsg) {
+        return serverMsg;
+      }
+      if (status && status >= 500) {
+        return "The server ran into a problem loading the dashboard. Please try again in a moment.";
+      }
+      if (e && e.request && !e.response) {
+        return "Couldn't reach the server. Check your connection and try again.";
+      }
+      return "Something went wrong loading the dashboard. Please try again.";
     },
     async refreshOrgs() {
       // Triggered by OrgListPanel after any child reload (member add/
@@ -265,6 +297,30 @@ export default {
 
 .superadmin-dashboard__error {
   color: var(--color-danger);
+}
+
+.superadmin-dashboard__error-msg {
+  max-width: 420px;
+  text-align: center;
+  margin: 0;
+}
+
+.superadmin-dashboard__retry {
+  appearance: none;
+  border: 1px solid var(--color-border);
+  background: var(--bg-card);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.superadmin-dashboard__retry:hover {
+  background: #f0f1f5;
+  border-color: #d1d5db;
 }
 
 .superadmin-dashboard__tabs {
