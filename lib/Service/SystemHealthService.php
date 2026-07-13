@@ -379,7 +379,7 @@ class SystemHealthService {
 
     private function checkPdfToImage(): array {
         $base = rtrim(
-            (string)$this->config->getSystemValue('superadminpage.pdf_to_image_url', 'https://pdf2img.loket.site'),
+            (string)$this->config->getSystemValue('superadminpage.pdf_to_image_url', 'https://pdf2img-new.loket.site'),
             '/'
         );
 
