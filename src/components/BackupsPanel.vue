@@ -415,7 +415,7 @@ export default {
   color: var(--chart-5);
 }
 .backups-panel__filter-badge--manual.backups-panel__filter-badge--active {
-  background: var(--chart-5);
+  background: var(--chart-5-bg);
 }
 
 /* ─── Table ─── */

@@ -1331,11 +1331,13 @@ export default {
 
 /* ─── Member Card ─── */
 .members-panel__card {
-  border: 1px solid var(--bg-subtle);
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  margin-bottom: 8px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 10px;
   overflow: hidden;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .members-panel__card:last-child {
@@ -1442,7 +1444,7 @@ export default {
   color: var(--accent-strong);
 }
 .members-panel__role--owner {
-  background: var(--chart-5);
+  background: var(--chart-5-bg);
   color: var(--chart-5);
 }
 .members-panel__role--member {

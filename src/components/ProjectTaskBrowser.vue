@@ -472,7 +472,7 @@ export default {
 }
 
 .task-browser__status--done {
-  background: var(--accent-bg);
+  background: var(--chart-5-bg);
   color: var(--chart-5);
 }
 
@@ -487,7 +487,7 @@ export default {
   font-weight: 600;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
-  background: var(--chart-5);
+  background: var(--chart-5-bg);
   color: var(--chart-5);
   margin-right: 4px;
   white-space: nowrap;

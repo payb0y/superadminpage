@@ -1125,9 +1125,10 @@ export default {
 }
 
 .sub-panel__card {
-  background: var(--bg-subtle);
+  background: var(--bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
   padding: 14px;
 }
 

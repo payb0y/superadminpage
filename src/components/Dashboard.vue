@@ -307,6 +307,9 @@ export default {
   --chart-3: #2f9e8f;
   --chart-4: #d98a2b;
   --chart-5: #7c5cbf;
+  /* soft purple background pair for chart-5 badges (the sweep collapsed light
+     purple tints and dark purple text both onto --chart-5, hiding badge text) */
+  --chart-5-bg: color-mix(in oklab, var(--chart-5, #7c5cbf) 16%, var(--bg-card, #fff));
 
   /* spacing — unchanged */
   --spacing-xs: 4px;
