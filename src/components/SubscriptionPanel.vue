@@ -13,7 +13,10 @@
     </div>
 
     <!-- ── Read mode ────────────────────────────────────────────────── -->
-    <div v-else-if="mode === 'read'">
+    <div
+      v-else-if="mode === 'read'"
+      class="sub-panel__read"
+    >
       <!-- Top row: Status + Plan -->
       <div class="sub-panel__row sub-panel__row--two">
         <div class="sub-panel__card">
@@ -1103,6 +1106,14 @@ export default {
 }
 
 /* ── Layout ──────────────────────────────────────────────────────────── */
+/* Read-mode wrapper: stack the rows with the same 14px rhythm as .sub-panel
+   (the intermediate v-else-if div previously had no gap, so rows were flush). */
+.sub-panel__read {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .sub-panel__row--two {
   display: grid;
   grid-template-columns: 1fr 1fr;
