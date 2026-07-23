@@ -238,6 +238,14 @@ export default {
   transform: translateY(-2px);
   box-shadow: 0 10px 40px -12px rgba(204, 61, 148, 0.25);
 }
+
+/* Native form controls follow the In Zicht accent (checkboxes, radios, etc.) */
+.superadmin-dashboard input[type="checkbox"],
+.superadmin-dashboard input[type="radio"],
+.superadmin-dashboard input[type="range"],
+.superadmin-dashboard progress {
+  accent-color: var(--accent);
+}
 </style>
 
 <style scoped>
