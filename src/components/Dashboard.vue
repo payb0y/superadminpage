@@ -201,32 +201,73 @@ export default {
 </script>
 
 <style>
-/* unscoped — overrides Nextcloud dark mode */
+/* unscoped — page backdrop follows the In Zicht theme (light + dark) */
 #app-content:has(.superadmin-dashboard) {
-  background-color: #f0f1f5 !important;
+  background: var(--image-background);
 }
 </style>
 
 <style scoped>
 .superadmin-dashboard {
-  --bg-page: #f0f1f5;
-  --bg-card: #ffffff;
+  /* ---- In Zicht wiring: tokens consume the theme's NC variables ---- */
+  /* surfaces */
+  --bg-page: var(--image-background, linear-gradient(135deg, #f7e9f2, #fdf9fc)); /* gradient → use with `background:` */
+  --bg-card: var(--color-main-background, #ffffff);
+  --bg-subtle: var(--color-background-hover, #faf6fa);
+  --bg-inset: var(--color-background-dark, #f3ecf3);
+
+  /* text */
+  --color-text-primary: var(--color-main-text, #24172e);
+  --color-text-secondary: var(--color-text-maxcontrast, #6a6472);
+  --color-text-muted: color-mix(in oklab, var(--color-text-maxcontrast, #6a6472) 70%, var(--color-main-background, #fff));
+
+  /* borders — --color-border is inherited from the theme (do NOT redefine: cycle) */
+  --color-border-strong: var(--color-border-dark, #e6d8e6);
+
+  /* accent (pink) */
+  --accent: var(--color-primary-element, #cc3d94);
+  --accent-hover: var(--color-primary-element-hover, #bd3487);
+  --accent-strong: var(--color-primary, #3a2350);
+  --accent-bg: var(--color-primary-element-light, #f6e4f0);
+  --accent-on-bg: var(--color-primary-element-light-text, #8a2b6b);
+
+  /* radii */
+  --radius-card: var(--border-radius-container, 14px);
+  --radius-el: var(--border-radius-element, 8px);
+  --radius-sm: var(--border-radius-small, 6px);
+  --radius-lg: var(--border-radius-large, 10px);
+  --radius-pill: var(--border-radius-pill, 9999px);
+
+  /* shadows — In Zicht pink glow */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --radius-card: 12px;
-  --color-text-primary: #1a1a2e;
-  --color-text-secondary: #6b7280;
-  --color-text-muted: #9ca3af;
-  --color-danger: #d94040;
-  --color-warning: #b8860b;
-  --color-success: #2e7d32;
-  --color-badge-danger-bg: #fde8e8;
-  --color-badge-danger-text: #b91c1c;
-  --color-badge-warning-bg: #fef3cd;
-  --color-badge-warning-text: #92400e;
-  --color-badge-success-bg: #d4edda;
-  --color-badge-success-text: #166534;
-  --color-border: #e5e7eb;
+  --shadow-card-hover: 0 12px 32px -8px rgba(204, 61, 148, 0.15), 0 4px 12px -4px rgba(0, 0, 0, 0.08);
+
+  /* status — semantic; danger wired to theme, warning renamed off the theme var (cycle) */
+  --color-danger: var(--color-error, #c9314a);
+  --color-danger-text: var(--color-error, #b42318);
+  --color-danger-bg: color-mix(in oklab, var(--color-error, #c9314a) 14%, var(--color-main-background, #fff));
+  --color-warning-text: #a86a12;
+  --color-warning-bg: color-mix(in oklab, var(--color-warning, #ecc980) 30%, var(--color-main-background, #fff));
+  --color-success: #1f7a3e;
+  --color-success-text: #166534;
+  --color-success-bg: color-mix(in oklab, #1f7a3e 14%, var(--color-main-background, #fff));
+
+  /* legacy badge token names (children reference them) → point at the ramps */
+  --color-badge-danger-bg: var(--color-danger-bg);
+  --color-badge-danger-text: var(--color-danger-text);
+  --color-badge-warning-bg: var(--color-warning-bg);
+  --color-badge-warning-text: var(--color-warning-text);
+  --color-badge-success-bg: var(--color-success-bg);
+  --color-badge-success-text: var(--color-success-text);
+
+  /* chart palette — series 1 = pink, reharmonized for light + dark */
+  --chart-1: var(--color-primary-element, #cc3d94);
+  --chart-2: var(--color-primary, #3a2350);
+  --chart-3: #2f9e8f;
+  --chart-4: #d98a2b;
+  --chart-5: #7c5cbf;
+
+  /* spacing — unchanged */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
@@ -234,13 +275,11 @@ export default {
   --spacing-xl: 32px;
   --spacing-2xl: 40px;
 
-  background-color: var(--bg-page);
+  background: var(--bg-page);
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-lg);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial,
-    sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--color-text-primary);
   min-height: calc(100vh - 50px);
   display: flex;
@@ -255,6 +294,7 @@ export default {
 }
 
 .superadmin-dashboard__page-title {
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   font-size: 26px;
   font-weight: 700;
   color: var(--color-text-primary);
@@ -283,8 +323,8 @@ export default {
 .superadmin-dashboard__spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #4a90d9;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: superadmin-spin 0.8s linear infinite;
 }
@@ -313,24 +353,30 @@ export default {
   font-size: 13px;
   font-weight: 600;
   padding: 8px 18px;
-  border-radius: 8px;
+  border-radius: var(--radius-el);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .superadmin-dashboard__retry:hover {
-  background: #f0f1f5;
-  border-color: #d1d5db;
+  background: var(--bg-subtle);
+  border-color: var(--color-border-strong);
+}
+
+.superadmin-dashboard__retry:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent);
 }
 
 .superadmin-dashboard__tabs {
   display: flex;
   gap: 4px;
-  border-bottom: 1px solid #eaecf0;
+  border-bottom: 1px solid var(--color-border);
   margin-bottom: calc(-1 * var(--spacing-lg) + 4px);
 }
 
 .superadmin-dashboard__tab {
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   background: transparent;
   border: 0;
   border-bottom: 2px solid transparent;
@@ -350,7 +396,13 @@ export default {
 }
 
 .superadmin-dashboard__tab--active {
-  color: #4a90d9;
-  border-bottom-color: #4a90d9;
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.superadmin-dashboard__tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent);
+  border-radius: var(--radius-sm);
 }
 </style>
