@@ -332,12 +332,12 @@ export default {
 .task-browser__state {
   padding: 20px;
   text-align: center;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   font-size: 13px;
 }
 
 .task-browser__state--error {
-  color: #d94040;
+  color: var(--color-danger-text);
 }
 
 .task-browser__filters {
@@ -358,7 +358,7 @@ export default {
 .task-browser__label {
   font-size: 11px;
   font-weight: 600;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -366,30 +366,30 @@ export default {
 .task-browser__input,
 .task-browser__select {
   padding: 7px 10px;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 8px;
+  border: 1px solid var(--color-border, var(--color-border));
+  border-radius: var(--radius-el);
   font-size: 13px;
-  color: var(--color-text-primary, #1a1a2e);
-  background: #fff;
+  color: var(--color-text-primary, var(--color-text-primary));
+  background: var(--bg-card);
   outline: none;
   transition: border-color 0.15s;
 }
 
 .task-browser__input:focus,
 .task-browser__select:focus {
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .task-browser__count {
   font-size: 12px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
 }
 
 .task-browser__table-wrap {
   overflow-x: auto;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 8px;
-  background: #fff;
+  border: 1px solid var(--color-border, var(--color-border));
+  border-radius: var(--radius-el);
+  background: var(--bg-card);
 }
 
 .task-browser__table {
@@ -402,18 +402,18 @@ export default {
 .task-browser__table td {
   padding: 10px 12px;
   text-align: left;
-  border-bottom: 1px solid var(--color-border, #eef1f5);
-  color: var(--color-text-primary, #1a1a2e);
+  border-bottom: 1px solid var(--color-border, var(--bg-subtle));
+  color: var(--color-text-primary, var(--color-text-primary));
 }
 
 .task-browser__table th {
-  background: #fafbfd;
+  background: var(--bg-subtle);
   white-space: nowrap;
   font-weight: 600;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, var(--color-text-secondary));
 }
 
 .task-browser__table tbody tr:last-child td {
@@ -421,7 +421,7 @@ export default {
 }
 
 .task-browser__table tbody tr:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .task-browser__th-sort {
@@ -430,7 +430,7 @@ export default {
 }
 
 .task-browser__th-sort--active {
-  color: #4a90d9;
+  color: var(--accent);
 }
 
 .task-browser__sort-arrow {
@@ -451,9 +451,9 @@ export default {
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 4px;
-  background: #f0f4ff;
-  color: #4a90d9;
+  border-radius: var(--radius-sm);
+  background: var(--accent-bg);
+  color: var(--accent);
   white-space: nowrap;
 }
 
@@ -462,23 +462,23 @@ export default {
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   text-transform: capitalize;
 }
 
 .task-browser__status--open {
-  background: #d4edda;
-  color: #166534;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .task-browser__status--done {
-  background: #e0e7ff;
-  color: #3730a3;
+  background: var(--accent-bg);
+  color: var(--chart-5);
 }
 
 .task-browser__status--archived {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--bg-subtle);
+  color: var(--color-text-secondary);
 }
 
 .task-browser__label-badge {
@@ -486,42 +486,42 @@ export default {
   font-size: 10px;
   font-weight: 600;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: #ede9fe;
-  color: #6d28d9;
+  border-radius: var(--radius-sm);
+  background: var(--chart-5);
+  color: var(--chart-5);
   margin-right: 4px;
   white-space: nowrap;
 }
 
 .task-browser__muted {
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
 }
 
 .task-browser__due--overdue {
-  color: #d94040;
+  color: var(--color-danger-text);
   font-weight: 600;
 }
 
 .task-browser__due--today {
-  color: #b8860b;
+  color: var(--color-warning-text);
   font-weight: 600;
 }
 
 .task-browser__due--tomorrow {
-  color: #e67e5a;
+  color: var(--color-warning-text);
 }
 
 .task-browser__empty {
   text-align: center;
   padding: 24px 12px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
 .task-browser__age {
   font-size: 11px;
   font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
   white-space: nowrap;
 }
 
@@ -535,18 +535,18 @@ export default {
 
 .task-browser__page-btn {
   padding: 5px 14px;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 6px;
-  background: #fff;
+  border: 1px solid var(--color-border, var(--color-border));
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
   font-size: 13px;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
 
 .task-browser__page-btn:hover:not(:disabled) {
-  background: #fafbfd;
-  border-color: #4a90d9;
+  background: var(--bg-subtle);
+  border-color: var(--accent);
 }
 
 .task-browser__page-btn:disabled {
@@ -556,6 +556,6 @@ export default {
 
 .task-browser__page-info {
   font-size: 12px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
 }
 </style>

@@ -551,7 +551,7 @@ export default {
 .system-health__title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin: 0;
@@ -561,7 +561,7 @@ export default {
 }
 
 .system-health__title svg {
-  color: #4a90d9;
+  color: var(--accent);
 }
 
 .system-health__header-actions {
@@ -576,33 +576,33 @@ export default {
   gap: 6px;
   font-size: 11px;
   font-weight: 600;
-  color: #067a56;
-  background: #ecfdf5;
-  border: 1px solid #a6f4c5;
+  color: var(--color-success-text);
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-bg);
   padding: 3px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   cursor: default;
 }
 
 .system-health__live--paused {
-  color: #667085;
-  background: #f2f4f7;
-  border-color: #eaecf0;
+  color: var(--color-text-secondary);
+  background: var(--bg-subtle);
+  border-color: var(--color-border);
 }
 
 .system-health__live-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #10b981;
+  background: var(--color-success);
   box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
   animation: system-health-pulse 1.6s ease-out infinite;
 }
 
 .system-health__live--paused .system-health__live-dot {
-  background: #98a2b3;
+  background: var(--color-text-muted);
   animation: none;
   box-shadow: none;
 }
@@ -618,17 +618,17 @@ export default {
   align-items: center;
   gap: 6px;
   background: transparent;
-  border: 1px solid #d0d5dd;
+  border: 1px solid var(--color-border-strong);
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 500;
-  color: #344054;
-  border-radius: 6px;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
 .system-health__refresh:hover:not(:disabled) {
-  background: #f9fafb;
+  background: var(--bg-subtle);
 }
 
 .system-health__refresh:disabled {
@@ -652,10 +652,10 @@ export default {
 
 .system-health__error {
   font-size: 13px;
-  color: #b42318;
-  background: #fef3f2;
-  border: 1px solid #fecdca;
-  border-radius: 8px;
+  color: var(--color-danger-text);
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-bg);
+  border-radius: var(--radius-el);
   padding: 10px 12px;
   display: flex;
   align-items: center;
@@ -665,28 +665,28 @@ export default {
 .system-health__retry {
   margin-left: auto;
   background: transparent;
-  border: 1px solid #fecdca;
-  color: #b42318;
+  border: 1px solid var(--color-danger-bg);
+  color: var(--color-danger-text);
   font-size: 12px;
   font-weight: 500;
   padding: 3px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
 .system-health__retry:hover {
-  background: #fee4e2;
+  background: var(--color-danger-bg);
 }
 
 .system-health__subhead {
   font-size: 11px;
   font-weight: 600;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 20px 0 10px;
   padding-bottom: 6px;
-  border-bottom: 1px solid #f2f4f7;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 
 .system-health__subhead--first {
@@ -700,12 +700,12 @@ export default {
   border-radius: 50%;
   margin-right: 6px;
   vertical-align: middle;
-  background: #98a2b3;
+  background: var(--color-text-muted);
 }
 
-.system-health__status-dot--ok       { background: #10b981; }
-.system-health__status-dot--degraded { background: #f59e0b; }
-.system-health__status-dot--down     { background: #ef4444; }
+.system-health__status-dot--ok       { background: var(--color-success); }
+.system-health__status-dot--degraded { background: var(--color-warning-text); }
+.system-health__status-dot--down     { background: var(--color-danger); }
 
 .system-health__grid {
   display: grid;
@@ -714,8 +714,8 @@ export default {
 }
 
 .system-health__card {
-  border: 1px solid #eaecf0;
-  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -726,7 +726,7 @@ export default {
 .system-health__card-title {
   font-size: 11px;
   font-weight: 600;
-  color: #667085;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -734,7 +734,7 @@ export default {
 .system-health__card-value {
   font-size: 18px;
   font-weight: 600;
-  color: #1d2939;
+  color: var(--color-text-primary);
   line-height: 1.2;
   word-break: break-word;
 }
@@ -742,8 +742,8 @@ export default {
 .system-health__bar {
   position: relative;
   height: 6px;
-  border-radius: 999px;
-  background: #f2f4f7;
+  border-radius: var(--radius-pill);
+  background: var(--bg-subtle);
   overflow: visible;
 }
 
@@ -756,14 +756,14 @@ export default {
   position: absolute;
   inset: 0 auto 0 0;
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   transition: width 0.2s ease, background-color 0.2s ease;
 }
 
-.system-health__bar-fill--ok      { background: #10b981; }
-.system-health__bar-fill--warn    { background: #f59e0b; }
-.system-health__bar-fill--danger  { background: #ef4444; }
-.system-health__bar-fill--neutral { background: #98a2b3; }
+.system-health__bar-fill--ok      { background: var(--color-success); }
+.system-health__bar-fill--warn    { background: var(--color-warning-text); }
+.system-health__bar-fill--danger  { background: var(--color-danger); }
+.system-health__bar-fill--neutral { background: var(--color-text-muted); }
 
 .system-health__bar-percent {
   position: absolute;
@@ -771,12 +771,12 @@ export default {
   top: 10px;
   font-size: 11px;
   font-weight: 600;
-  color: #475467;
+  color: var(--color-text-secondary);
 }
 
 .system-health__card-sub {
   font-size: 11px;
-  color: #667085;
+  color: var(--color-text-secondary);
   margin-top: 14px;
   word-break: break-word;
 }

@@ -141,7 +141,7 @@ export default {
     },
     iconColor: {
       type: String,
-      default: "#4A90D9",
+      default: "var(--accent)",
     },
     metrics: {
       type: Array,
@@ -172,10 +172,12 @@ export default {
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   padding: 20px 24px;
-  transition: box-shadow 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .kpi-card:hover {
+  transform: translateY(-4px);
   box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
@@ -189,7 +191,7 @@ export default {
 .kpi-card__icon {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-el);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -204,7 +206,7 @@ export default {
 .kpi-card__title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
@@ -221,7 +223,7 @@ export default {
   gap: 2px;
   padding: 8px 14px;
   position: relative;
-  border-left: 1px solid var(--color-border, #e5e7eb);
+  border-left: 1px solid var(--color-border, var(--color-border));
 }
 
 .kpi-card__metric:first-child {
@@ -232,14 +234,14 @@ export default {
 .kpi-card__metric-value {
   font-size: 22px;
   font-weight: 700;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   line-height: 1.1;
   white-space: nowrap;
 }
 
 .kpi-card__metric-label {
   font-size: 11px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   line-height: 1.3;
   font-weight: 400;
   white-space: nowrap;

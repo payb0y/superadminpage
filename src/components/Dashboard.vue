@@ -205,6 +205,39 @@ export default {
 #app-content:has(.superadmin-dashboard) {
   background: var(--image-background);
 }
+
+/* ---- Cross-cutting In Zicht behaviours (unscoped so they reach every child
+   component's elements regardless of scoped data-v attributes) ---- */
+
+/* Space Grotesk on titles + big value numerals across all panels */
+.superadmin-dashboard [class*="__title"],
+.superadmin-dashboard [class*="__metric-value"],
+.superadmin-dashboard [class*="__value"],
+.superadmin-dashboard [class*="__count"],
+.superadmin-dashboard [class*="__figure"],
+.superadmin-dashboard [class*="__number"],
+.superadmin-dashboard [class*="__amount"],
+.superadmin-dashboard [class*="__headline"],
+.superadmin-dashboard [class*="__kpi-stat-value"] {
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+}
+
+/* Buttons — In Zicht motif: smooth transition + pink focus-visible ring on all,
+   hover lift on primary/create actions. Colors already themed via tokens. */
+.superadmin-dashboard [class*="btn"] {
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease, transform 0.2s ease;
+}
+.superadmin-dashboard [class*="btn"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent);
+}
+.superadmin-dashboard [class*="btn--primary"]:hover:not(:disabled),
+.superadmin-dashboard [class*="__create-btn"]:hover:not(:disabled),
+.superadmin-dashboard [class*="__add-btn"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px -12px rgba(204, 61, 148, 0.25);
+}
 </style>
 
 <style scoped>

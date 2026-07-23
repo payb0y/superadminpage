@@ -312,7 +312,7 @@ export default {
 
 .backups-panel__empty-text {
   font-size: 13px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   margin: 0;
 }
 
@@ -329,7 +329,7 @@ export default {
   display: flex;
   gap: 5px;
   padding-right: 12px;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid var(--color-border);
 }
 
 .backups-panel__filter-group:last-child {
@@ -341,17 +341,17 @@ export default {
   font-size: 11px;
   font-weight: 500;
   padding: 3px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   cursor: pointer;
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-subtle);
+  color: var(--color-text-secondary);
   transition: all 0.15s ease;
   user-select: none;
   border: 1.5px solid transparent;
 }
 
 .backups-panel__filter-badge:hover {
-  background: #e5e7eb;
+  background: var(--color-border);
 }
 
 .backups-panel__filter-badge--active {
@@ -361,61 +361,61 @@ export default {
 
 /* Status-specific filter colors */
 .backups-panel__filter-badge--completed {
-  color: #166534;
+  color: var(--color-success-text);
 }
 .backups-panel__filter-badge--completed.backups-panel__filter-badge--active {
-  background: #d4edda;
+  background: var(--color-success-bg);
 }
 
 .backups-panel__filter-badge--expired {
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 .backups-panel__filter-badge--expired.backups-panel__filter-badge--active {
-  background: #e5e7eb;
+  background: var(--color-border);
 }
 
 .backups-panel__filter-badge--running {
-  color: #1e4a8a;
+  color: var(--accent-strong);
 }
 .backups-panel__filter-badge--running.backups-panel__filter-badge--active {
-  background: #e8f0fe;
+  background: var(--accent-bg);
 }
 
 .backups-panel__filter-badge--failed {
-  color: #b91c1c;
+  color: var(--color-danger-text);
 }
 .backups-panel__filter-badge--failed.backups-panel__filter-badge--active {
-  background: #fde8e8;
+  background: var(--color-danger-bg);
 }
 
 /* Type-specific filter colors */
 .backups-panel__filter-badge--full {
-  color: #1e4a8a;
+  color: var(--accent-strong);
 }
 .backups-panel__filter-badge--full.backups-panel__filter-badge--active {
-  background: #e8f0fe;
+  background: var(--accent-bg);
 }
 
 .backups-panel__filter-badge--incremental {
-  color: #92400e;
+  color: var(--color-warning-text);
 }
 .backups-panel__filter-badge--incremental.backups-panel__filter-badge--active {
-  background: #fef3cd;
+  background: var(--color-warning-bg);
 }
 
 /* Trigger-specific filter colors */
 .backups-panel__filter-badge--scheduled {
-  color: #475569;
+  color: var(--color-text-secondary);
 }
 .backups-panel__filter-badge--scheduled.backups-panel__filter-badge--active {
-  background: #e2e8f0;
+  background: var(--bg-subtle);
 }
 
 .backups-panel__filter-badge--manual {
-  color: #6b21a8;
+  color: var(--chart-5);
 }
 .backups-panel__filter-badge--manual.backups-panel__filter-badge--active {
-  background: #f3e8ff;
+  background: var(--chart-5);
 }
 
 /* ─── Table ─── */
@@ -432,13 +432,13 @@ export default {
 .backups-panel__table th {
   font-size: 10px;
   font-weight: 600;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 0 10px 10px;
   text-align: left;
   white-space: nowrap;
-  border-bottom: 1px solid #eef1f5;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 
 .backups-panel__row {
@@ -446,12 +446,12 @@ export default {
 }
 
 .backups-panel__row:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .backups-panel__row td {
   padding: 10px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
   vertical-align: middle;
   white-space: nowrap;
 }
@@ -466,31 +466,31 @@ export default {
   font-size: 10px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-el);
   text-transform: capitalize;
 }
 
 .backups-panel__badge--completed {
-  background: var(--color-badge-success-bg, #d4edda);
-  color: var(--color-badge-success-text, #166534);
+  background: var(--color-badge-success-bg, var(--color-success-bg));
+  color: var(--color-badge-success-text, var(--color-success-text));
 }
 
 .backups-panel__badge--failed,
 .backups-panel__badge--error {
-  background: var(--color-badge-danger-bg, #fde8e8);
-  color: var(--color-badge-danger-text, #b91c1c);
+  background: var(--color-badge-danger-bg, var(--color-danger-bg));
+  color: var(--color-badge-danger-text, var(--color-danger-text));
 }
 
 .backups-panel__badge--running,
 .backups-panel__badge--pending,
 .backups-panel__badge--queued {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 
 .backups-panel__badge--expired {
-  background: #f0f1f5;
-  color: var(--color-text-muted, #9ca3af);
+  background: var(--bg-subtle);
+  color: var(--color-text-muted, var(--color-text-muted));
 }
 
 /* ─── Type Pill ─── */
@@ -499,18 +499,18 @@ export default {
   font-size: 10px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-el);
   text-transform: capitalize;
 }
 
 .backups-panel__type--full {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 
 .backups-panel__type--incremental {
-  background: #fef3cd;
-  color: #92400e;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 
 /* ─── Trigger ─── */
@@ -519,7 +519,7 @@ export default {
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: capitalize;
 }
 
@@ -531,41 +531,41 @@ export default {
 .backups-panel__artifact {
   font-size: 11px;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', Consolas, monospace;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
 }
 
 /* ─── Size ─── */
 .backups-panel__size {
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
 }
 
 /* ─── Dates ─── */
 .backups-panel__date {
   font-size: 12px;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
 }
 
 .backups-panel__date--expiring {
-  color: var(--color-badge-warning-text, #92400e);
+  color: var(--color-badge-warning-text, var(--color-warning-text));
   font-weight: 600;
 }
 
 .backups-panel__date--expired {
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   text-decoration: line-through;
 }
 
 /* ─── Duration ─── */
 .backups-panel__duration {
   font-size: 12px;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
 }
 
 /* ─── Muted placeholder ─── */
 .backups-panel__muted {
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   font-size: 12px;
 }
 

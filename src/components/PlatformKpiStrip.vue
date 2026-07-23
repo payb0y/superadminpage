@@ -1,6 +1,6 @@
 <template>
   <div class="platform-kpi-strip">
-    <KpiCard title="Organizations" icon-color="#4a90d9">
+    <KpiCard title="Organizations" icon-color="var(--accent)">
       <div class="kpi-card__metrics">
         <button
           type="button"
@@ -28,7 +28,7 @@
         </button>
       </div>
     </KpiCard>
-    <KpiCard title="Human Resources" icon-color="#8b5cf6">
+    <KpiCard title="Human Resources" icon-color="var(--chart-5)">
       <div class="kpi-card__metrics">
         <button
           type="button"
@@ -56,7 +56,7 @@
         </button>
       </div>
     </KpiCard>
-    <KpiCard title="Projects" icon-color="#f59e0b">
+    <KpiCard title="Projects" icon-color="var(--color-warning-text)">
       <div class="projects-kpi">
         <div class="projects-kpi__hero">
           <button
@@ -132,7 +132,7 @@
     </KpiCard>
     <KpiCard
       title="Financial"
-      icon-color="#2e9e5a"
+      icon-color="var(--color-success)"
       :metrics="[
         { value: mrrDisplay, label: 'MRR' },
         { value: arrDisplay, label: 'ARR' },
@@ -212,38 +212,38 @@ export default {
 .projects-kpi__hero-value {
   font-size: 22px;
   font-weight: 700;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
 
 .projects-kpi__hero-label {
   font-size: 11px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
 }
 
 .projects-kpi__hero-sep {
-  color: #cfd6e0;
+  color: var(--color-border-strong);
   font-size: 13px;
   user-select: none;
 }
 
 .projects-kpi__hero-tasks {
   font-size: 12px;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
   font-variant-numeric: tabular-nums;
 }
 
 .projects-kpi__hero-tasks strong {
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   font-weight: 700;
 }
 
 .projects-kpi__bar {
   display: flex;
   height: 8px;
-  border-radius: 4px;
-  background: #f0f1f5;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
   overflow: hidden;
 }
 
@@ -254,15 +254,15 @@ export default {
 }
 
 .projects-kpi__seg--done {
-  background: #10b981;
+  background: var(--color-success);
 }
 
 .projects-kpi__seg--overdue {
-  background: #ef4444;
+  background: var(--color-danger);
 }
 
 .projects-kpi__seg--open {
-  background: #4a90d9;
+  background: var(--accent);
 }
 
 .projects-kpi__legend {
@@ -270,7 +270,7 @@ export default {
   flex-wrap: wrap;
   gap: 4px 12px;
   font-size: 11px;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
   font-variant-numeric: tabular-nums;
 }
 
@@ -281,27 +281,27 @@ export default {
 }
 
 .projects-kpi__legend-item strong {
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   font-weight: 700;
 }
 
 .projects-kpi__dot {
   width: 8px;
   height: 8px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
 .projects-kpi__dot--done {
-  background: #10b981;
+  background: var(--color-success);
 }
 
 .projects-kpi__dot--overdue {
-  background: #ef4444;
+  background: var(--color-danger);
 }
 
 .projects-kpi__dot--open {
-  background: #4a90d9;
+  background: var(--accent);
 }
 
 @media (max-width: 1200px) {
@@ -322,7 +322,7 @@ export default {
   padding: 4px 8px;
   margin: -4px -8px;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--radius-el);
   font: inherit;
   color: inherit;
   text-align: left;
@@ -330,11 +330,11 @@ export default {
 }
 
 .kpi-link:hover {
-  background: rgba(74, 144, 217, 0.08);
+  background: rgba(204, 61, 148, 0.08);
 }
 
 .kpi-link:focus-visible {
-  outline: 2px solid #4a90d9;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -344,12 +344,12 @@ export default {
   gap: 2px;
   padding: 8px 14px;
   margin: 0;
-  border-left: 1px solid var(--color-border, #e5e7eb);
+  border-left: 1px solid var(--color-border, var(--color-border));
   border-radius: 0;
 }
 
 .kpi-link.kpi-card__metric:hover {
-  background: rgba(74, 144, 217, 0.08);
+  background: rgba(204, 61, 148, 0.08);
 }
 
 .kpi-card__metrics > .kpi-link.kpi-card__metric:first-child {

@@ -23,7 +23,7 @@ import "leaflet/dist/leaflet.css";
 // shipping marker-icon.png / marker-icon-2x.png / marker-shadow.png as
 // separate webpack-emitted asset files, which would have the same
 // "file-not-on-server" problem the lazy chunks had.
-const MARKER_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#b91c1c" stroke="#7f1d1d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3" fill="#fff" stroke="#7f1d1d"/></svg>';
+const MARKER_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="var(--color-danger-text)" stroke="var(--color-danger-text)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3" fill="#fff" stroke="var(--color-danger-text)"/></svg>';
 
 export default {
   name: "ProjectMap",
@@ -92,13 +92,13 @@ export default {
 .project-map__container {
   height: 280px;
   width: 100%;
-  border-radius: 8px;
+  border-radius: var(--radius-el);
   overflow: hidden;
-  background: #f0f1f5;
+  background: var(--bg-subtle);
 }
 .project-map__link {
   font-size: 12px;
-  color: #4a90d9;
+  color: var(--accent);
   text-decoration: none;
   align-self: flex-end;
 }

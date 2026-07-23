@@ -78,7 +78,7 @@ export default {
 .alerts-panel__title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin: 0;
@@ -88,13 +88,13 @@ export default {
 }
 
 .alerts-panel__title svg {
-  color: #b8860b;
+  color: var(--color-warning-text);
 }
 
 .alerts-panel__summary {
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
 }
 
 .alerts-panel__grid {
@@ -104,7 +104,7 @@ export default {
 }
 
 .alerts-panel__card {
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 14px 16px;
   border: 1px solid transparent;
   display: flex;
@@ -113,21 +113,21 @@ export default {
 }
 
 .alerts-panel__card--success {
-  background: var(--color-badge-success-bg, #d4edda);
-  border-color: #bfe3c6;
-  color: var(--color-badge-success-text, #166534);
+  background: var(--color-badge-success-bg, var(--color-success-bg));
+  border-color: var(--color-success-bg);
+  color: var(--color-badge-success-text, var(--color-success-text));
 }
 
 .alerts-panel__card--warning {
-  background: var(--color-badge-warning-bg, #fef3cd);
-  border-color: #fde68a;
-  color: var(--color-badge-warning-text, #92400e);
+  background: var(--color-badge-warning-bg, var(--color-warning-bg));
+  border-color: var(--color-warning-bg);
+  color: var(--color-badge-warning-text, var(--color-warning-text));
 }
 
 .alerts-panel__card--danger {
-  background: var(--color-badge-danger-bg, #fde8e8);
-  border-color: #fecaca;
-  color: var(--color-badge-danger-text, #b91c1c);
+  background: var(--color-badge-danger-bg, var(--color-danger-bg));
+  border-color: var(--color-danger-bg);
+  color: var(--color-badge-danger-text, var(--color-danger-text));
 }
 
 .alerts-panel__card-value {

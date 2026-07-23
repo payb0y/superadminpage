@@ -906,16 +906,16 @@ export default {
 }
 
 .ho-panel__card {
-  background: #fff;
-  border: 1px solid var(--color-border, #eaecf0);
-  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border, var(--color-border));
+  border-radius: var(--radius-lg);
   padding: 16px;
 }
 
 .ho-panel__label {
   font-size: 10px;
   font-weight: 700;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, var(--color-text-secondary));
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 10px;
@@ -932,37 +932,37 @@ export default {
 .ho-panel__arrow {
   text-align: center;
   padding-bottom: 8px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 20px;
 }
 
 .ho-panel__field-label {
   display: block;
   font-size: 11px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-bottom: 4px;
   font-weight: 600;
 }
 
 .ho-panel__req {
-  color: #b42318;
+  color: var(--color-danger-text);
 }
 
 .ho-panel__input {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-el);
   font-size: 13px;
-  background: #fff;
-  color: #1a1a2e;
+  background: var(--bg-card);
+  color: var(--color-text-primary);
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.15s;
 }
 
 .ho-panel__input:focus {
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .ho-panel__input:disabled {
@@ -971,9 +971,9 @@ export default {
 }
 
 .ho-panel__options {
-  background: #f9fafb;
-  border: 1px dashed #d0d5dd;
-  border-radius: 8px;
+  background: var(--bg-subtle);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-el);
   padding: 10px 12px;
   margin-bottom: 14px;
 }
@@ -983,7 +983,7 @@ export default {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
   margin-bottom: 6px;
   cursor: pointer;
   user-select: none;
@@ -999,24 +999,24 @@ export default {
 }
 
 .ho-panel__hint {
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .ho-panel__warning {
-  background: #fef0c7;
-  border: 1px solid #fec84b;
-  border-radius: 6px;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-text);
+  border-radius: var(--radius-sm);
   padding: 8px 10px;
   font-size: 11px;
-  color: #b54708;
+  color: var(--color-warning-text);
   margin-bottom: 12px;
   line-height: 1.4;
 }
 
 .ho-panel__dry-result {
   background: rgba(16, 185, 129, 0.06);
-  border: 1px solid #a7f3d0;
-  border-radius: 6px;
+  border: 1px solid var(--color-success-bg);
+  border-radius: var(--radius-sm);
   padding: 10px 12px;
   margin-bottom: 12px;
 }
@@ -1027,17 +1027,17 @@ export default {
   gap: 8px;
   font-size: 12px;
   font-weight: 700;
-  color: #047857;
+  color: var(--color-success-text);
   margin-bottom: 8px;
 }
 
 .ho-panel__dry-json {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11px;
-  color: #1a1a2e;
-  background: #fff;
-  border: 1px solid #d1fadf;
-  border-radius: 4px;
+  color: var(--color-text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--color-success-bg);
+  border-radius: var(--radius-sm);
   padding: 8px 10px;
   overflow-x: auto;
   margin: 0;
@@ -1048,17 +1048,17 @@ export default {
 
 .ho-panel__field-state {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-style: italic;
   margin-bottom: 10px;
 }
 
 .ho-panel__field-error {
   font-size: 12px;
-  color: #b42318;
-  background: #fef3f2;
-  border: 1px solid #fecdca;
-  border-radius: 6px;
+  color: var(--color-danger-text);
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-bg);
+  border-radius: var(--radius-sm);
   padding: 6px 10px;
   margin-bottom: 12px;
   display: flex;
@@ -1068,10 +1068,10 @@ export default {
 }
 
 .ho-panel__retry-link {
-  background: #fff;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  color: #4a90d9;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
@@ -1087,7 +1087,7 @@ export default {
 /* ── Buttons ─────────────────────────────────────────────────────────── */
 .ho-panel__btn {
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-el);
   padding: 7px 14px;
   font-size: 12px;
   font-weight: 600;
@@ -1099,25 +1099,25 @@ export default {
 }
 
 .ho-panel__btn--primary {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .ho-panel__btn--primary:hover:not(:disabled) {
-  background: #3a7bc3;
-  border-color: #3a7bc3;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .ho-panel__btn--ghost {
   background: transparent;
-  color: #6b7280;
-  border-color: #d0d5dd;
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-strong);
 }
 
 .ho-panel__btn--ghost:hover:not(:disabled) {
-  background: #f0f1f5;
-  color: #1a1a2e;
+  background: var(--bg-subtle);
+  color: var(--color-text-primary);
 }
 
 .ho-panel__btn:disabled {
@@ -1127,9 +1127,9 @@ export default {
 
 .ho-panel__btn-sm {
   background: transparent;
-  border: 1px solid #d0d5dd;
-  color: #4a90d9;
-  border-radius: 6px;
+  border: 1px solid var(--color-border-strong);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
   padding: 3px 10px;
   font-size: 11px;
   font-weight: 600;
@@ -1138,18 +1138,18 @@ export default {
 }
 
 .ho-panel__btn-sm:hover:not(:disabled) {
-  background: #f0f1f5;
+  background: var(--bg-subtle);
 }
 
 .ho-panel__btn-sm--primary {
-  background: #4a90d9;
-  border-color: #4a90d9;
+  background: var(--accent);
+  border-color: var(--accent);
   color: #fff;
 }
 
 .ho-panel__btn-sm--primary:hover:not(:disabled) {
-  background: #3a7bc3;
-  border-color: #3a7bc3;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .ho-panel__btn-sm:disabled {
@@ -1189,9 +1189,9 @@ export default {
   align-items: center;
   gap: 4px;
   background: rgba(16, 185, 129, 0.14);
-  color: #047857;
+  color: var(--color-success-text);
   padding: 3px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 11px;
   font-weight: 700;
 }
@@ -1200,7 +1200,7 @@ export default {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #10b981;
+  background: var(--color-success);
   animation: ho-panel-pulse 2s ease-in-out infinite;
 }
 
@@ -1211,10 +1211,10 @@ export default {
 
 .ho-panel__refresh {
   background: transparent;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
   padding: 3px 10px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -1222,8 +1222,8 @@ export default {
 }
 
 .ho-panel__refresh:hover:not(:disabled) {
-  background: #f0f1f5;
-  color: #1a1a2e;
+  background: var(--bg-subtle);
+  color: var(--color-text-primary);
 }
 
 .ho-panel__refresh:disabled {
@@ -1235,16 +1235,16 @@ export default {
   padding: 24px 12px;
   text-align: center;
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-style: italic;
-  background: #fafbfd;
-  border: 1px dashed #d0d5dd;
-  border-radius: 8px;
+  background: var(--bg-subtle);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-el);
 }
 
 .ho-panel__jobs-table {
-  border: 1px solid #eef1f5;
-  border-radius: 8px;
+  border: 1px solid var(--bg-subtle);
+  border-radius: var(--radius-el);
   overflow: hidden;
 }
 
@@ -1255,7 +1255,7 @@ export default {
   padding: 10px 14px;
   font-size: 12px;
   align-items: center;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 
 .ho-panel__jobs-row:last-child {
@@ -1263,20 +1263,20 @@ export default {
 }
 
 .ho-panel__jobs-row--head {
-  background: #fafbfd;
+  background: var(--bg-subtle);
   font-size: 11px;
   font-weight: 700;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
 
 .ho-panel__jobs-row--failed {
-  background: #fef3f2;
+  background: var(--color-danger-bg);
 }
 
 .ho-panel__job-endpoints {
-  color: #1a1a2e;
+  color: var(--color-text-primary);
 }
 
 .ho-panel__uid {
@@ -1284,11 +1284,11 @@ export default {
 }
 
 .ho-panel__arrow-small {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .ho-panel__ts {
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-size: 11px;
 }
 
@@ -1304,7 +1304,7 @@ export default {
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 11px;
   font-weight: 700;
   text-transform: capitalize;
@@ -1328,37 +1328,37 @@ export default {
 }
 
 .ho-panel__status--queued {
-  background: #eef2f7;
-  color: #6b7280;
+  background: var(--bg-subtle);
+  color: var(--color-text-secondary);
 }
 
 .ho-panel__status--running {
-  background: rgba(74, 144, 217, 0.14);
-  color: #1d4ed8;
+  background: rgba(204, 61, 148, 0.14);
+  color: var(--accent-strong);
 }
 
 .ho-panel__status--succeeded {
   background: rgba(16, 185, 129, 0.14);
-  color: #047857;
+  color: var(--color-success-text);
 }
 
 .ho-panel__status--failed {
   background: rgba(220, 38, 38, 0.12);
-  color: #b91c1c;
+  color: var(--color-danger-text);
 }
 
 .ho-panel__status--cancelled {
   background: rgba(245, 158, 11, 0.14);
-  color: #b45309;
+  color: var(--color-warning-text);
 }
 
 /* Expanded events */
 .ho-panel__events {
   padding: 12px 20px;
-  background: #fafbfd;
-  border-bottom: 1px solid #f3f4f6;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--bg-subtle);
   font-size: 12px;
-  color: #4b5563;
+  color: var(--color-text-secondary);
 }
 
 .ho-panel__events:last-child {
@@ -1377,17 +1377,17 @@ export default {
   font-weight: 700;
 }
 
-.ho-panel__events-icon--ok      { color: #047857; }
-.ho-panel__events-icon--fail    { color: #b91c1c; }
-.ho-panel__events-icon--neutral { color: #9ca3af; }
+.ho-panel__events-icon--ok      { color: var(--color-success-text); }
+.ho-panel__events-icon--fail    { color: var(--color-danger-text); }
+.ho-panel__events-icon--neutral { color: var(--color-text-muted); }
 
 .ho-panel__events-ts {
-  color: #6b7280;
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
 .ho-panel__events-msg {
-  color: #1a1a2e;
+  color: var(--color-text-primary);
   word-break: break-word;
 }
 
@@ -1398,11 +1398,11 @@ export default {
   align-items: center;
   margin-top: 10px;
   font-size: 11px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .ho-panel__pagination-info {
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .ho-panel__pagination-buttons {
@@ -1411,17 +1411,17 @@ export default {
 }
 
 .ho-panel__pagination-buttons button {
-  border: 1px solid #d0d5dd;
-  background: #fff;
-  color: #1a1a2e;
-  border-radius: 6px;
+  border: 1px solid var(--color-border-strong);
+  background: var(--bg-card);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-sm);
   padding: 3px 10px;
   font-size: 11px;
   cursor: pointer;
 }
 
 .ho-panel__pagination-buttons button:disabled {
-  color: #9ca3af;
+  color: var(--color-text-muted);
   cursor: not-allowed;
 }
 
@@ -1438,8 +1438,8 @@ export default {
 }
 
 .ho-panel__modal {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   width: 100%;
   max-width: 420px;
@@ -1451,10 +1451,10 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  border-bottom: 1px solid #eaecf0;
+  border-bottom: 1px solid var(--color-border);
   font-size: 14px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
 }
 
 .ho-panel__modal-close {
@@ -1462,15 +1462,15 @@ export default {
   border: 0;
   font-size: 22px;
   line-height: 1;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .ho-panel__modal-close:hover:not(:disabled) {
-  background: #f0f1f5;
-  color: #1a1a2e;
+  background: var(--bg-subtle);
+  color: var(--color-text-primary);
 }
 
 .ho-panel__modal-close:disabled {
@@ -1485,7 +1485,7 @@ export default {
 .ho-panel__modal-text {
   margin: 0 0 12px;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
@@ -1501,17 +1501,17 @@ export default {
 .ho-panel__modal-password {
   width: 100%;
   padding: 9px 12px;
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-el);
   font-size: 13px;
-  background: #fff;
+  background: var(--bg-card);
   box-sizing: border-box;
   outline: none;
   transition: border-color 0.15s;
 }
 
 .ho-panel__modal-password:focus {
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .ho-panel__modal-error {
@@ -1523,7 +1523,7 @@ export default {
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 18px 16px;
-  border-top: 1px solid #eaecf0;
+  border-top: 1px solid var(--color-border);
 }
 
 @media (max-width: 720px) {

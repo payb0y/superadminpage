@@ -139,7 +139,8 @@ export default {
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   padding: 20px 24px;
   cursor: pointer;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -147,16 +148,16 @@ export default {
 
 .org-card:hover {
   box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
-  transform: translateY(-1px);
+  transform: translateY(-4px);
 }
 
 .org-card--selected {
-  box-shadow: 0 0 0 2px #4a90d9, var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
-  background: #f5faff;
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
+  background: var(--accent-bg);
 }
 
 .org-card--selected:hover {
-  box-shadow: 0 0 0 2px #4a90d9, var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
 .org-card__header {
@@ -168,8 +169,8 @@ export default {
 .org-card__avatar {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #4a90d9, #6cb0f0);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--accent), var(--accent));
   color: #fff;
   font-size: 17px;
   font-weight: 700;
@@ -189,7 +190,7 @@ export default {
 .org-card__name {
   font-size: 15px;
   font-weight: 700;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -206,7 +207,7 @@ export default {
   font-size: 10px;
   font-weight: 600;
   padding: 3px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -214,24 +215,24 @@ export default {
 }
 
 .org-card__pill--success {
-  background: var(--color-badge-success-bg, #d4edda);
-  color: var(--color-badge-success-text, #166534);
+  background: var(--color-badge-success-bg, var(--color-success-bg));
+  color: var(--color-badge-success-text, var(--color-success-text));
 }
 .org-card__pill--warning {
-  background: var(--color-badge-warning-bg, #fef3cd);
-  color: var(--color-badge-warning-text, #92400e);
+  background: var(--color-badge-warning-bg, var(--color-warning-bg));
+  color: var(--color-badge-warning-text, var(--color-warning-text));
 }
 .org-card__pill--danger {
-  background: var(--color-badge-danger-bg, #fde8e8);
-  color: var(--color-badge-danger-text, #b91c1c);
+  background: var(--color-badge-danger-bg, var(--color-danger-bg));
+  color: var(--color-badge-danger-text, var(--color-danger-text));
 }
 .org-card__pill--muted {
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-subtle);
+  color: var(--color-text-secondary);
 }
 .org-card__pill--plan {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 
 .org-card__dot {
@@ -244,7 +245,7 @@ export default {
 
 .org-card__metrics {
   display: flex;
-  border-top: 1px solid var(--color-border, #e5e7eb);
+  border-top: 1px solid var(--color-border, var(--color-border));
   padding-top: 12px;
 }
 
@@ -254,7 +255,7 @@ export default {
   flex-direction: column;
   gap: 2px;
   padding-left: 14px;
-  border-left: 1px solid var(--color-border, #e5e7eb);
+  border-left: 1px solid var(--color-border, var(--color-border));
 }
 
 .org-card__metric:first-child {
@@ -265,21 +266,21 @@ export default {
 .org-card__metric-value {
   font-size: 20px;
   font-weight: 700;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   line-height: 1.1;
 }
 
 .org-card__metric-label {
   font-size: 11px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
 }
 
 .org-card__metric-value--highlight,
 .org-card__task--highlight {
-  background: #fef3cd;
-  color: #92400e;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
   padding: 1px 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
 }
 
@@ -290,7 +291,7 @@ export default {
   gap: 4px 6px;
   margin-top: 10px;
   font-size: 11px;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
   font-variant-numeric: tabular-nums;
 }
 
@@ -300,13 +301,13 @@ export default {
 }
 
 .org-card__task strong {
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   font-weight: 700;
   margin-right: 4px;
 }
 
 .org-card__task-sep {
-  color: #cfd6e0;
+  color: var(--color-border-strong);
   user-select: none;
 }
 </style>

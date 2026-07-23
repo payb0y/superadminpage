@@ -873,41 +873,41 @@ export default {
 .projects-panel__search {
   width: 100%;
   padding: 8px 14px;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 8px;
+  border: 1px solid var(--color-border, var(--color-border));
+  border-radius: var(--radius-el);
   font-size: 13px;
-  color: var(--color-text-primary, #1a1a2e);
-  background: #fff;
+  color: var(--color-text-primary, var(--color-text-primary));
+  background: var(--bg-card);
   outline: none;
   transition: border-color 0.15s;
 }
 
 .projects-panel__search:focus {
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .projects-panel__empty {
   padding: 24px;
   text-align: center;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   font-size: 13px;
 }
 
 .projects-panel__row {
-  background: #fff;
-  border: 1px solid #f3f4f6;
-  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--bg-subtle);
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   transition: border-color 0.15s;
 }
 
 .projects-panel__row:hover {
-  border-color: #e0e3e9;
+  border-color: var(--color-border);
 }
 
 .projects-panel__row--expanded {
-  border-color: #e0e3e9;
+  border-color: var(--color-border);
 }
 
 .projects-panel__row-header {
@@ -921,13 +921,13 @@ export default {
 }
 
 .projects-panel__row-header:focus-visible {
-  box-shadow: inset 0 0 0 2px #4a90d9;
-  border-radius: 10px;
+  box-shadow: inset 0 0 0 2px var(--accent);
+  border-radius: var(--radius-lg);
 }
 
 .projects-panel__chevron {
   font-size: 12px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   width: 12px;
   flex-shrink: 0;
   transition: transform 0.15s ease;
@@ -935,13 +935,13 @@ export default {
 
 .projects-panel__chevron--open {
   transform: rotate(90deg);
-  color: #4a90d9;
+  color: var(--accent);
 }
 
 .projects-panel__expanded {
-  border-top: 1px solid #eef1f5;
+  border-top: 1px solid var(--bg-subtle);
   padding: 16px;
-  background: #fafbfd;
+  background: var(--bg-subtle);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -950,9 +950,9 @@ export default {
 }
 
 .projects-panel__section {
-  background: #fff;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border, var(--color-border));
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -963,9 +963,9 @@ export default {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--color-text-muted, #6b7280);
-  background: #fafbfd;
-  border-bottom: 1px solid var(--color-border, #eef1f5);
+  color: var(--color-text-muted, var(--color-text-secondary));
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--color-border, var(--bg-subtle));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -993,7 +993,7 @@ export default {
 .projects-panel__name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1003,11 +1003,11 @@ export default {
   display: flex;
   gap: 10px;
   font-size: 11px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
 }
 
 .projects-panel__meta-item--danger {
-  color: var(--color-danger, #d94040);
+  color: var(--color-danger, var(--color-danger-text));
   font-weight: 600;
 }
 
@@ -1021,31 +1021,31 @@ export default {
 .projects-panel__bar {
   flex: 1;
   height: 6px;
-  background: #e5e7eb;
-  border-radius: 3px;
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .projects-panel__fill {
   height: 100%;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   transition: width 0.4s ease;
 }
 
 .projects-panel__fill--high {
-  background: #2e9e5a;
+  background: var(--color-success);
 }
 .projects-panel__fill--mid {
-  background: #f4a261;
+  background: var(--color-warning-text);
 }
 .projects-panel__fill--low {
-  background: #e63946;
+  background: var(--color-danger-text);
 }
 
 .projects-panel__pct {
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   min-width: 36px;
   text-align: right;
 }
@@ -1061,9 +1061,9 @@ export default {
 }
 
 .projects-panel__card {
-  background: #fff;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border, var(--color-border));
+  border-radius: var(--radius-lg);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -1079,17 +1079,17 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   font-size: 13px;
-  background: #f9fafb;
-  border-radius: 8px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-el);
   text-align: center;
   padding: 0 16px;
 }
 
 .projects-panel__map-state--error {
-  color: #b91c1c;
-  background: #fef3f2;
+  color: var(--color-danger-text);
+  background: var(--color-danger-bg);
 }
 
 .projects-panel__card-header {
@@ -1105,7 +1105,7 @@ export default {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, var(--color-text-secondary));
 }
 
 .projects-panel__card-title--sub {
@@ -1116,27 +1116,27 @@ export default {
   font-size: 11px;
   font-weight: 600;
   padding: 3px 10px;
-  border-radius: 999px;
-  background: #eef1f5;
-  color: #4b5563;
+  border-radius: var(--radius-pill);
+  background: var(--bg-subtle);
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
 .projects-panel__badge--active {
-  background: #e6f4ea;
-  color: #1f7a3e;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 .projects-panel__badge--waiting-on-customer {
-  background: #fff4e0;
-  color: #a1620b;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 .projects-panel__badge--on-hold {
-  background: #fde8e8;
-  color: #a32222;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
 }
 .projects-panel__badge--done {
-  background: #e8efff;
-  color: #2b57c7;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 
 .projects-panel__info-grid {
@@ -1156,13 +1156,13 @@ export default {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   font-weight: 600;
 }
 
 .projects-panel__info-value {
   font-size: 13px;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   word-break: break-word;
 }
 
@@ -1172,7 +1172,7 @@ export default {
 
 .projects-panel__info-link {
   font-size: 13px;
-  color: #4a90d9;
+  color: var(--accent);
   text-decoration: none;
   word-break: break-all;
 }
@@ -1183,7 +1183,7 @@ export default {
 
 .projects-panel__no-client {
   font-size: 12px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   font-style: italic;
 }
 
@@ -1197,30 +1197,30 @@ export default {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, var(--color-text-secondary));
   font-weight: 600;
 }
 
 .projects-panel__completion-pct {
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
 }
 
 .projects-panel__completion-bar {
   height: 6px;
-  background: #e5e7eb;
-  border-radius: 3px;
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .projects-panel__completion-fill {
   height: 100%;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   transition: width 0.4s ease;
 }
 
 .projects-panel__completion-detail {
   font-size: 11px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
 }
 
 .projects-panel__resources {
@@ -1234,21 +1234,21 @@ export default {
   flex-direction: column;
   align-items: center;
   padding: 10px 6px;
-  background: #fafbfd;
-  border: 1px solid var(--color-border, #eef1f5);
-  border-radius: 8px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--color-border, var(--bg-subtle));
+  border-radius: var(--radius-el);
   gap: 2px;
 }
 
 .projects-panel__resource-value {
   font-size: 18px;
   font-weight: 700;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
 }
 
 .projects-panel__resource-label {
   font-size: 11px;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, var(--color-text-secondary));
 }
 
 .projects-panel__kpi-row {
@@ -1258,9 +1258,9 @@ export default {
 }
 
 .projects-panel__kpi-stat {
-  background: #fff;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border, var(--color-border));
+  border-radius: var(--radius-lg);
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -1271,7 +1271,7 @@ export default {
 .projects-panel__kpi-stat-value {
   font-size: 22px;
   font-weight: 700;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   line-height: 1.1;
 }
 
@@ -1280,26 +1280,26 @@ export default {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, var(--color-text-secondary));
 }
 
 .projects-panel__kpi-stat-sub {
   font-size: 11px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
 }
 
 .projects-panel__kpi-bar {
   width: 100%;
   height: 4px;
-  background: #e5e7eb;
-  border-radius: 2px;
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
   overflow: hidden;
   margin-top: 2px;
 }
 
 .projects-panel__kpi-bar-fill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   transition: width 0.4s ease;
 }
 
@@ -1324,9 +1324,9 @@ export default {
   display: inline-block;
   margin-left: 6px;
   padding: 1px 8px;
-  border-radius: 999px;
-  background: #eef2f7;
-  color: #6b7280;
+  border-radius: var(--radius-pill);
+  background: var(--bg-subtle);
+  color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 600;
 }
@@ -1343,14 +1343,14 @@ export default {
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border-bottom: 1px solid #eef0f3;
+  border-bottom: 1px solid var(--color-border);
   transition: background 120ms ease;
 }
 .projects-panel__member:last-child {
   border-bottom: 0;
 }
 .projects-panel__member:hover {
-  background: #f7f9fc;
+  background: var(--bg-subtle);
 }
 .projects-panel__member-avatar {
   width: 36px;
@@ -1359,8 +1359,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(74, 144, 217, 0.12);
-  color: #4a90d9;
+  background: rgba(204, 61, 148, 0.12);
+  color: var(--accent);
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.5px;
@@ -1372,7 +1372,7 @@ export default {
 }
 .projects-panel__member-name {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-text-primary);
   font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1380,18 +1380,18 @@ export default {
 }
 .projects-panel__member-email {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-decoration: none;
 }
 .projects-panel__member-email:hover {
-  color: #4a90d9;
+  color: var(--accent);
   text-decoration: underline;
 }
 .projects-panel__member-email--muted {
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 .projects-panel__member-role {
@@ -1399,15 +1399,15 @@ export default {
   align-items: center;
   gap: 4px;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 .projects-panel__member-role--owner {
-  background: rgba(74, 144, 217, 0.12);
-  color: #4a90d9;
+  background: rgba(204, 61, 148, 0.12);
+  color: var(--accent);
 }
 .projects-panel__member-badges {
   display: inline-flex;
@@ -1420,7 +1420,7 @@ export default {
   display: inline-flex;
   align-items: center;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -1433,17 +1433,17 @@ export default {
 
 .projects-panel__member-drasci:hover {
   filter: brightness(0.92);
-  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.18);
+  box-shadow: 0 0 0 2px rgba(204, 61, 148, 0.18);
 }
 
 .projects-panel__member-drasci-edit {
   font-size: 11px;
   font-weight: 600;
   padding: 3px 6px;
-  border-radius: 999px;
-  border: 1px solid #4a90d9;
-  background: #fff;
-  color: #1f2937;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent);
+  background: var(--bg-card);
+  color: var(--color-text-primary);
   cursor: pointer;
   max-width: 140px;
   text-transform: uppercase;
@@ -1452,7 +1452,7 @@ export default {
 
 .projects-panel__member-drasci-edit:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.3);
+  box-shadow: 0 0 0 2px rgba(204, 61, 148, 0.3);
 }
 
 .projects-panel__member-drasci-edit:disabled {
@@ -1463,58 +1463,58 @@ export default {
 /* DRASCI role color palette — distinct hues for quick scanning */
 .projects-panel__member-drasci--driver {
   background: rgba(245, 158, 11, 0.14);
-  color: #b45309;
+  color: var(--color-warning-text);
 }
 
 .projects-panel__member-drasci--responsible {
-  background: rgba(74, 144, 217, 0.14);
-  color: #1d4ed8;
+  background: rgba(204, 61, 148, 0.14);
+  color: var(--accent-strong);
 }
 
 .projects-panel__member-drasci--accountable {
   background: rgba(220, 38, 38, 0.12);
-  color: #b91c1c;
+  color: var(--color-danger-text);
 }
 
 .projects-panel__member-drasci--supportive {
   background: rgba(16, 185, 129, 0.14);
-  color: #047857;
+  color: var(--color-success-text);
 }
 
 .projects-panel__member-drasci--consulted {
   background: rgba(139, 92, 246, 0.14);
-  color: #6d28d9;
+  color: var(--chart-5);
 }
 
 .projects-panel__member-drasci--informed {
-  background: #eef2f7;
-  color: #4b5563;
+  background: var(--bg-subtle);
+  color: var(--color-text-secondary);
 }
 
 .projects-panel__member-drasci--unassigned {
-  background: #f3f4f6;
-  color: #9ca3af;
+  background: var(--bg-subtle);
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
 .projects-panel__member-role--member {
-  background: #eef2f7;
-  color: #6b7280;
+  background: var(--bg-subtle);
+  color: var(--color-text-secondary);
 }
 .projects-panel__members-empty {
   padding: 14px 12px;
   text-align: center;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 13px;
   font-style: italic;
 }
 
 /* ── Inline "+ Add member" panel ────────────────────────────────────── */
 .projects-panel__add-toggle {
-  background: #fff;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  color: #4a90d9;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
   font-size: 11px;
   font-weight: 700;
   text-transform: none;
@@ -1528,15 +1528,15 @@ export default {
 }
 
 .projects-panel__add-toggle:hover {
-  background: #4a90d9;
-  border-color: #4a90d9;
+  background: var(--accent);
+  border-color: var(--accent);
   color: #fff;
 }
 
 .projects-panel__add-form {
-  background: #fafbfd;
-  border: 1px solid #eaecf0;
-  border-radius: 10px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: 12px 14px;
   margin-bottom: 12px;
 }
@@ -1544,25 +1544,25 @@ export default {
 .projects-panel__add-form-input {
   width: 100%;
   padding: 7px 12px;
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-el);
   font-size: 13px;
-  color: var(--color-text-primary, #1a1a2e);
-  background: #fff;
+  color: var(--color-text-primary, var(--color-text-primary));
+  background: var(--bg-card);
   outline: none;
   transition: border-color 0.15s;
   box-sizing: border-box;
 }
 
 .projects-panel__add-form-input:focus {
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .projects-panel__add-form-role {
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  background: #fff;
-  color: var(--color-text-primary, #1a1a2e);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--color-text-primary, var(--color-text-primary));
   font-size: 12px;
   padding: 5px 8px;
   cursor: pointer;
@@ -1572,23 +1572,23 @@ export default {
 
 .projects-panel__add-form-role:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .projects-panel__add-form-error {
   margin-top: 8px;
   font-size: 12px;
-  color: #b42318;
-  background: #fef3f2;
-  border: 1px solid #fecdca;
-  border-radius: 6px;
+  color: var(--color-danger-text);
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-bg);
+  border-radius: var(--radius-sm);
   padding: 6px 10px;
 }
 
 .projects-panel__add-form-state {
   margin-top: 8px;
   font-size: 12px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   font-style: italic;
 }
 
@@ -1596,9 +1596,9 @@ export default {
   list-style: none;
   margin: 8px 0 0;
   padding: 0;
-  background: #fff;
-  border: 1px solid #eaecf0;
-  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-el);
   overflow: hidden;
   max-height: 220px;
   overflow-y: auto;
@@ -1609,7 +1609,7 @@ export default {
   align-items: center;
   gap: 12px;
   padding: 8px 12px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 
 .projects-panel__add-form-result:last-child {
@@ -1627,7 +1627,7 @@ export default {
 .projects-panel__add-form-result-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1635,7 +1635,7 @@ export default {
 
 .projects-panel__add-form-result-meta {
   font-size: 11px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1644,10 +1644,10 @@ export default {
 .projects-panel__add-form-add-btn {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
-  border: 1px solid #4a90d9;
-  background: #fff;
-  color: #4a90d9;
+  border-radius: var(--radius-el);
+  border: 1px solid var(--accent);
+  background: var(--bg-card);
+  color: var(--accent);
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -1659,7 +1659,7 @@ export default {
 }
 
 .projects-panel__add-form-add-btn:hover:not(:disabled) {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
 }
 
@@ -1671,7 +1671,7 @@ export default {
 .projects-panel__add-form-spinner {
   width: 12px;
   height: 12px;
-  border: 2px solid #4a90d9;
+  border: 2px solid var(--accent);
   border-top-color: transparent;
   border-radius: 50%;
   animation: projects-panel-spin 0.8s linear infinite;

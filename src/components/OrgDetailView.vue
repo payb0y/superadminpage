@@ -292,7 +292,7 @@ export default {
   align-self: flex-end;
   background: none;
   border: none;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -300,7 +300,7 @@ export default {
 }
 
 .org-detail__back:hover {
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
 }
 
 .org-detail__header {
@@ -316,8 +316,8 @@ export default {
 .org-detail__avatar {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #4a90d9, #6cb0f0);
+  border-radius: var(--radius-card);
+  background: linear-gradient(135deg, var(--accent), var(--accent));
   color: #fff;
   font-size: 20px;
   font-weight: 700;
@@ -337,7 +337,7 @@ export default {
 .org-detail__name {
   font-size: 22px;
   font-weight: 700;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   margin: 0;
   line-height: 1.2;
 }
@@ -353,7 +353,7 @@ export default {
   font-size: 11px;
   font-weight: 600;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -361,24 +361,24 @@ export default {
 }
 
 .org-detail__pill--success {
-  background: var(--color-badge-success-bg, #d4edda);
-  color: var(--color-badge-success-text, #166534);
+  background: var(--color-badge-success-bg, var(--color-success-bg));
+  color: var(--color-badge-success-text, var(--color-success-text));
 }
 .org-detail__pill--warning {
-  background: var(--color-badge-warning-bg, #fef3cd);
-  color: var(--color-badge-warning-text, #92400e);
+  background: var(--color-badge-warning-bg, var(--color-warning-bg));
+  color: var(--color-badge-warning-text, var(--color-warning-text));
 }
 .org-detail__pill--danger {
-  background: var(--color-badge-danger-bg, #fde8e8);
-  color: var(--color-badge-danger-text, #b91c1c);
+  background: var(--color-badge-danger-bg, var(--color-danger-bg));
+  color: var(--color-badge-danger-text, var(--color-danger-text));
 }
 .org-detail__pill--muted {
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-subtle);
+  color: var(--color-text-secondary);
 }
 .org-detail__pill--plan {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 
 .org-detail__dot {
@@ -390,13 +390,13 @@ export default {
 
 .org-detail__contact {
   font-size: 12px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
 }
 
 .org-detail__tabs {
   display: flex;
   gap: 4px;
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  border-bottom: 1px solid var(--color-border, var(--color-border));
   padding: 0 4px;
 }
 
@@ -406,7 +406,7 @@ export default {
   padding: 10px 16px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
@@ -417,26 +417,26 @@ export default {
 }
 
 .org-detail__tab:hover {
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
 }
 
 .org-detail__tab--active {
-  color: #4a90d9;
-  border-bottom-color: #4a90d9;
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 .org-detail__tab-count {
   font-size: 11px;
   font-weight: 600;
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-subtle);
+  color: var(--color-text-secondary);
   padding: 1px 7px;
-  border-radius: 8px;
+  border-radius: var(--radius-el);
 }
 
 .org-detail__tab--active .org-detail__tab-count {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 
 .org-detail__body {
@@ -459,15 +459,15 @@ export default {
 }
 
 .org-detail__profile-card {
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 10px;
+  border: 1px solid var(--color-border, var(--color-border));
+  border-radius: var(--radius-lg);
   padding: 16px 20px;
 }
 
 .org-detail__section-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin: 0 0 12px;
@@ -484,7 +484,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #eef1f5;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 
 .org-detail__profile-item:last-child {
@@ -493,13 +493,13 @@ export default {
 
 .org-detail__profile-label {
   font-size: 12px;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary, var(--color-text-secondary));
 }
 
 .org-detail__profile-value {
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   text-align: right;
   word-break: break-word;
 }

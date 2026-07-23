@@ -1151,8 +1151,8 @@ export default {
 }
 
 .co-modal {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   width: 100%;
   max-width: 540px;
@@ -1175,14 +1175,14 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  border-bottom: 1px solid #eaecf0;
+  border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
 .co-modal__title {
   font-size: 15px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
 }
 
 .co-modal__close {
@@ -1190,15 +1190,15 @@ export default {
   border: 0;
   font-size: 22px;
   line-height: 1;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .co-modal__close:hover:not(:disabled) {
-  background: #f0f1f5;
-  color: #1a1a2e;
+  background: var(--bg-subtle);
+  color: var(--color-text-primary);
 }
 
 .co-modal__close:disabled {
@@ -1218,8 +1218,8 @@ export default {
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 18px;
-  border-top: 1px solid #eaecf0;
-  background: #fafbfd;
+  border-top: 1px solid var(--color-border);
+  background: var(--bg-subtle);
   flex-shrink: 0;
 }
 
@@ -1227,20 +1227,20 @@ export default {
 .co-modal__mode {
   display: flex;
   gap: 6px;
-  background: #f4f5f7;
+  background: var(--bg-subtle);
   padding: 3px;
-  border-radius: 8px;
+  border-radius: var(--radius-el);
   margin-bottom: 14px;
 }
 
 .co-modal__mode-pill {
   flex: 1;
   padding: 6px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   text-align: center;
   font-size: 12px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   cursor: pointer;
   user-select: none;
   display: flex;
@@ -1255,19 +1255,19 @@ export default {
 }
 
 .co-modal__mode-pill--active {
-  background: #fff;
-  color: #4a90d9;
+  background: var(--bg-card);
+  color: var(--accent);
   font-weight: 700;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .co-modal__hint {
-  background: rgba(74, 144, 217, 0.08);
-  border-left: 3px solid #4a90d9;
-  border-radius: 4px;
+  background: rgba(204, 61, 148, 0.08);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
   padding: 8px 10px;
   font-size: 11px;
-  color: #1d4ed8;
+  color: var(--accent-strong);
   margin-bottom: 14px;
 }
 
@@ -1275,7 +1275,7 @@ export default {
 .co-modal__section-label {
   font-size: 10px;
   font-weight: 700;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 4px 0 8px;
@@ -1287,7 +1287,7 @@ export default {
 
 .co-modal__optional {
   font-weight: 400;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 /* ── Fields ──────────────────────────────────────────────────────── */
@@ -1299,29 +1299,29 @@ export default {
   display: block;
   font-size: 11px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-bottom: 4px;
 }
 
 .co-modal__req {
-  color: #b42318;
+  color: var(--color-danger-text);
 }
 
 .co-modal__input {
   width: 100%;
   padding: 7px 10px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
   font-size: 12px;
-  background: #fff;
-  color: #1a1a2e;
+  background: var(--bg-card);
+  color: var(--color-text-primary);
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.15s;
 }
 
 .co-modal__input:focus {
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .co-modal__input:disabled {
@@ -1338,10 +1338,10 @@ export default {
 .co-modal__field-error {
   margin-top: 4px;
   font-size: 11px;
-  color: #b42318;
-  background: #fef3f2;
-  border: 1px solid #fecdca;
-  border-radius: 6px;
+  color: var(--color-danger-text);
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-bg);
+  border-radius: var(--radius-sm);
   padding: 6px 10px;
   display: flex;
   align-items: center;
@@ -1351,16 +1351,16 @@ export default {
 
 .co-modal__state {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-style: italic;
   margin-bottom: 10px;
 }
 
 .co-modal__retry {
-  background: #fff;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  color: #4a90d9;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
@@ -1381,10 +1381,10 @@ export default {
 }
 
 .co-modal__plan-custom-btn {
-  background: #fff;
-  border: 1px solid #4a90d9;
-  color: #4a90d9;
-  border-radius: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
   font-size: 11px;
   font-weight: 600;
   padding: 0 12px;
@@ -1394,12 +1394,12 @@ export default {
 }
 
 .co-modal__plan-custom-btn:hover:not(:disabled) {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
 }
 
 .co-modal__plan-custom-btn--active {
-  background: rgba(74, 144, 217, 0.08);
+  background: rgba(204, 61, 148, 0.08);
 }
 
 .co-modal__plan-custom-btn:disabled {
@@ -1409,9 +1409,9 @@ export default {
 
 /* ── Custom plan sub-form ────────────────────────────────────────── */
 .co-modal__custom {
-  background: #f9fafb;
-  border: 1px solid #eaecf0;
-  border-radius: 8px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-el);
   padding: 12px;
   margin: 6px 0 10px;
 }
@@ -1426,7 +1426,7 @@ export default {
 .co-modal__custom-title {
   font-size: 11px;
   font-weight: 700;
-  color: #4a90d9;
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
@@ -1434,17 +1434,17 @@ export default {
 .co-modal__custom-close {
   background: transparent;
   border: 0;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
   padding: 0 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .co-modal__custom-close:hover:not(:disabled) {
-  background: #f0f1f5;
-  color: #1a1a2e;
+  background: var(--bg-subtle);
+  color: var(--color-text-primary);
 }
 
 .co-modal__unit-row {
@@ -1455,7 +1455,7 @@ export default {
 
 .co-modal__unit {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 /* ── Password row (admin user) ───────────────────────────────────── */
@@ -1471,10 +1471,10 @@ export default {
 
 .co-modal__icon-btn {
   width: 34px;
-  background: #fff;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  color: #6b7280;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1484,9 +1484,9 @@ export default {
 }
 
 .co-modal__icon-btn:hover:not(:disabled) {
-  background: #f0f1f5;
-  color: #1a1a2e;
-  border-color: #b6bcc8;
+  background: var(--bg-subtle);
+  color: var(--color-text-primary);
+  border-color: var(--color-text-muted);
 }
 
 .co-modal__icon-btn:disabled {
@@ -1499,7 +1499,7 @@ export default {
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-top: 6px;
   cursor: pointer;
   user-select: none;
@@ -1513,7 +1513,7 @@ export default {
 /* ── Buttons ─────────────────────────────────────────────────────── */
 .co-modal__btn {
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-el);
   padding: 7px 14px;
   font-size: 12px;
   font-weight: 600;
@@ -1525,25 +1525,25 @@ export default {
 }
 
 .co-modal__btn--primary {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .co-modal__btn--primary:hover:not(:disabled) {
-  background: #3a7bc3;
-  border-color: #3a7bc3;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .co-modal__btn--ghost {
   background: transparent;
-  color: #6b7280;
-  border-color: #d0d5dd;
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-strong);
 }
 
 .co-modal__btn--ghost:hover:not(:disabled) {
-  background: #f0f1f5;
-  color: #1a1a2e;
+  background: var(--bg-subtle);
+  color: var(--color-text-primary);
 }
 
 .co-modal__btn:disabled {
@@ -1566,7 +1566,7 @@ export default {
 
 /* ── Reveal card ─────────────────────────────────────────────────── */
 .co-modal__reveal {
-  background: #fff;
+  background: var(--bg-card);
 }
 
 .co-modal__reveal-heading {
@@ -1575,7 +1575,7 @@ export default {
   gap: 8px;
   font-size: 14px;
   font-weight: 700;
-  color: #067647;
+  color: var(--color-success-text);
   margin-bottom: 14px;
 }
 
@@ -1586,8 +1586,8 @@ export default {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #d1fadf;
-  color: #067647;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
   font-size: 12px;
   font-weight: 700;
 }
@@ -1597,7 +1597,7 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 6px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
   font-size: 12px;
 }
 
@@ -1613,7 +1613,7 @@ export default {
 
 .co-modal__reveal-label {
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   width: 100px;
   flex-shrink: 0;
 }
@@ -1621,15 +1621,15 @@ export default {
 .co-modal__reveal-value {
   flex: 1;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
   word-break: break-all;
 }
 
 .co-modal__reveal-btn {
-  background: #fff;
-  border: 1px solid #d0d5dd;
-  color: #6b7280;
-  border-radius: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
   padding: 3px 10px;
   font-size: 11px;
   font-weight: 600;
@@ -1638,8 +1638,8 @@ export default {
 }
 
 .co-modal__reveal-btn:hover {
-  background: #f0f1f5;
-  color: #1a1a2e;
+  background: var(--bg-subtle);
+  color: var(--color-text-primary);
 }
 
 .co-modal__reveal-btn--wide {
@@ -1650,10 +1650,10 @@ export default {
 .co-modal__reveal-warning {
   margin: 12px 0 0;
   font-size: 11px;
-  color: #b54708;
-  background: #fef0c7;
-  border: 1px solid #fec84b;
-  border-radius: 6px;
+  color: var(--color-warning-text);
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-text);
+  border-radius: var(--radius-sm);
   padding: 6px 10px;
   line-height: 1.4;
 }
@@ -1671,8 +1671,8 @@ export default {
 }
 
 .co-modal__confirm {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   width: 100%;
   max-width: 420px;
@@ -1685,10 +1685,10 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  border-bottom: 1px solid #eaecf0;
+  border-bottom: 1px solid var(--color-border);
   font-size: 14px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
 }
 
 .co-modal__confirm-close {
@@ -1696,15 +1696,15 @@ export default {
   border: 0;
   font-size: 22px;
   line-height: 1;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .co-modal__confirm-close:hover:not(:disabled) {
-  background: #f0f1f5;
-  color: #1a1a2e;
+  background: var(--bg-subtle);
+  color: var(--color-text-primary);
 }
 
 .co-modal__confirm-body {
@@ -1714,7 +1714,7 @@ export default {
 .co-modal__confirm-text {
   margin: 0 0 12px;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
@@ -1730,17 +1730,17 @@ export default {
 .co-modal__confirm-password {
   width: 100%;
   padding: 9px 12px;
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-el);
   font-size: 13px;
-  background: #fff;
+  background: var(--bg-card);
   box-sizing: border-box;
   outline: none;
   transition: border-color 0.15s;
 }
 
 .co-modal__confirm-password:focus {
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .co-modal__confirm-error {
@@ -1752,7 +1752,7 @@ export default {
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 18px 16px;
-  border-top: 1px solid #eaecf0;
+  border-top: 1px solid var(--color-border);
 }
 
 @media (max-width: 720px) {

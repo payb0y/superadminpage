@@ -13,7 +13,7 @@
         >
           <span
             class="timeline-chart__dot"
-            :style="{ backgroundColor: item.color || '#94a3b8' }"
+            :style="{ backgroundColor: item.color || 'var(--color-text-muted)' }"
           ></span>
           <span class="timeline-chart__label-text" :title="item.label">{{
             item.label
@@ -65,7 +65,7 @@
             :style="{
               left: item.leftPct + '%',
               width: item.widthPct + '%',
-              backgroundColor: item.color || '#94a3b8',
+              backgroundColor: item.color || 'var(--color-text-muted)',
             }"
             :title="
               item.label +
@@ -125,7 +125,7 @@ export default {
           return {
             label: t.label,
             systemKey: t.systemKey,
-            color: t.color || "#94a3b8",
+            color: t.color || "var(--color-text-muted)",
             startDate: s,
             endDate: e,
             duration: self.calcDuration(s, e),
@@ -281,7 +281,7 @@ export default {
 .timeline-chart__empty {
   text-align: center;
   font-size: 13px;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   padding: 24px;
 }
 
@@ -315,7 +315,7 @@ export default {
 .timeline-chart__label-text {
   font-size: 12px;
   font-weight: 500;
-  color: var(--color-text-primary, #1a1a2e);
+  color: var(--color-text-primary, var(--color-text-primary));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -326,28 +326,28 @@ export default {
   font-size: 9px;
   font-weight: 700;
   padding: 1px 4px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
 .timeline-chart__type-badge--system {
-  background: #e0f2fe;
-  color: #0369a1;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 
 .timeline-chart__bars {
   flex: 1;
   position: relative;
   min-width: 300px;
-  border-left: 1px solid var(--color-border, #e5e7eb);
+  border-left: 1px solid var(--color-border, var(--color-border));
 }
 
 .timeline-chart__months {
   position: relative;
   height: 28px;
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  border-bottom: 1px solid var(--color-border, var(--color-border));
 }
 
 .timeline-chart__month {
@@ -359,13 +359,13 @@ export default {
   padding-left: 8px;
   font-size: 11px;
   font-weight: 600;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, var(--color-text-muted));
   text-transform: uppercase;
   letter-spacing: 0.3px;
   white-space: nowrap;
   overflow: hidden;
   box-sizing: border-box;
-  border-right: 1px solid #f3f4f6;
+  border-right: 1px solid var(--bg-subtle);
 }
 
 .timeline-chart__grid {
@@ -382,7 +382,7 @@ export default {
   top: 0;
   bottom: 0;
   width: 1px;
-  background: #f3f4f6;
+  background: var(--bg-subtle);
 }
 
 .timeline-chart__today {
@@ -390,7 +390,7 @@ export default {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: #ef4444;
+  background: var(--color-danger);
   z-index: 2;
   opacity: 0.6;
 }
@@ -402,7 +402,7 @@ export default {
   left: 4px;
   font-size: 9px;
   font-weight: 700;
-  color: #ef4444;
+  color: var(--color-danger);
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -414,14 +414,14 @@ export default {
 }
 
 .timeline-chart__bar-row:nth-child(even) {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .timeline-chart__bar {
   position: absolute;
   top: 6px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   opacity: 0.85;
   cursor: default;
   transition: opacity 0.15s;
@@ -450,10 +450,10 @@ export default {
   transform: translateX(-50%);
   font-size: 9px;
   font-weight: 700;
-  color: #6366f1;
-  background: #eef2ff;
-  border: 1px solid #c7d2fe;
-  border-radius: 4px;
+  color: var(--chart-5);
+  background: var(--accent-bg);
+  border: 1px solid var(--chart-5);
+  border-radius: var(--radius-sm);
   padding: 0 4px;
   line-height: 16px;
   white-space: nowrap;
