@@ -22,8 +22,8 @@
         <div class="sub-panel__card">
           <div class="sub-panel__label">STATUS</div>
           <span
-            class="sub-panel__pill"
-            :class="'sub-panel__pill--' + statusTone"
+            class="iz-pill iz-pill--lg"
+            :class="statusTone"
           >
             <span class="iz-dot" aria-hidden="true"></span>
             {{ statusLabel }}
@@ -151,7 +151,7 @@
           {{ plansError }}
           <button
             type="button"
-            class="sub-panel__retry"
+            class="iz-btn iz-btn--sm iz-btn--accent"
             @click="loadPlans"
           >Retry</button>
         </div>
@@ -188,7 +188,7 @@
             <span class="sub-panel__custom-title">NEW CUSTOM PLAN</span>
             <button
               type="button"
-              class="sub-panel__custom-close"
+              class="iz-close iz-close--sm"
               :disabled="saving"
               aria-label="Cancel custom plan"
               @click="closeCustomPlan"
@@ -385,7 +385,7 @@
       <!-- Submit preview -->
       <div
         v-if="customPlanOpen && canCreateCustomPlan"
-        class="sub-panel__preview"
+        class="iz-inset sub-panel__preview"
       >
         <div class="sub-panel__label">VALUES THAT WILL BE SUBMITTED</div>
         <div class="sub-panel__preview-section">NEW PLAN</div>
@@ -411,7 +411,7 @@
           <span v-if="form.extendDuration">extendDuration</span><span v-if="form.extendDuration">{{ form.extendDuration }}</span>
         </div>
       </div>
-      <div v-else-if="!customPlanOpen && selectedPlan" class="sub-panel__preview">
+      <div v-else-if="!customPlanOpen && selectedPlan" class="iz-inset sub-panel__preview">
         <div class="sub-panel__label">VALUES THAT WILL BE SUBMITTED</div>
         <div class="sub-panel__preview-grid">
           <span>Plan ID</span><span>{{ selectedPlan.id }}</span>
@@ -462,7 +462,7 @@
           <span>Confirm with your password</span>
           <button
             type="button"
-            class="sub-panel__modal-close"
+            class="iz-close"
             aria-label="Close"
             :disabled="saving"
             @click="closeConfirm"
@@ -628,10 +628,10 @@ export default {
     },
     statusTone() {
       switch (this.sub.status) {
-        case "active": return "active";
-        case "paused": return "paused";
-        case "cancelled": return "cancelled";
-        default: return "none";
+        case "active": return "iz-pill--success";
+        case "paused": return "iz-pill--warning";
+        case "cancelled": return "iz-pill--danger";
+        default: return "iz-pill--muted";
       }
     },
     statusLabel() {
@@ -1148,41 +1148,12 @@ export default {
 }
 
 /* ── Status pill ─────────────────────────────────────────────────────── */
-.sub-panel__pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
-  font-size: var(--iz-fs-md);
-  font-weight: 700;
-}
 
 .sub-panel__pill-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: currentColor;
-}
-
-.sub-panel__pill--active {
-  background: var(--iz-success-bg);
-  color: var(--color-success-text);
-}
-
-.sub-panel__pill--paused {
-  background: var(--iz-warning-bg);
-  color: var(--color-warning-text);
-}
-
-.sub-panel__pill--cancelled {
-  background: var(--iz-danger-bg);
-  color: var(--color-danger-text);
-}
-
-.sub-panel__pill--none {
-  background: var(--bg-subtle);
-  color: var(--color-text-secondary);
 }
 
 /* ── Plan pill ───────────────────────────────────────────────────────── */
@@ -1355,17 +1326,6 @@ export default {
   gap: 12px;
 }
 
-.sub-panel__retry {
-  background: var(--bg-card);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  color: var(--accent);
-  font-size: var(--iz-fs-xs);
-  font-weight: 600;
-  padding: 4px 10px;
-  cursor: pointer;
-}
-
 
 
 /* ── Status radio pills ──────────────────────────────────────────────── */
@@ -1437,13 +1397,8 @@ export default {
 }
 
 /* ── Submit preview ──────────────────────────────────────────────────── */
-.sub-panel__preview {
-  background: var(--bg-subtle);
-  border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-el);
-  padding: 10px 12px;
-  margin-bottom: 14px;
-}
+/* Chrome from .iz-inset; only the spacing below it is local. */
+.sub-panel__preview { margin-bottom: 14px; }
 
 .sub-panel__preview-grid {
   display: grid;
@@ -1536,27 +1491,6 @@ export default {
   letter-spacing: 0.4px;
 }
 
-.sub-panel__custom-close {
-  background: transparent;
-  border: 0;
-  color: var(--color-text-muted);
-  font-size: var(--iz-fs-lg);
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 6px;
-  border-radius: var(--radius-sm);
-}
-
-.sub-panel__custom-close:hover:not(:disabled) {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary, var(--color-text-primary));
-}
-
-.sub-panel__custom-close:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .sub-panel__custom-field {
   margin-bottom: 10px;
 }
@@ -1637,28 +1571,6 @@ export default {
 @keyframes sub-panel-modal-in {
   from { transform: scale(0.96); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
-}
-
-
-.sub-panel__modal-close {
-  background: transparent;
-  border: 0;
-  font-size: var(--iz-fs-xl);
-  line-height: 1;
-  color: var(--color-text-muted, var(--color-text-muted));
-  cursor: pointer;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-}
-
-.sub-panel__modal-close:hover:not(:disabled) {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary, var(--color-text-primary));
-}
-
-.sub-panel__modal-close:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 .sub-panel__modal-body {

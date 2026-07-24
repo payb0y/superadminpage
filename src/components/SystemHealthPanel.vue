@@ -43,7 +43,7 @@
 
     <div v-if="error && !snapshot" class="system-health__error">
       {{ error }}
-      <button class="system-health__retry" @click="fetch">Retry</button>
+      <button class="iz-btn iz-btn--sm iz-btn--danger-quiet system-health__retry" @click="fetch">Retry</button>
     </div>
 
     <template v-else>
@@ -666,10 +666,6 @@ export default {
   padding: 3px 10px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-}
-
-.system-health__retry:hover {
-  background: var(--color-danger-bg);
 }
 
 .system-health__subhead {

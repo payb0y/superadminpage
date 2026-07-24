@@ -88,8 +88,8 @@
               <!-- Backup type -->
               <td>
                 <span
-                  class="backups-panel__type"
-                  :class="'backups-panel__type--' + job.backupType"
+                  class="iz-badge"
+                  :class="typeTone(job.backupType)"
                 >{{ job.backupType }}</span>
               </td>
 
@@ -254,6 +254,13 @@ export default {
       );
     },
     // Filter-chip tone. "" is the "All" option and stays neutral.
+    // Backup type -> shared badge tone, with a neutral fallback.
+    typeTone(t) {
+      return (
+        { full: "iz-badge--accent", incremental: "iz-badge--warning" }[t] ||
+        "iz-badge--muted"
+      );
+    },
     chipTone(value) {
       return (
         {
@@ -418,24 +425,6 @@ export default {
 
 
 /* ─── Type Pill ─── */
-.backups-panel__type {
-  display: inline-block;
-  font-size: var(--iz-fs-micro);
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--radius-el);
-  text-transform: capitalize;
-}
-
-.backups-panel__type--full {
-  background: var(--accent-bg);
-  color: var(--accent-strong);
-}
-
-.backups-panel__type--incremental {
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
-}
 
 /* ─── Trigger ─── */
 .backups-panel__trigger {

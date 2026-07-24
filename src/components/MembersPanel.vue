@@ -61,8 +61,8 @@
         />
         <div class="members-panel__role-badges">
           <span
-            class="members-panel__role-badge"
-            :class="{ 'members-panel__role-badge--active': roleFilter === '' }"
+            class="iz-chip"
+            :class="{ 'iz-chip--active': roleFilter === '' }"
             @click="
               roleFilter = '';
               currentPage = 1;
@@ -70,7 +70,7 @@
             >All</span
           >
           <span
-            class="members-panel__role-badge members-panel__role-badge--admin-color"
+            class="iz-chip iz-chip--accent"
             :class="{
               'members-panel__role-badge--active': roleFilter === 'admin',
             }"
@@ -81,7 +81,7 @@
             >Admin</span
           >
           <span
-            class="members-panel__role-badge members-panel__role-badge--member-color"
+            class="iz-chip iz-chip--muted"
             :class="{
               'members-panel__role-badge--active': roleFilter === 'member',
             }"
@@ -104,7 +104,7 @@
           <span class="members-panel__add-form-title">Add member</span>
           <button
             type="button"
-            class="members-panel__add-form-close"
+            class="iz-close iz-close--sm"
             @click="closeAddMode"
             aria-label="Close add form"
           >×</button>
@@ -1213,38 +1213,8 @@ export default {
   display: flex;
   gap: 5px;
 }
-
-.members-panel__role-badge {
-  font-size: var(--iz-fs-xs);
-  font-weight: 500;
-  padding: 3px 10px;
-  border-radius: var(--radius-card);
-  cursor: pointer;
-  background: var(--bg-subtle);
-  color: var(--color-text-secondary);
-  transition: all 0.15s ease;
-  user-select: none;
-  border: 1.5px solid transparent;
-}
-
-.members-panel__role-badge:hover {
-  background: var(--color-border);
-}
-
-.members-panel__role-badge--active {
-  font-weight: 600;
-  border-color: currentColor;
-}
-
-.members-panel__role-badge--admin-color {
-  color: var(--accent-strong);
-}
 .members-panel__role-badge--admin-color.members-panel__role-badge--active {
   background: var(--accent-bg);
-}
-
-.members-panel__role-badge--member-color {
-  color: var(--color-text-secondary);
 }
 .members-panel__role-badge--member-color.members-panel__role-badge--active {
   background: var(--bg-subtle);
@@ -1500,22 +1470,6 @@ export default {
   color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: uppercase;
   letter-spacing: 0.04em;
-}
-
-.members-panel__add-form-close {
-  background: transparent;
-  border: 0;
-  font-size: var(--iz-fs-lg);
-  line-height: 1;
-  color: var(--color-text-muted, var(--color-text-muted));
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-}
-
-.members-panel__add-form-close:hover {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary, var(--color-text-primary));
 }
 
 .members-panel__remove-btn {

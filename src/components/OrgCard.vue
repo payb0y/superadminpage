@@ -27,14 +27,14 @@
       <div class="org-card__metric">
         <span
           class="org-card__metric-value"
-          :class="{ 'org-card__metric-value--highlight': metricHighlight === 'members' }"
+          :class="{ 'iz-mark': metricHighlight === 'members' }"
         >{{ org.memberCount }}</span>
         <span class="org-card__metric-label">members</span>
       </div>
       <div class="org-card__metric">
         <span
           class="org-card__metric-value"
-          :class="{ 'org-card__metric-value--highlight': metricHighlight === 'projects' }"
+          :class="{ 'iz-mark': metricHighlight === 'projects' }"
         >{{ org.projectCount }}</span>
         <span class="org-card__metric-label">projects</span>
       </div>
@@ -47,28 +47,28 @@
     <div class="org-card__tasks">
       <span
         class="org-card__task"
-        :class="{ 'org-card__task--highlight': metricHighlight === 'tasks' }"
+        :class="{ 'iz-mark': metricHighlight === 'tasks' }"
       >
         <strong>{{ org.totalTasks || 0 }}</strong> tasks
       </span>
       <span class="org-card__task-sep">·</span>
       <span
         class="org-card__task"
-        :class="{ 'org-card__task--highlight': metricHighlight === 'done' }"
+        :class="{ 'iz-mark': metricHighlight === 'done' }"
       >
         <strong>{{ org.doneTasks || 0 }}</strong> done
       </span>
       <span class="org-card__task-sep">·</span>
       <span
         class="org-card__task"
-        :class="{ 'org-card__task--highlight': metricHighlight === 'overdue' }"
+        :class="{ 'iz-mark': metricHighlight === 'overdue' }"
       >
         <strong>{{ org.overdueTasks || 0 }}</strong> overdue
       </span>
       <span class="org-card__task-sep">·</span>
       <span
         class="org-card__task"
-        :class="{ 'org-card__task--highlight': metricHighlight === 'open' }"
+        :class="{ 'iz-mark': metricHighlight === 'open' }"
       >
         <strong>{{ openTasks }}</strong> open
       </span>
@@ -222,15 +222,6 @@ export default {
 .org-card__metric-label {
   font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
-}
-
-.org-card__metric-value--highlight,
-.org-card__task--highlight {
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
 }
 
 .org-card__tasks {

@@ -9,7 +9,7 @@
       <p class="superadmin-dashboard__error-msg">{{ error }}</p>
       <button
         type="button"
-        class="superadmin-dashboard__retry"
+        class="iz-btn iz-btn--accent"
         @click="retry"
       >Try again</button>
     </div>
@@ -394,29 +394,6 @@ export default {
   max-width: 420px;
   text-align: center;
   margin: 0;
-}
-
-.superadmin-dashboard__retry {
-  appearance: none;
-  border: 1px solid var(--color-border);
-  background: var(--bg-card);
-  color: var(--color-text-primary);
-  font-size: var(--iz-fs-md);
-  font-weight: 600;
-  padding: 8px 18px;
-  border-radius: var(--radius-el);
-  cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-}
-
-.superadmin-dashboard__retry:hover {
-  background: var(--bg-subtle);
-  border-color: var(--color-border-strong);
-}
-
-.superadmin-dashboard__retry:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent);
 }
 
 .superadmin-dashboard__tabs {

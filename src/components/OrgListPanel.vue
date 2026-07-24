@@ -204,37 +204,37 @@
           <div class="org-list__cell org-list__cell--num" role="cell">
             <span
               class="org-list__metric"
-              :class="{ 'org-list__metric--highlight': metricHighlight === 'members' }"
+              :class="{ 'iz-mark': metricHighlight === 'members' }"
             >{{ org.memberCount }}</span>
           </div>
           <div class="org-list__cell org-list__cell--num" role="cell">
             <span
               class="org-list__metric"
-              :class="{ 'org-list__metric--highlight': metricHighlight === 'projects' }"
+              :class="{ 'iz-mark': metricHighlight === 'projects' }"
             >{{ org.projectCount }}</span>
           </div>
           <div class="org-list__cell org-list__cell--num" role="cell">
             <span
               class="org-list__metric"
-              :class="{ 'org-list__metric--highlight': metricHighlight === 'tasks' }"
+              :class="{ 'iz-mark': metricHighlight === 'tasks' }"
             >{{ org.totalTasks || 0 }}</span>
           </div>
           <div class="org-list__cell org-list__cell--num" role="cell">
             <span
               class="org-list__metric"
-              :class="{ 'org-list__metric--highlight': metricHighlight === 'done' }"
+              :class="{ 'iz-mark': metricHighlight === 'done' }"
             >{{ org.doneTasks || 0 }}</span>
           </div>
           <div class="org-list__cell org-list__cell--num" role="cell">
             <span
               class="org-list__metric"
-              :class="{ 'org-list__metric--highlight': metricHighlight === 'overdue' }"
+              :class="{ 'iz-mark': metricHighlight === 'overdue' }"
             >{{ org.overdueTasks || 0 }}</span>
           </div>
           <div class="org-list__cell org-list__cell--num" role="cell">
             <span
               class="org-list__metric"
-              :class="{ 'org-list__metric--highlight': metricHighlight === 'open' }"
+              :class="{ 'iz-mark': metricHighlight === 'open' }"
             >{{ Math.max(0, (Number(org.totalTasks) || 0) - (Number(org.doneTasks) || 0)) }}</span>
           </div>
           <div
@@ -948,14 +948,6 @@ export default {
 .org-list__metric {
   display: inline-block;
   font-variant-numeric: tabular-nums;
-}
-
-.org-list__metric--highlight {
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
 }
 
 .org-list__cell--expand {

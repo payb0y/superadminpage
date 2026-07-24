@@ -12,7 +12,7 @@
         <span class="co-modal__title">Create organization</span>
         <button
           type="button"
-          class="co-modal__close"
+          class="iz-close"
           :disabled="saving"
           aria-label="Close"
           @click="cancel"
@@ -152,7 +152,7 @@
               {{ plansError }}
               <button
                 type="button"
-                class="co-modal__retry"
+                class="iz-btn iz-btn--sm iz-btn--accent"
                 @click="loadPlans"
               >Retry</button>
             </div>
@@ -182,7 +182,7 @@
                 <span class="co-modal__custom-title">NEW CUSTOM PLAN</span>
                 <button
                   type="button"
-                  class="co-modal__custom-close"
+                  class="iz-close iz-close--sm"
                   :disabled="saving"
                   aria-label="Cancel custom plan"
                   @click="closeCustomPlan"
@@ -553,7 +553,7 @@
           <span>Confirm with your password</span>
           <button
             type="button"
-            class="co-modal__confirm-close"
+            class="iz-close"
             :disabled="saving"
             aria-label="Close"
             @click="closeConfirm"
@@ -1148,27 +1148,6 @@ export default {
   color: var(--color-text-primary);
 }
 
-.co-modal__close {
-  background: transparent;
-  border: 0;
-  font-size: var(--iz-fs-xl);
-  line-height: 1;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-}
-
-.co-modal__close:hover:not(:disabled) {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary);
-}
-
-.co-modal__close:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
 .co-modal__body {
   padding: 18px;
   overflow-y: auto;
@@ -1287,18 +1266,6 @@ export default {
   margin-bottom: 10px;
 }
 
-.co-modal__retry {
-  background: var(--bg-card);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  color: var(--accent);
-  font-size: var(--iz-fs-xs);
-  font-weight: 600;
-  padding: 4px 10px;
-  cursor: pointer;
-  margin-left: auto;
-}
-
 /* ── Plan row ────────────────────────────────────────────────────── */
 .co-modal__plan-row {
   display: flex;
@@ -1360,22 +1327,6 @@ export default {
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.4px;
-}
-
-.co-modal__custom-close {
-  background: transparent;
-  border: 0;
-  color: var(--color-text-muted);
-  font-size: var(--iz-fs-lg);
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 6px;
-  border-radius: var(--radius-sm);
-}
-
-.co-modal__custom-close:hover:not(:disabled) {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary);
 }
 
 .co-modal__unit-row {
@@ -1585,22 +1536,6 @@ export default {
   border-bottom: 1px solid var(--color-border);
   font-size: var(--iz-fs-md);
   font-weight: 700;
-  color: var(--color-text-primary);
-}
-
-.co-modal__confirm-close {
-  background: transparent;
-  border: 0;
-  font-size: var(--iz-fs-xl);
-  line-height: 1;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-}
-
-.co-modal__confirm-close:hover:not(:disabled) {
-  background: var(--bg-subtle);
   color: var(--color-text-primary);
 }
 

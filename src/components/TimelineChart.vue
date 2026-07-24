@@ -20,7 +20,7 @@
           }}</span>
           <span
             v-if="item.systemKey"
-            class="timeline-chart__type-badge timeline-chart__type-badge--system"
+            class="iz-badge iz-badge--muted timeline-chart__type-badge"
             >SYS</span
           >
         </div>
@@ -85,7 +85,7 @@
           <!-- Weeks elapsed indicator (from start date to today) -->
           <span
             v-if="item.weeksElapsed !== null"
-            class="timeline-chart__weeks-badge"
+            class="iz-badge iz-badge--accent"
             :style="{ left: todayBadgeLeft(item) + '%' }"
             :title="
               item.weeksElapsed +
@@ -321,20 +321,11 @@ export default {
   text-overflow: ellipsis;
   flex: 1;
 }
-
+/* Chrome from .iz-badge; the chart needs it tighter and uppercase. */
 .timeline-chart__type-badge {
-  font-size: var(--iz-fs-micro);
-  font-weight: 700;
   padding: 1px 4px;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-}
-
-.timeline-chart__type-badge--system {
-  background: var(--accent-bg);
-  color: var(--accent-strong);
 }
 
 .timeline-chart__bars {
@@ -442,22 +433,5 @@ export default {
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   white-space: nowrap;
-}
-
-.timeline-chart__weeks-badge {
-  position: absolute;
-  top: 0;
-  transform: translateX(-50%);
-  font-size: var(--iz-fs-micro);
-  font-weight: 700;
-  color: var(--chart-5);
-  background: var(--accent-bg);
-  border: 1px solid var(--chart-5);
-  border-radius: var(--radius-sm);
-  padding: 0 4px;
-  line-height: 16px;
-  white-space: nowrap;
-  z-index: 3;
-  pointer-events: none;
 }
 </style>

@@ -50,7 +50,7 @@
         </div>
       </div>
 
-      <div class="ho-panel__options">
+      <div class="iz-inset ho-panel__options">
         <div class="ho-panel__label">OPTIONS</div>
         <label class="ho-panel__option">
           <input
@@ -233,7 +233,7 @@
               {{ eventsByJob[job.id].error }}
               <button
                 type="button"
-                class="ho-panel__retry-link"
+                class="iz-btn iz-btn--sm iz-btn--accent"
                 @click="loadJobEvents(job.id, true)"
               >Retry</button>
             </div>
@@ -299,7 +299,7 @@
           <span>Confirm with your password</span>
           <button
             type="button"
-            class="ho-panel__modal-close"
+            class="iz-close"
             :disabled="saving"
             aria-label="Close"
             @click="closeConfirm"
@@ -954,14 +954,8 @@ export default {
   opacity: 0.6;
   cursor: not-allowed;
 }
-
-.ho-panel__options {
-  background: var(--bg-subtle);
-  border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-el);
-  padding: 10px 12px;
-  margin-bottom: 14px;
-}
+/* Chrome from .iz-inset; only the spacing below it is local. */
+.ho-panel__options { margin-bottom: 14px; }
 
 .ho-panel__option {
   display: flex;
@@ -1046,17 +1040,6 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-}
-
-.ho-panel__retry-link {
-  background: var(--bg-card);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  color: var(--accent);
-  font-size: var(--iz-fs-xs);
-  font-weight: 600;
-  padding: 4px 10px;
-  cursor: pointer;
 }
 
 .ho-panel__actions {
@@ -1343,29 +1326,6 @@ export default {
 }
 
 /* ── Password confirmation modal (mirrors SubscriptionPanel's) ─────── */
-
-
-
-.ho-panel__modal-close {
-  background: transparent;
-  border: 0;
-  font-size: var(--iz-fs-xl);
-  line-height: 1;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-}
-
-.ho-panel__modal-close:hover:not(:disabled) {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary);
-}
-
-.ho-panel__modal-close:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
 
 .ho-panel__modal-body {
   padding: 16px 18px;
