@@ -1,26 +1,26 @@
 <template>
-  <section class="projects-panel">
+  <section class="projects-panel iz-stack iz-stack--tight">
     <div class="projects-panel__filters">
       <input
         v-model="searchQuery"
-        class="projects-panel__search"
+        class="projects-panel__search iz-input"
         type="text"
         placeholder="Search projects…"
       />
     </div>
 
-    <div v-if="filteredProjects.length === 0" class="projects-panel__empty">
+    <div v-if="filteredProjects.length === 0" class="iz-empty">
       No projects match your filters.
     </div>
 
     <div
       v-for="project in filteredProjects"
       :key="'proj-' + project.id"
-      class="projects-panel__row"
+      class="projects-panel__row iz-row--card iz-row--expandable"
       :class="{ 'projects-panel__row--expanded': isExpanded(project.id) }"
     >
       <div
-        class="projects-panel__row-header"
+        class="projects-panel__row-header iz-row__header"
         role="button"
         tabindex="0"
         :aria-expanded="isExpanded(project.id) ? 'true' : 'false'"
@@ -66,41 +66,41 @@
         class="projects-panel__expanded"
       >
         <div class="projects-panel__cards-row">
-          <div class="projects-panel__card">
+          <div class="projects-panel__card iz-card">
             <div class="projects-panel__card-header">
               <h4 class="projects-panel__card-title">Project Overview</h4>
               <span
                 v-if="project.statusLabel"
-                class="projects-panel__badge"
+                class="iz-pill"
                 :class="statusClass(project)"
               >{{ project.statusLabel }}</span>
             </div>
             <div class="projects-panel__info-grid">
               <div class="projects-panel__info-item">
-                <span class="projects-panel__info-label">Project Name</span>
+                <span class="iz-label projects-panel__info-label">Project Name</span>
                 <span class="projects-panel__info-value">{{ project.name }}</span>
               </div>
               <div v-if="project.number" class="projects-panel__info-item">
-                <span class="projects-panel__info-label">Project Number</span>
+                <span class="iz-label projects-panel__info-label">Project Number</span>
                 <span class="projects-panel__info-value">{{ project.number }}</span>
               </div>
               <div v-if="project.description" class="projects-panel__info-item">
-                <span class="projects-panel__info-label">Description</span>
+                <span class="iz-label projects-panel__info-label">Description</span>
                 <span class="projects-panel__info-value">{{ project.description }}</span>
               </div>
               <div
                 v-if="project.location && project.location !== ','"
                 class="projects-panel__info-item"
               >
-                <span class="projects-panel__info-label">Project Address</span>
+                <span class="iz-label projects-panel__info-label">Project Address</span>
                 <span class="projects-panel__info-value">{{ project.location }}</span>
               </div>
               <div class="projects-panel__info-item">
-                <span class="projects-panel__info-label">Created</span>
+                <span class="iz-label projects-panel__info-label">Created</span>
                 <span class="projects-panel__info-value">{{ formatDate(project.createdAt) }}</span>
               </div>
               <div class="projects-panel__info-item">
-                <span class="projects-panel__info-label">Last Updated</span>
+                <span class="iz-label projects-panel__info-label">Last Updated</span>
                 <span class="projects-panel__info-value">{{ formatDate(project.updatedAt) }}</span>
               </div>
             </div>
@@ -122,22 +122,22 @@
             </div>
           </div>
 
-          <div class="projects-panel__card">
+          <div class="projects-panel__card iz-card">
             <h4 class="projects-panel__card-title">Client &amp; Resources</h4>
             <div v-if="hasClientInfo(project)" class="projects-panel__info-grid">
               <div v-if="project.clientName" class="projects-panel__info-item">
-                <span class="projects-panel__info-label">Client</span>
+                <span class="iz-label projects-panel__info-label">Client</span>
                 <span class="projects-panel__info-value">{{ project.clientName }}</span>
               </div>
               <div v-if="project.clientEmail" class="projects-panel__info-item">
-                <span class="projects-panel__info-label">Email</span>
+                <span class="iz-label projects-panel__info-label">Email</span>
                 <a
                   :href="'mailto:' + project.clientEmail"
                   class="projects-panel__info-link"
                 >{{ project.clientEmail }}</a>
               </div>
               <div v-if="project.clientPhone" class="projects-panel__info-item">
-                <span class="projects-panel__info-label">Phone</span>
+                <span class="iz-label projects-panel__info-label">Phone</span>
                 <a
                   :href="'tel:' + project.clientPhone"
                   class="projects-panel__info-link"
@@ -147,7 +147,7 @@
                 v-if="project.clientAddress"
                 class="projects-panel__info-item"
               >
-                <span class="projects-panel__info-label">Client Address</span>
+                <span class="iz-label projects-panel__info-label">Client Address</span>
                 <span class="projects-panel__info-value projects-panel__info-value--multiline">{{ project.clientAddress }}</span>
               </div>
             </div>
@@ -370,10 +370,10 @@
                     {{ drasciLabelFor(project.id, m.userId) }}
                   </button>
                   <span
-                    class="projects-panel__member-role"
+                    class="iz-pill projects-panel__member-role"
                     :class="m.isOwner
-                      ? 'projects-panel__member-role--owner'
-                      : 'projects-panel__member-role--member'"
+                      ? 'iz-pill--accent'
+                      : 'iz-pill--muted'"
                   >
                     <span v-if="m.isOwner" aria-hidden="true">★</span>
                     {{ m.isOwner ? 'Owner' : 'Member' }}
@@ -495,9 +495,19 @@ export default {
         p.clientAddress
       );
     },
+    // Project status -> In Zicht pill tone. A map (not string concat) so an
+    // unrecognised status label degrades to the neutral tone rather than
+    // emitting a class that doesn't exist.
     statusClass(p) {
       const label = (p.statusLabel || "").toLowerCase().replace(/ /g, "-");
-      return "projects-panel__badge--" + label;
+      return (
+        {
+          active: "iz-pill--success",
+          "waiting-on-customer": "iz-pill--warning",
+          "on-hold": "iz-pill--danger",
+          done: "iz-pill--accent",
+        }[label] || "iz-pill--muted"
+      );
     },
     findTimelineItem(p, systemKey) {
       const tl = (p && p.timeline) || [];
@@ -860,70 +870,30 @@ export default {
 </script>
 
 <style scoped>
-.projects-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 
 .projects-panel__filters {
   margin-bottom: 4px;
 }
 
+/* Chrome comes from .iz-input; only the full-width stretch is local. */
 .projects-panel__search {
   width: 100%;
-  padding: 8px 14px;
-  border: 1px solid var(--color-border, var(--color-border));
-  border-radius: var(--radius-el);
-  font-size: 13px;
-  color: var(--color-text-primary, var(--color-text-primary));
-  background: var(--bg-card);
-  outline: none;
-  transition: border-color 0.15s;
 }
 
-.projects-panel__search:focus {
-  border-color: var(--accent);
-}
 
-.projects-panel__empty {
-  padding: 24px;
-  text-align: center;
-  color: var(--color-text-muted, var(--color-text-muted));
-  font-size: 13px;
-}
 
-.projects-panel__row {
-  background: var(--bg-card);
-  border: 1px solid var(--bg-subtle);
-  border-radius: var(--radius-lg);
-  display: flex;
-  flex-direction: column;
-  transition: border-color 0.15s;
-}
+/* Shell chrome comes from .iz-row--card .iz-row--expandable. */
 
-.projects-panel__row:hover {
-  border-color: var(--color-border);
-}
 
 .projects-panel__row--expanded {
-  border-color: var(--color-border);
+  border-color: var(--iz-accent);
 }
 
+/* Padding/cursor come from .iz-row__header; this row needs a wider gap. */
 .projects-panel__row-header {
-  display: flex;
-  align-items: center;
   gap: 14px;
-  padding: 14px 16px;
-  cursor: pointer;
-  user-select: none;
-  outline: none;
 }
 
-.projects-panel__row-header:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--accent);
-  border-radius: var(--radius-lg);
-}
 
 .projects-panel__chevron {
   font-size: 12px;
@@ -1060,11 +1030,8 @@ export default {
   margin-top: 14px;
 }
 
+/* Chrome comes from .iz-card; the internal stack is local. */
 .projects-panel__card {
-  background: var(--bg-card);
-  border: 1px solid var(--color-border, var(--color-border));
-  border-radius: var(--radius-lg);
-  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1112,32 +1079,7 @@ export default {
   margin-top: 4px;
 }
 
-.projects-panel__badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--bg-subtle);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-}
 
-.projects-panel__badge--active {
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
-}
-.projects-panel__badge--waiting-on-customer {
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
-}
-.projects-panel__badge--on-hold {
-  background: var(--color-danger-bg);
-  color: var(--color-danger-text);
-}
-.projects-panel__badge--done {
-  background: var(--accent-bg);
-  color: var(--accent-strong);
-}
 
 .projects-panel__info-grid {
   display: grid;
@@ -1152,12 +1094,10 @@ export default {
   min-width: 0;
 }
 
+/* Eyebrow comes from .iz-label; these sit in a tight grid, no bottom margin. */
 .projects-panel__info-label {
-  font-size: 10px;
-  text-transform: uppercase;
+  margin-bottom: 0;
   letter-spacing: 0.4px;
-  color: var(--color-text-muted, var(--color-text-muted));
-  font-weight: 600;
 }
 
 .projects-panel__info-value {
@@ -1342,9 +1282,9 @@ export default {
   grid-template-columns: 36px 1fr auto;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--color-border);
-  transition: background 120ms ease;
+  padding: var(--iz-pad-row);
+  border-bottom: 1px solid var(--iz-border);
+  transition: background var(--iz-transition);
 }
 .projects-panel__member:last-child {
   border-bottom: 0;
@@ -1393,21 +1333,6 @@ export default {
 .projects-panel__member-email--muted {
   color: var(--color-text-muted);
   font-style: italic;
-}
-.projects-panel__member-role {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border-radius: var(--radius-pill);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.projects-panel__member-role--owner {
-  background: rgba(204, 61, 148, 0.12);
-  color: var(--accent);
 }
 .projects-panel__member-badges {
   display: inline-flex;
@@ -1497,10 +1422,6 @@ export default {
   font-style: italic;
 }
 
-.projects-panel__member-role--member {
-  background: var(--bg-subtle);
-  color: var(--color-text-secondary);
-}
 .projects-panel__members-empty {
   padding: 14px 12px;
   text-align: center;

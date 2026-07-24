@@ -8,7 +8,7 @@
       class="members-panel__header"
       @click="collapsed = !collapsed"
     >
-      <h3 class="members-panel__title">
+      <h3 class="members-panel__title iz-panel__title">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -55,7 +55,7 @@
       <div class="members-panel__filters">
         <input
           v-model="search"
-          class="members-panel__search"
+          class="members-panel__search iz-input iz-input--sm"
           type="text"
           placeholder="Search members…"
         />
@@ -155,7 +155,7 @@
           <div class="members-panel__reveal-actions">
             <button
               type="button"
-              class="members-panel__btn members-panel__btn--primary"
+              class="iz-btn iz-btn--primary"
               @click="confirmCreatedUser"
             >Done</button>
           </div>
@@ -312,7 +312,7 @@
                 />
                 <button
                   type="button"
-                  class="members-panel__icon-btn"
+                  class="iz-btn iz-btn--icon members-panel__icon-btn"
                   :aria-label="newUserShowPassword ? 'Hide password' : 'Show password'"
                   :title="newUserShowPassword ? 'Hide password' : 'Show password'"
                   :disabled="newUserSubmitting"
@@ -356,7 +356,7 @@
                 <button
                   v-if="newUser.autoGenerate"
                   type="button"
-                  class="members-panel__icon-btn"
+                  class="iz-btn iz-btn--icon members-panel__icon-btn"
                   aria-label="Regenerate password"
                   title="Regenerate password"
                   :disabled="newUserSubmitting"
@@ -386,13 +386,13 @@
             <div class="members-panel__form-actions">
               <button
                 type="button"
-                class="members-panel__btn members-panel__btn--ghost"
+                class="iz-btn iz-btn--ghost"
                 :disabled="newUserSubmitting"
                 @click="closeAddMode"
               >Cancel</button>
               <button
                 type="button"
-                class="members-panel__btn members-panel__btn--primary"
+                class="iz-btn iz-btn--primary"
                 :disabled="newUserSubmitting || !newUserFormValid"
                 @click="submitNewUser"
               >
@@ -415,10 +415,10 @@
       <div
         v-for="member in paginatedMembers"
         :key="'mem-' + member.userId"
-        class="members-panel__card"
+        class="members-panel__card iz-row--card iz-row--expandable"
       >
         <!-- Summary Row (always visible, clickable) -->
-        <div class="members-panel__row" @click="toggle(member.userId)">
+        <div class="members-panel__row iz-row__header" @click="toggle(member.userId)">
           <span class="members-panel__avatar">{{
             (member.displayName || member.userId).charAt(0).toUpperCase()
           }}</span>
@@ -466,14 +466,14 @@
           <div v-else class="members-panel__right">
             <span
               v-if="member.assignedTasks > 0"
-              class="members-panel__stat-pill"
+              class="iz-pill iz-pill--accent members-panel__stat-pill"
             >
               {{ member.doneTasks }}/{{ member.assignedTasks }}
               <span class="members-panel__stat-label">tasks</span>
             </span>
             <span
               v-if="member.overdueTasks > 0"
-              class="members-panel__stat-pill members-panel__stat-pill--danger"
+              class="iz-pill iz-pill--danger members-panel__stat-pill"
             >
               {{ member.overdueTasks }}
               <span class="members-panel__stat-label">overdue</span>
@@ -641,7 +641,7 @@
       <!-- Pagination -->
       <div v-if="totalPages > 1" class="members-panel__pagination">
         <button
-          class="members-panel__page-btn"
+          class="iz-btn iz-btn--icon members-panel__page-btn"
           :disabled="currentPage <= 1"
           @click="currentPage--"
         >
@@ -651,7 +651,7 @@
           {{ currentPage }} / {{ totalPages }}
         </span>
         <button
-          class="members-panel__page-btn"
+          class="iz-btn iz-btn--icon members-panel__page-btn"
           :disabled="currentPage >= totalPages"
           @click="currentPage++"
         >
@@ -1212,22 +1212,12 @@ export default {
   flex-wrap: wrap;
 }
 
+/* Chrome comes from .iz-input--sm; only the flex sizing is local. */
 .members-panel__search {
   flex: 1;
   min-width: 120px;
-  padding: 7px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-el);
-  font-size: 12px;
-  color: var(--color-text-primary, var(--color-text-primary));
-  background: var(--bg-card);
-  outline: none;
-  transition: border-color 0.15s;
 }
 
-.members-panel__search:focus {
-  border-color: var(--accent);
-}
 
 .members-panel__search::placeholder {
   color: var(--color-text-muted);
@@ -1284,19 +1274,8 @@ export default {
 }
 
 .members-panel__page-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-el);
-  border: 1px solid var(--color-border);
-  background: var(--bg-card);
   font-size: 16px;
-  font-weight: 600;
-  color: var(--accent);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
+  color: var(--iz-accent);
 }
 
 .members-panel__page-btn:hover:not(:disabled) {
@@ -1330,14 +1309,10 @@ export default {
 }
 
 /* ─── Member Card ─── */
+/* Chrome comes from .iz-row--card; only the list rhythm is local. */
 .members-panel__card {
-  background: var(--bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
   margin-bottom: 10px;
   overflow: hidden;
-  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .members-panel__card:last-child {
@@ -1349,14 +1324,7 @@ export default {
 }
 
 /* ─── Summary Row ─── */
-.members-panel__row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
+/* Layout comes from .iz-row__header; this row uses the standard padding. */
 
 .members-panel__row:hover {
   background: var(--bg-subtle);
@@ -1408,22 +1376,7 @@ export default {
   flex-shrink: 0;
 }
 
-.members-panel__stat-pill {
-  font-size: 11px;
-  font-weight: 600;
-  background: var(--accent-bg);
-  color: var(--accent-strong);
-  padding: 2px 8px;
-  border-radius: var(--radius-el);
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
 
-.members-panel__stat-pill--danger {
-  background: var(--color-danger-bg);
-  color: var(--color-danger-text);
-}
 
 .members-panel__stat-label {
   font-weight: 400;
@@ -1942,18 +1895,12 @@ export default {
   min-width: 0;
 }
 
+/* .iz-btn--icon is square 28px; this one is a taller full-height control. */
 .members-panel__icon-btn {
-  background: var(--bg-card);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-el);
-  color: var(--color-text-secondary, var(--color-text-secondary));
-  cursor: pointer;
-  font-size: 16px;
   width: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  height: auto;
+  align-self: stretch;
+  font-size: 16px;
 }
 
 .members-panel__icon-btn:hover:not(:disabled) {
@@ -1990,45 +1937,11 @@ export default {
   margin-top: 14px;
 }
 
-.members-panel__btn {
-  border: 1px solid transparent;
-  border-radius: var(--radius-el);
-  padding: 7px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
 
-.members-panel__btn--ghost {
-  background: transparent;
-  color: var(--color-text-secondary, var(--color-text-secondary));
-  border-color: var(--color-border-strong);
-}
 
-.members-panel__btn--ghost:hover:not(:disabled) {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary, var(--color-text-primary));
-}
 
-.members-panel__btn--primary {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
 
-.members-panel__btn--primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-}
 
-.members-panel__btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 .members-panel__spinner--inline {
   width: 12px;
