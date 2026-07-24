@@ -236,7 +236,7 @@ export default {
 .superadmin-dashboard [class*="__create-btn"]:hover:not(:disabled),
 .superadmin-dashboard [class*="__add-btn"]:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 40px -12px rgba(204, 61, 148, 0.25);
+  box-shadow: var(--iz-shadow-accent);
 }
 
 /* Native form controls follow the In Zicht accent (checkboxes, radios, etc.) */
@@ -346,7 +346,7 @@ export default {
 
 .superadmin-dashboard__page-title {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  font-size: 26px;
+  font-size: var(--iz-fs-2xl);
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0;
@@ -354,7 +354,7 @@ export default {
 }
 
 .superadmin-dashboard__page-sub {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-secondary);
   margin: 0;
 }
@@ -368,7 +368,7 @@ export default {
   gap: 12px;
   padding: var(--spacing-2xl);
   color: var(--color-text-secondary);
-  font-size: 14px;
+  font-size: var(--iz-fs-md);
 }
 
 .superadmin-dashboard__spinner {
@@ -401,7 +401,7 @@ export default {
   border: 1px solid var(--color-border);
   background: var(--bg-card);
   color: var(--color-text-primary);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   padding: 8px 18px;
   border-radius: var(--radius-el);
@@ -433,7 +433,7 @@ export default {
   border-bottom: 2px solid transparent;
   color: var(--color-text-muted);
   padding: 10px 16px;
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   cursor: pointer;
   text-transform: uppercase;
@@ -442,13 +442,20 @@ export default {
   margin-bottom: -1px;
 }
 
-.superadmin-dashboard__tab:hover {
+/* NC core styles bare <button> with `button:not(.button-vue, [class^="vs__"]):hover`
+   (specificity 0,2,1), which beats a scoped single-class rule (0,2,0) and paints
+   these tabs navy-on-pink on hover. Match its specificity so the tab keeps the
+   In Zicht treatment: quiet tint, accent text, no pill background. */
+.superadmin-dashboard__tabs .superadmin-dashboard__tab:hover {
   color: var(--color-text-primary);
+  background: transparent;
 }
 
-.superadmin-dashboard__tab--active {
+.superadmin-dashboard__tabs .superadmin-dashboard__tab--active,
+.superadmin-dashboard__tabs .superadmin-dashboard__tab--active:hover {
   color: var(--accent);
   border-bottom-color: var(--accent);
+  background: transparent;
 }
 
 .superadmin-dashboard__tab:focus-visible {

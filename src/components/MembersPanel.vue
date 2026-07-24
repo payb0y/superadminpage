@@ -1,7 +1,7 @@
 <template>
   <component
     :is="embedded ? 'div' : 'section'"
-    :class="['members-panel', { 'members-panel--embedded': embedded }]"
+    :class="['members-panel', 'iz-panel', 'iz-panel--list', { 'iz-panel--flush': embedded }]"
   >
     <div
       v-if="!embedded"
@@ -1135,21 +1135,7 @@ export default {
 </script>
 
 <style scoped>
-.members-panel {
-  background: var(--bg-card, #fff);
-  border-radius: var(--radius-card, 12px);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  margin-bottom: var(--spacing-xl, 32px);
-  overflow: hidden;
-}
 
-.members-panel--embedded {
-  background: none;
-  border-radius: 0;
-  box-shadow: none;
-  margin-bottom: 0;
-  overflow: visible;
-}
 
 .members-panel__header {
   display: flex;
@@ -1166,7 +1152,7 @@ export default {
 }
 
 .members-panel__title {
-  font-size: 15px;
+  font-size: var(--iz-fs-lg);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
   margin: 0;
@@ -1182,7 +1168,7 @@ export default {
 }
 
 .members-panel__count {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   background: var(--accent-bg);
   color: var(--accent-strong);
@@ -1229,7 +1215,7 @@ export default {
 }
 
 .members-panel__role-badge {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 500;
   padding: 3px 10px;
   border-radius: var(--radius-card);
@@ -1274,7 +1260,7 @@ export default {
 }
 
 .members-panel__page-btn {
-  font-size: 16px;
+  font-size: var(--iz-fs-lg);
   color: var(--iz-accent);
 }
 
@@ -1289,20 +1275,20 @@ export default {
 }
 
 .members-panel__page-info {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
 }
 
 .members-panel__showing-hint {
   text-align: center;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
   margin-top: 6px;
 }
 
 .members-panel__empty {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-muted, var(--color-text-muted));
   padding: 16px 0;
   text-align: center;
@@ -1336,7 +1322,7 @@ export default {
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, var(--accent), var(--accent));
   color: #fff;
-  font-size: 15px;
+  font-size: var(--iz-fs-lg);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -1353,7 +1339,7 @@ export default {
 }
 
 .members-panel__name {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   color: var(--color-text-primary, var(--color-text-primary));
   overflow: hidden;
@@ -1362,7 +1348,7 @@ export default {
 }
 
 .members-panel__sub {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1384,7 +1370,7 @@ export default {
 }
 
 .members-panel__role {
-  font-size: 10px;
+  font-size: var(--iz-fs-micro);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: var(--radius-el);
@@ -1442,13 +1428,13 @@ export default {
 }
 
 .members-panel__detail-label {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary, var(--color-text-secondary));
   font-weight: 500;
 }
 
 .members-panel__detail-value {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   color: var(--color-text-primary, var(--color-text-primary));
   text-align: right;
@@ -1472,7 +1458,7 @@ export default {
 }
 
 .members-panel__tasks-title {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: uppercase;
@@ -1480,7 +1466,7 @@ export default {
 }
 
 .members-panel__tasks-pct {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
 }
@@ -1516,7 +1502,7 @@ export default {
 }
 
 .members-panel__tasks-stat {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary, var(--color-text-secondary));
   display: flex;
   align-items: center;
@@ -1542,7 +1528,7 @@ export default {
 
 .members-panel__tasks-empty {
   margin-top: 12px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-muted));
   font-style: italic;
   padding: 8px 0;
@@ -1552,7 +1538,7 @@ export default {
   background: var(--accent);
   border: 0;
   color: #fff;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   padding: 6px 12px;
   border-radius: var(--radius-el);
@@ -1580,7 +1566,7 @@ export default {
 }
 
 .members-panel__add-form-title {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 700;
   color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: uppercase;
@@ -1590,7 +1576,7 @@ export default {
 .members-panel__add-form-close {
   background: transparent;
   border: 0;
-  font-size: 18px;
+  font-size: var(--iz-fs-lg);
   line-height: 1;
   color: var(--color-text-muted, var(--color-text-muted));
   cursor: pointer;
@@ -1608,7 +1594,7 @@ export default {
   padding: 7px 12px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-el);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-primary, var(--color-text-primary));
   background: var(--bg-card);
   outline: none;
@@ -1622,14 +1608,14 @@ export default {
 
 .members-panel__add-form-state {
   margin-top: 8px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-muted));
   font-style: italic;
 }
 
 .members-panel__add-form-error {
   margin-top: 8px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-danger-text);
   background: var(--color-danger-bg);
   border: 1px solid var(--color-danger-bg);
@@ -1670,7 +1656,7 @@ export default {
 }
 
 .members-panel__add-form-result-name {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   color: var(--color-text-primary, var(--color-text-primary));
   overflow: hidden;
@@ -1679,7 +1665,7 @@ export default {
 }
 
 .members-panel__add-form-result-meta {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1693,7 +1679,7 @@ export default {
   border: 1px solid var(--accent);
   background: var(--bg-card);
   color: var(--accent);
-  font-size: 16px;
+  font-size: var(--iz-fs-lg);
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -1744,13 +1730,13 @@ export default {
 }
 
 .members-panel__confirm-text {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   color: var(--color-danger-text);
 }
 
 .members-panel__confirm-error {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-danger-text);
   background: var(--color-danger-bg);
   padding: 2px 6px;
@@ -1758,7 +1744,7 @@ export default {
 }
 
 .members-panel__confirm-btn {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   padding: 4px 10px;
   border-radius: var(--radius-sm);
@@ -1825,7 +1811,7 @@ export default {
   color: var(--color-success-text);
   padding: 8px 12px;
   border-radius: var(--radius-el);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   margin-bottom: 12px;
 }
@@ -1844,7 +1830,7 @@ export default {
   border-bottom: 2px solid transparent;
   color: var(--color-text-muted, var(--color-text-muted));
   padding: 6px 12px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   cursor: pointer;
   text-transform: uppercase;
@@ -1868,7 +1854,7 @@ export default {
 
 .members-panel__field-label {
   display: block;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
   margin-bottom: 4px;
@@ -1880,7 +1866,7 @@ export default {
 
 .members-panel__field-error {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-danger-text);
 }
 
@@ -1900,7 +1886,7 @@ export default {
   width: 38px;
   height: auto;
   align-self: stretch;
-  font-size: 16px;
+  font-size: var(--iz-fs-lg);
 }
 
 .members-panel__icon-btn:hover:not(:disabled) {
@@ -1918,7 +1904,7 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary, var(--color-text-secondary));
   margin-top: 6px;
   cursor: pointer;
@@ -1961,7 +1947,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 700;
   color: var(--color-success-text);
   margin-bottom: 12px;
@@ -1976,7 +1962,7 @@ export default {
   border-radius: 50%;
   background: var(--color-success-bg);
   color: var(--color-success-text);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 700;
 }
 
@@ -1986,7 +1972,7 @@ export default {
   gap: 8px;
   padding: 6px 0;
   border-bottom: 1px solid var(--bg-subtle);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
 }
 
 .members-panel__reveal-row:last-of-type {
@@ -2019,7 +2005,7 @@ export default {
   color: var(--color-text-secondary, var(--color-text-secondary));
   border-radius: var(--radius-sm);
   padding: 4px 10px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
@@ -2033,12 +2019,12 @@ export default {
 
 .members-panel__reveal-btn--wide {
   padding: 6px 14px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
 }
 
 .members-panel__reveal-warning {
   margin: 12px 0 0;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-warning-text);
   background: var(--color-warning-bg);
   border: 1px solid var(--color-warning-text);

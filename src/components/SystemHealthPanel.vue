@@ -1,5 +1,5 @@
 <template>
-  <section class="system-health">
+  <section class="system-health iz-panel">
     <header class="system-health__header">
       <h3 class="system-health__title">
         <svg
@@ -534,12 +534,6 @@ export default {
 </script>
 
 <style scoped>
-.system-health {
-  background: var(--bg-card, #fff);
-  border-radius: var(--radius-card, 12px);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  padding: var(--spacing-lg, 24px);
-}
 
 .system-health__header {
   display: flex;
@@ -549,7 +543,7 @@ export default {
 }
 
 .system-health__title {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: uppercase;
@@ -574,7 +568,7 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   color: var(--color-success-text);
   background: var(--color-success-bg);
@@ -597,7 +591,7 @@ export default {
   height: 6px;
   border-radius: 50%;
   background: var(--color-success);
-  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--iz-success) 60%, transparent);
   animation: system-health-pulse 1.6s ease-out infinite;
 }
 
@@ -608,9 +602,9 @@ export default {
 }
 
 @keyframes system-health-pulse {
-  0%   { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0.55); }
-  70%  { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-  100% { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0); }
+  0%   { box-shadow: 0 0 0 0   color-mix(in oklab, var(--iz-success) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 6px transparent; }
+  100% { box-shadow: 0 0 0 0   transparent; }
 }
 
 .system-health__refresh {
@@ -620,7 +614,7 @@ export default {
   background: transparent;
   border: 1px solid var(--color-border-strong);
   padding: 4px 10px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 500;
   color: var(--color-text-secondary);
   border-radius: var(--radius-sm);
@@ -638,7 +632,7 @@ export default {
 
 .system-health__refresh-icon {
   display: inline-block;
-  font-size: 14px;
+  font-size: var(--iz-fs-md);
   line-height: 1;
 }
 
@@ -651,7 +645,7 @@ export default {
 }
 
 .system-health__error {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-danger-text);
   background: var(--color-danger-bg);
   border: 1px solid var(--color-danger-bg);
@@ -667,7 +661,7 @@ export default {
   background: transparent;
   border: 1px solid var(--color-danger-bg);
   color: var(--color-danger-text);
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 500;
   padding: 3px 10px;
   border-radius: var(--radius-sm);
@@ -679,7 +673,7 @@ export default {
 }
 
 .system-health__subhead {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   color: var(--color-text-muted, var(--color-text-muted));
   text-transform: uppercase;
@@ -724,7 +718,7 @@ export default {
 }
 
 .system-health__card-title {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   color: var(--color-text-secondary);
   text-transform: uppercase;
@@ -732,7 +726,7 @@ export default {
 }
 
 .system-health__card-value {
-  font-size: 18px;
+  font-size: var(--iz-fs-lg);
   font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.2;
@@ -769,13 +763,13 @@ export default {
   position: absolute;
   right: 0;
   top: 10px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   color: var(--color-text-secondary);
 }
 
 .system-health__card-sub {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary);
   margin-top: 14px;
   word-break: break-word;

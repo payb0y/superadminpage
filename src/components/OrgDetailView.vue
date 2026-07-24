@@ -293,7 +293,7 @@ export default {
   background: none;
   border: none;
   color: var(--color-text-secondary, var(--color-text-secondary));
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   cursor: pointer;
   padding: 4px 8px;
@@ -319,7 +319,7 @@ export default {
   border-radius: var(--radius-card);
   background: linear-gradient(135deg, var(--accent), var(--accent));
   color: #fff;
-  font-size: 20px;
+  font-size: var(--iz-fs-xl);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -335,7 +335,7 @@ export default {
 }
 
 .org-detail__name {
-  font-size: 22px;
+  font-size: var(--iz-fs-xl);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
   margin: 0;
@@ -353,7 +353,7 @@ export default {
 
 
 .org-detail__contact {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-muted));
 }
 
@@ -368,7 +368,7 @@ export default {
   background: none;
   border: none;
   padding: 10px 16px;
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
   cursor: pointer;
@@ -390,7 +390,7 @@ export default {
 }
 
 .org-detail__tab-count {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   background: var(--bg-subtle);
   color: var(--color-text-secondary);
@@ -429,7 +429,7 @@ export default {
 }
 
 .org-detail__section-title {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: uppercase;
@@ -456,12 +456,12 @@ export default {
 }
 
 .org-detail__profile-label {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary, var(--color-text-secondary));
 }
 
 .org-detail__profile-value {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   color: var(--color-text-primary, var(--color-text-primary));
   text-align: right;

@@ -1,14 +1,14 @@
 <template>
   <div
-    class="co-modal__backdrop"
+    class="iz-modal-backdrop"
     role="dialog"
     aria-modal="true"
     @click.self="cancel"
     @keydown.esc="cancel"
   >
-    <div class="co-modal">
+    <div class="iz-modal co-modal">
       <!-- Header -->
-      <div class="co-modal__header">
+      <div class="iz-modal__header">
         <span class="co-modal__title">Create organization</span>
         <button
           type="button"
@@ -20,7 +20,7 @@
       </div>
 
       <!-- Body -->
-      <div class="co-modal__body">
+      <div class="iz-modal__body co-modal__body">
         <!-- ── Credentials reveal (post-success with auto-generated pw) ─── -->
         <div v-if="createdOrg" class="co-modal__reveal">
           <div class="co-modal__reveal-heading">
@@ -514,7 +514,7 @@
       </div>
 
       <!-- Footer -->
-      <div class="co-modal__footer">
+      <div class="iz-modal__footer">
         <template v-if="createdOrg">
           <button
             type="button"
@@ -1134,53 +1134,16 @@ export default {
 </script>
 
 <style scoped>
-.co-modal__backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-  display: flex;
-  /* Top-aligned with a padding that clears the Nextcloud header (~50px)
-     so a tall modal never slides up underneath it. */
-  align-items: flex-start;
-  justify-content: center;
-  z-index: 9000;
-  padding: 70px 16px 24px;
-  /* If for some reason the modal is somehow taller than the viewport,
-     allow page-level scroll instead of clipping it. */
-  overflow-y: auto;
-}
 
-.co-modal {
-  background: var(--bg-card);
-  border-radius: var(--radius-card);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-  width: 100%;
-  max-width: 540px;
-  /* Cap to the visible area between the NC header and the bottom edge
-     so header + footer stay pinned and the body scrolls. */
-  max-height: calc(100vh - 94px);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  animation: co-modal-in 0.15s ease-out;
-}
 
 @keyframes co-modal-in {
   from { transform: scale(0.96); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
 
-.co-modal__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--color-border);
-  flex-shrink: 0;
-}
 
 .co-modal__title {
-  font-size: 15px;
+  font-size: var(--iz-fs-lg);
   font-weight: 700;
   color: var(--color-text-primary);
 }
@@ -1188,7 +1151,7 @@ export default {
 .co-modal__close {
   background: transparent;
   border: 0;
-  font-size: 22px;
+  font-size: var(--iz-fs-xl);
   line-height: 1;
   color: var(--color-text-muted);
   cursor: pointer;
@@ -1213,15 +1176,6 @@ export default {
   min-height: 0;
 }
 
-.co-modal__footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 18px;
-  border-top: 1px solid var(--color-border);
-  background: var(--bg-subtle);
-  flex-shrink: 0;
-}
 
 /* ── Mode toggle ─────────────────────────────────────────────────── */
 .co-modal__mode {
@@ -1238,7 +1192,7 @@ export default {
   padding: 6px 10px;
   border-radius: var(--radius-sm);
   text-align: center;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -1262,18 +1216,18 @@ export default {
 }
 
 .co-modal__hint {
-  background: rgba(204, 61, 148, 0.08);
+  background: var(--iz-accent-bg);
   border-left: 3px solid var(--accent);
   border-radius: var(--radius-sm);
   padding: 8px 10px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--accent-strong);
   margin-bottom: 14px;
 }
 
 /* ── Sections ────────────────────────────────────────────────────── */
 .co-modal__section-label {
-  font-size: 10px;
+  font-size: var(--iz-fs-micro);
   font-weight: 700;
   color: var(--color-text-secondary);
   text-transform: uppercase;
@@ -1297,7 +1251,7 @@ export default {
 
 .co-modal__label {
   display: block;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   color: var(--color-text-secondary);
   margin-bottom: 4px;
@@ -1318,7 +1272,7 @@ export default {
 
 .co-modal__field-error {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-danger-text);
   background: var(--color-danger-bg);
   border: 1px solid var(--color-danger-bg);
@@ -1331,7 +1285,7 @@ export default {
 }
 
 .co-modal__state {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted);
   font-style: italic;
   margin-bottom: 10px;
@@ -1342,7 +1296,7 @@ export default {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   color: var(--accent);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   padding: 4px 10px;
   cursor: pointer;
@@ -1366,7 +1320,7 @@ export default {
   border: 1px solid var(--accent);
   color: var(--accent);
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   padding: 0 12px;
   cursor: pointer;
@@ -1380,7 +1334,7 @@ export default {
 }
 
 .co-modal__plan-custom-btn--active {
-  background: rgba(204, 61, 148, 0.08);
+  background: var(--iz-accent-bg);
 }
 
 .co-modal__plan-custom-btn:disabled {
@@ -1405,7 +1359,7 @@ export default {
 }
 
 .co-modal__custom-title {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 700;
   color: var(--accent);
   text-transform: uppercase;
@@ -1416,7 +1370,7 @@ export default {
   background: transparent;
   border: 0;
   color: var(--color-text-muted);
-  font-size: 16px;
+  font-size: var(--iz-fs-lg);
   line-height: 1;
   cursor: pointer;
   padding: 0 6px;
@@ -1435,7 +1389,7 @@ export default {
 }
 
 .co-modal__unit {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted);
 }
 
@@ -1460,7 +1414,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: var(--iz-fs-lg);
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
@@ -1479,7 +1433,7 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary);
   margin-top: 6px;
   cursor: pointer;
@@ -1520,7 +1474,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: var(--iz-fs-md);
   font-weight: 700;
   color: var(--color-success-text);
   margin-bottom: 14px;
@@ -1535,7 +1489,7 @@ export default {
   border-radius: 50%;
   background: var(--color-success-bg);
   color: var(--color-success-text);
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 700;
 }
 
@@ -1545,7 +1499,7 @@ export default {
   gap: 8px;
   padding: 6px 0;
   border-bottom: 1px solid var(--bg-subtle);
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
 }
 
 .co-modal__reveal-row:last-of-type {
@@ -1578,7 +1532,7 @@ export default {
   color: var(--color-text-secondary);
   border-radius: var(--radius-sm);
   padding: 3px 10px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
@@ -1591,12 +1545,12 @@ export default {
 
 .co-modal__reveal-btn--wide {
   padding: 5px 14px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
 }
 
 .co-modal__reveal-warning {
   margin: 12px 0 0;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-warning-text);
   background: var(--color-warning-bg);
   border: 1px solid var(--color-warning-text);
@@ -1609,7 +1563,7 @@ export default {
 .co-modal__confirm-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: var(--iz-scrim);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -1633,7 +1587,7 @@ export default {
   justify-content: space-between;
   padding: 14px 18px;
   border-bottom: 1px solid var(--color-border);
-  font-size: 14px;
+  font-size: var(--iz-fs-md);
   font-weight: 700;
   color: var(--color-text-primary);
 }
@@ -1641,7 +1595,7 @@ export default {
 .co-modal__confirm-close {
   background: transparent;
   border: 0;
-  font-size: 22px;
+  font-size: var(--iz-fs-xl);
   line-height: 1;
   color: var(--color-text-muted);
   cursor: pointer;
@@ -1660,7 +1614,7 @@ export default {
 
 .co-modal__confirm-text {
   margin: 0 0 12px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary);
   line-height: 1.5;
 }
@@ -1679,7 +1633,7 @@ export default {
   padding: 9px 12px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-el);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   background: var(--bg-card);
   box-sizing: border-box;
   outline: none;

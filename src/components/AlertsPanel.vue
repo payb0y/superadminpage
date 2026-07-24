@@ -1,5 +1,5 @@
 <template>
-  <section class="alerts-panel">
+  <section class="alerts-panel iz-panel">
     <header class="alerts-panel__header">
       <h3 class="alerts-panel__title">
         <svg
@@ -61,12 +61,6 @@ export default {
 </script>
 
 <style scoped>
-.alerts-panel {
-  background: var(--bg-card, #fff);
-  border-radius: var(--radius-card, 12px);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  padding: var(--spacing-lg, 24px);
-}
 
 .alerts-panel__header {
   display: flex;
@@ -76,7 +70,7 @@ export default {
 }
 
 .alerts-panel__title {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: uppercase;
@@ -92,7 +86,7 @@ export default {
 }
 
 .alerts-panel__summary {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   color: var(--color-text-muted, var(--color-text-muted));
 }
@@ -131,13 +125,13 @@ export default {
 }
 
 .alerts-panel__card-value {
-  font-size: 24px;
+  font-size: var(--iz-fs-2xl);
   font-weight: 700;
   line-height: 1.1;
 }
 
 .alerts-panel__card-label {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 500;
   opacity: 0.9;
 }

@@ -1,5 +1,5 @@
 <template>
-  <div :class="['backups-panel', { 'backups-panel--embedded': embedded }]">
+  <div :class="['backups-panel', 'iz-panel', { 'iz-panel--flush': embedded }]">
     <!-- Empty state (no jobs at all) -->
     <div v-if="!jobs || jobs.length === 0" class="iz-empty backups-panel__empty">
       <p class="backups-panel__empty-text">No backup jobs found.</p>
@@ -13,10 +13,10 @@
           <span
             v-for="s in statusOptions"
             :key="'sf-' + s.value"
-            class="backups-panel__filter-badge"
+            class="iz-chip"
             :class="[
-              'backups-panel__filter-badge--' + (s.value || 'all'),
-              { 'backups-panel__filter-badge--active': statusFilter === s.value },
+              chipTone(s.value),
+              { 'iz-chip--active': statusFilter === s.value },
             ]"
             @click="statusFilter = s.value"
           >{{ s.label }}</span>
@@ -27,10 +27,10 @@
           <span
             v-for="t in typeOptions"
             :key="'tf-' + t.value"
-            class="backups-panel__filter-badge"
+            class="iz-chip"
             :class="[
-              'backups-panel__filter-badge--' + (t.value || 'all'),
-              { 'backups-panel__filter-badge--active': typeFilter === t.value },
+              chipTone(t.value),
+              { 'iz-chip--active': typeFilter === t.value },
             ]"
             @click="typeFilter = t.value"
           >{{ t.label }}</span>
@@ -41,10 +41,10 @@
           <span
             v-for="tr in triggerOptions"
             :key="'trf-' + tr.value"
-            class="backups-panel__filter-badge"
+            class="iz-chip"
             :class="[
-              'backups-panel__filter-badge--' + (tr.value || 'all'),
-              { 'backups-panel__filter-badge--active': triggerFilter === tr.value },
+              chipTone(tr.value),
+              { 'iz-chip--active': triggerFilter === tr.value },
             ]"
             @click="triggerFilter = tr.value"
           >{{ tr.label }}</span>
@@ -80,8 +80,8 @@
               <!-- Status badge -->
               <td>
                 <span
-                  class="backups-panel__badge"
-                  :class="'backups-panel__badge--' + job.status"
+                  class="iz-badge"
+                  :class="badgeTone(job.status)"
                 >{{ job.status }}</span>
               </td>
 
@@ -154,7 +154,7 @@
               <!-- Duration -->
               <td>
                 <span v-if="job.startedAt && job.finishedAt" class="backups-panel__duration">{{ formatDuration(job.startedAt, job.finishedAt) }}</span>
-                <span v-else-if="job.status === 'running'" class="backups-panel__badge backups-panel__badge--running">running</span>
+                <span v-else-if="job.status === 'running'" class="iz-badge iz-badge--accent">running</span>
                 <span v-else class="backups-panel__muted">&mdash;</span>
               </td>
 
@@ -238,6 +238,36 @@ export default {
     },
   },
   methods: {
+    // Backup job status -> shared badge tone. Explicit map with a neutral
+    // fallback so an unknown status can't emit a class that doesn't exist.
+    badgeTone(status) {
+      return (
+        {
+          completed: "iz-badge--success",
+          failed: "iz-badge--danger",
+          error: "iz-badge--danger",
+          running: "iz-badge--accent",
+          pending: "iz-badge--accent",
+          queued: "iz-badge--accent",
+          expired: "iz-badge--muted",
+        }[status] || "iz-badge--muted"
+      );
+    },
+    // Filter-chip tone. "" is the "All" option and stays neutral.
+    chipTone(value) {
+      return (
+        {
+          completed: "iz-chip--success",
+          failed: "iz-chip--danger",
+          expired: "iz-chip--muted",
+          running: "iz-chip--accent",
+          full: "iz-chip--accent",
+          incremental: "iz-chip--warning",
+          scheduled: "iz-chip--muted",
+          manual: "iz-chip--cat-5",
+        }[value] || "iz-chip--muted"
+      );
+    },
     formatSize: function (bytes) {
       if (!bytes || bytes === 0) return '0 B';
       if (bytes < 1024) return bytes + ' B';
@@ -290,19 +320,7 @@ export default {
 </script>
 
 <style scoped>
-.backups-panel {
-  background: var(--bg-card, #fff);
-  border-radius: var(--radius-card, 12px);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  padding: var(--spacing-lg, 24px);
-}
 
-.backups-panel--embedded {
-  background: none;
-  border-radius: 0;
-  box-shadow: none;
-  padding: 0;
-}
 
 /* ─── Empty State ─── */
 .backups-panel__empty {
@@ -311,7 +329,7 @@ export default {
 }
 
 .backups-panel__empty-text {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-muted, var(--color-text-muted));
   margin: 0;
 }
@@ -337,86 +355,19 @@ export default {
   padding-right: 0;
 }
 
-.backups-panel__filter-badge {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 3px 10px;
-  border-radius: var(--radius-card);
-  cursor: pointer;
-  background: var(--bg-subtle);
-  color: var(--color-text-secondary);
-  transition: all 0.15s ease;
-  user-select: none;
-  border: 1.5px solid transparent;
-}
 
-.backups-panel__filter-badge:hover {
-  background: var(--color-border);
-}
 
-.backups-panel__filter-badge--active {
-  font-weight: 600;
-  border-color: currentColor;
-}
 
 /* Status-specific filter colors */
-.backups-panel__filter-badge--completed {
-  color: var(--color-success-text);
-}
-.backups-panel__filter-badge--completed.backups-panel__filter-badge--active {
-  background: var(--color-success-bg);
-}
 
-.backups-panel__filter-badge--expired {
-  color: var(--color-text-secondary);
-}
-.backups-panel__filter-badge--expired.backups-panel__filter-badge--active {
-  background: var(--color-border);
-}
 
-.backups-panel__filter-badge--running {
-  color: var(--accent-strong);
-}
-.backups-panel__filter-badge--running.backups-panel__filter-badge--active {
-  background: var(--accent-bg);
-}
 
-.backups-panel__filter-badge--failed {
-  color: var(--color-danger-text);
-}
-.backups-panel__filter-badge--failed.backups-panel__filter-badge--active {
-  background: var(--color-danger-bg);
-}
 
 /* Type-specific filter colors */
-.backups-panel__filter-badge--full {
-  color: var(--accent-strong);
-}
-.backups-panel__filter-badge--full.backups-panel__filter-badge--active {
-  background: var(--accent-bg);
-}
 
-.backups-panel__filter-badge--incremental {
-  color: var(--color-warning-text);
-}
-.backups-panel__filter-badge--incremental.backups-panel__filter-badge--active {
-  background: var(--color-warning-bg);
-}
 
 /* Trigger-specific filter colors */
-.backups-panel__filter-badge--scheduled {
-  color: var(--color-text-secondary);
-}
-.backups-panel__filter-badge--scheduled.backups-panel__filter-badge--active {
-  background: var(--bg-subtle);
-}
 
-.backups-panel__filter-badge--manual {
-  color: var(--chart-5);
-}
-.backups-panel__filter-badge--manual.backups-panel__filter-badge--active {
-  background: var(--chart-5-bg);
-}
 
 /* ─── Table ─── */
 .backups-panel__table-wrap {
@@ -426,11 +377,11 @@ export default {
 .backups-panel__table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
 }
 
 .backups-panel__table th {
-  font-size: 10px;
+  font-size: var(--iz-fs-micro);
   font-weight: 600;
   color: var(--color-text-muted, var(--color-text-muted));
   text-transform: uppercase;
@@ -461,42 +412,15 @@ export default {
 }
 
 /* ─── Status Badge ─── */
-.backups-panel__badge {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--radius-el);
-  text-transform: capitalize;
-}
 
-.backups-panel__badge--completed {
-  background: var(--color-badge-success-bg, var(--color-success-bg));
-  color: var(--color-badge-success-text, var(--color-success-text));
-}
 
-.backups-panel__badge--failed,
-.backups-panel__badge--error {
-  background: var(--color-badge-danger-bg, var(--color-danger-bg));
-  color: var(--color-badge-danger-text, var(--color-danger-text));
-}
 
-.backups-panel__badge--running,
-.backups-panel__badge--pending,
-.backups-panel__badge--queued {
-  background: var(--accent-bg);
-  color: var(--accent-strong);
-}
 
-.backups-panel__badge--expired {
-  background: var(--bg-subtle);
-  color: var(--color-text-muted, var(--color-text-muted));
-}
 
 /* ─── Type Pill ─── */
 .backups-panel__type {
   display: inline-block;
-  font-size: 10px;
+  font-size: var(--iz-fs-micro);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: var(--radius-el);
@@ -518,7 +442,7 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: capitalize;
 }
@@ -529,21 +453,21 @@ export default {
 
 /* ─── Artifact ─── */
 .backups-panel__artifact {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-family: 'SF Mono', Monaco, 'Cascadia Code', Consolas, monospace;
   color: var(--color-text-secondary, var(--color-text-secondary));
 }
 
 /* ─── Size ─── */
 .backups-panel__size {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   color: var(--color-text-primary, var(--color-text-primary));
 }
 
 /* ─── Dates ─── */
 .backups-panel__date {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary, var(--color-text-secondary));
 }
 
@@ -559,14 +483,14 @@ export default {
 
 /* ─── Duration ─── */
 .backups-panel__duration {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary, var(--color-text-secondary));
 }
 
 /* ─── Muted placeholder ─── */
 .backups-panel__muted {
   color: var(--color-text-muted, var(--color-text-muted));
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
 }
 
 </style>

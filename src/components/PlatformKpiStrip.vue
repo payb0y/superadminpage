@@ -210,7 +210,7 @@ export default {
 }
 
 .projects-kpi__hero-value {
-  font-size: 22px;
+  font-size: var(--iz-fs-xl);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
   line-height: 1.1;
@@ -218,18 +218,18 @@ export default {
 }
 
 .projects-kpi__hero-label {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
 }
 
 .projects-kpi__hero-sep {
   color: var(--color-border-strong);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   user-select: none;
 }
 
 .projects-kpi__hero-tasks {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary, var(--color-text-secondary));
   font-variant-numeric: tabular-nums;
 }
@@ -269,7 +269,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 12px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary, var(--color-text-secondary));
   font-variant-numeric: tabular-nums;
 }
@@ -330,7 +330,7 @@ export default {
 }
 
 .kpi-link:hover {
-  background: rgba(204, 61, 148, 0.08);
+  background: var(--iz-accent-bg);
 }
 
 .kpi-link:focus-visible {
@@ -349,7 +349,7 @@ export default {
 }
 
 .kpi-link.kpi-card__metric:hover {
-  background: rgba(204, 61, 148, 0.08);
+  background: var(--iz-accent-bg);
 }
 
 .kpi-card__metrics > .kpi-link.kpi-card__metric:first-child {

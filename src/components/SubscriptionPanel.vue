@@ -451,14 +451,14 @@
     <!-- ── Password confirmation modal ─────────────────────────────── -->
     <div
       v-if="confirmOpen"
-      class="sub-panel__modal-backdrop"
+      class="iz-modal-backdrop"
       role="dialog"
       aria-modal="true"
       @click.self="closeConfirm"
       @keydown.esc="closeConfirm"
     >
-      <div class="sub-panel__modal">
-        <div class="sub-panel__modal-header">
+      <div class="iz-modal sub-panel__modal">
+        <div class="iz-modal__header">
           <span>Confirm with your password</span>
           <button
             type="button"
@@ -469,7 +469,7 @@
           >×</button>
         </div>
         <form
-          class="sub-panel__modal-body"
+          class="iz-modal__body sub-panel__modal-body"
           autocomplete="on"
           @submit.prevent="saveChanges"
         >
@@ -1093,14 +1093,14 @@ export default {
 }
 
 .sub-panel__empty-title {
-  font-size: 14px;
+  font-size: var(--iz-fs-md);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
   margin-bottom: 6px;
 }
 
 .sub-panel__empty-body {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-secondary));
   line-height: 1.5;
 }
@@ -1133,7 +1133,7 @@ export default {
 }
 
 .sub-panel__label {
-  font-size: 10px;
+  font-size: var(--iz-fs-micro);
   font-weight: 700;
   color: var(--color-text-muted, var(--color-text-secondary));
   text-transform: uppercase;
@@ -1142,7 +1142,7 @@ export default {
 }
 
 .sub-panel__sub {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-secondary));
   margin-top: 8px;
 }
@@ -1154,7 +1154,7 @@ export default {
   gap: 6px;
   padding: 5px 12px;
   border-radius: var(--radius-pill);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 700;
 }
 
@@ -1166,17 +1166,17 @@ export default {
 }
 
 .sub-panel__pill--active {
-  background: rgba(16, 185, 129, 0.14);
+  background: var(--iz-success-bg);
   color: var(--color-success-text);
 }
 
 .sub-panel__pill--paused {
-  background: rgba(245, 158, 11, 0.14);
+  background: var(--iz-warning-bg);
   color: var(--color-warning-text);
 }
 
 .sub-panel__pill--cancelled {
-  background: rgba(220, 38, 38, 0.12);
+  background: var(--iz-danger-bg);
   color: var(--color-danger-text);
 }
 
@@ -1194,16 +1194,16 @@ export default {
 }
 
 .sub-panel__plan-pill {
-  background: rgba(204, 61, 148, 0.12);
+  background: var(--iz-accent-bg);
   color: var(--accent);
   padding: 5px 12px;
   border-radius: var(--radius-pill);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 700;
 }
 
 .sub-panel__plan-meta {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-secondary));
 }
 
@@ -1215,19 +1215,19 @@ export default {
 }
 
 .sub-panel__kv-label {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted);
   margin-bottom: 4px;
 }
 
 .sub-panel__kv-value {
-  font-size: 14px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   color: var(--color-text-primary, var(--color-text-primary));
 }
 
 .sub-panel__kv-relative {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 500;
   color: var(--color-warning-text);
 }
@@ -1239,7 +1239,7 @@ export default {
 .sub-panel__kv-line {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-muted, var(--color-text-secondary));
   padding: 4px 0;
 }
@@ -1257,13 +1257,13 @@ export default {
 }
 
 .sub-panel__limit-num {
-  font-size: 20px;
+  font-size: var(--iz-fs-xl);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
 }
 
 .sub-panel__limit-of {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-secondary));
 }
 
@@ -1317,13 +1317,13 @@ export default {
 }
 
 .sub-panel__edit-title {
-  font-size: 16px;
+  font-size: var(--iz-fs-lg);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
 }
 
 .sub-panel__edit-meta {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
 }
 
@@ -1334,7 +1334,7 @@ export default {
 
 .sub-panel__field-label {
   display: block;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
   margin-bottom: 6px;
@@ -1350,19 +1350,19 @@ export default {
 }
 
 .sub-panel__field-hint {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
   margin-top: 4px;
 }
 
 .sub-panel__field-state {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-muted));
   font-style: italic;
 }
 
 .sub-panel__field-error {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-danger-text);
   background: var(--color-danger-bg);
   border: 1px solid var(--color-danger-bg);
@@ -1380,7 +1380,7 @@ export default {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   color: var(--accent);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   padding: 4px 10px;
   cursor: pointer;
@@ -1402,7 +1402,7 @@ export default {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-el);
   background: var(--bg-card);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1417,7 +1417,7 @@ export default {
 
 .sub-panel__status-pill--active {
   border-color: var(--accent);
-  background: rgba(204, 61, 148, 0.08);
+  background: var(--iz-accent-bg);
   color: var(--color-text-primary);
 }
 
@@ -1433,7 +1433,7 @@ export default {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-el);
   background: var(--bg-card);
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
   cursor: pointer;
@@ -1447,7 +1447,7 @@ export default {
 
 .sub-panel__extend-pill--active {
   border-color: var(--accent);
-  background: rgba(204, 61, 148, 0.08);
+  background: var(--iz-accent-bg);
   color: var(--accent);
 }
 
@@ -1469,7 +1469,7 @@ export default {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 4px 16px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
@@ -1481,7 +1481,7 @@ export default {
 }
 
 .sub-panel__preview-section {
-  font-size: 10px;
+  font-size: var(--iz-fs-micro);
   font-weight: 700;
   color: var(--color-text-secondary);
   text-transform: uppercase;
@@ -1510,7 +1510,7 @@ export default {
   border: 1px solid var(--accent);
   color: var(--accent);
   border-radius: var(--radius-el);
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   padding: 0 12px;
   cursor: pointer;
@@ -1524,7 +1524,7 @@ export default {
 }
 
 .sub-panel__plan-custom-btn--active {
-  background: rgba(204, 61, 148, 0.08);
+  background: var(--iz-accent-bg);
 }
 
 .sub-panel__plan-custom-btn:disabled {
@@ -1549,7 +1549,7 @@ export default {
 }
 
 .sub-panel__custom-title {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 700;
   color: var(--accent);
   text-transform: uppercase;
@@ -1560,7 +1560,7 @@ export default {
   background: transparent;
   border: 0;
   color: var(--color-text-muted);
-  font-size: 18px;
+  font-size: var(--iz-fs-lg);
   line-height: 1;
   cursor: pointer;
   padding: 0 6px;
@@ -1583,7 +1583,7 @@ export default {
 
 .sub-panel__custom-label {
   display: block;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
   margin-bottom: 4px;
@@ -1608,7 +1608,7 @@ export default {
 }
 
 .sub-panel__unit-suffix {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
 }
 
@@ -1616,7 +1616,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary, var(--color-text-secondary));
   margin-top: 6px;
   cursor: pointer;
@@ -1634,7 +1634,7 @@ export default {
   padding: 0;
   background: transparent;
   border: 0;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
 }
 
 .sub-panel__custom-error {
@@ -1652,47 +1652,18 @@ export default {
 }
 
 /* ── Password confirmation modal ─────────────────────────────────────── */
-.sub-panel__modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9000;
-  padding: 16px;
-}
 
-.sub-panel__modal {
-  background: var(--bg-card);
-  border-radius: var(--radius-card);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-  width: 100%;
-  max-width: 420px;
-  overflow: hidden;
-  animation: sub-panel-modal-in 0.15s ease-out;
-}
 
 @keyframes sub-panel-modal-in {
   from { transform: scale(0.96); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
 
-.sub-panel__modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text-primary, var(--color-text-primary));
-}
 
 .sub-panel__modal-close {
   background: transparent;
   border: 0;
-  font-size: 22px;
+  font-size: var(--iz-fs-xl);
   line-height: 1;
   color: var(--color-text-muted, var(--color-text-muted));
   cursor: pointer;
@@ -1716,7 +1687,7 @@ export default {
 
 .sub-panel__modal-body-text {
   margin: 0 0 12px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary, var(--color-text-secondary));
   line-height: 1.5;
 }
@@ -1726,7 +1697,7 @@ export default {
   padding: 9px 12px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-el);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   background: var(--bg-card);
   box-sizing: border-box;
   outline: none;

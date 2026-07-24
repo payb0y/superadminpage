@@ -97,7 +97,7 @@ export default {
   background: var(--bg-subtle);
 }
 .project-map__link {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--accent);
   text-decoration: none;
   align-self: flex-end;

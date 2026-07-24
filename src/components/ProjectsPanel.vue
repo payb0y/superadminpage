@@ -896,7 +896,7 @@ export default {
 
 
 .projects-panel__chevron {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-muted));
   width: 12px;
   flex-shrink: 0;
@@ -929,7 +929,7 @@ export default {
 .projects-panel__section-title {
   margin: 0;
   padding: 10px 14px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -961,7 +961,7 @@ export default {
 }
 
 .projects-panel__name {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   color: var(--color-text-primary, var(--color-text-primary));
   overflow: hidden;
@@ -972,7 +972,7 @@ export default {
 .projects-panel__meta {
   display: flex;
   gap: 10px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
 }
 
@@ -1013,7 +1013,7 @@ export default {
 }
 
 .projects-panel__pct {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
   min-width: 36px;
@@ -1047,7 +1047,7 @@ export default {
   align-items: center;
   justify-content: center;
   color: var(--color-text-muted, var(--color-text-muted));
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   background: var(--bg-subtle);
   border-radius: var(--radius-el);
   text-align: center;
@@ -1068,7 +1068,7 @@ export default {
 
 .projects-panel__card-title {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1101,7 +1101,7 @@ export default {
 }
 
 .projects-panel__info-value {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-primary, var(--color-text-primary));
   word-break: break-word;
 }
@@ -1111,7 +1111,7 @@ export default {
 }
 
 .projects-panel__info-link {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--accent);
   text-decoration: none;
   word-break: break-all;
@@ -1122,7 +1122,7 @@ export default {
 }
 
 .projects-panel__no-client {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-muted));
   font-style: italic;
 }
@@ -1136,7 +1136,7 @@ export default {
 .projects-panel__completion-header {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-secondary));
   font-weight: 600;
 }
@@ -1159,7 +1159,7 @@ export default {
 }
 
 .projects-panel__completion-detail {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
 }
 
@@ -1181,13 +1181,13 @@ export default {
 }
 
 .projects-panel__resource-value {
-  font-size: 18px;
+  font-size: var(--iz-fs-lg);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
 }
 
 .projects-panel__resource-label {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-secondary));
 }
 
@@ -1209,14 +1209,14 @@ export default {
 }
 
 .projects-panel__kpi-stat-value {
-  font-size: 22px;
+  font-size: var(--iz-fs-xl);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
   line-height: 1.1;
 }
 
 .projects-panel__kpi-stat-label {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -1224,7 +1224,7 @@ export default {
 }
 
 .projects-panel__kpi-stat-sub {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
 }
 
@@ -1267,7 +1267,7 @@ export default {
   border-radius: var(--radius-pill);
   background: var(--bg-subtle);
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
 }
 .projects-panel__members {
@@ -1299,10 +1299,10 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(204, 61, 148, 0.12);
+  background: var(--iz-accent-bg);
   color: var(--accent);
   font-weight: 700;
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   letter-spacing: 0.5px;
 }
 .projects-panel__member-info {
@@ -1313,13 +1313,13 @@ export default {
 .projects-panel__member-name {
   font-weight: 600;
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: var(--iz-fs-md);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .projects-panel__member-email {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1346,7 +1346,7 @@ export default {
   align-items: center;
   padding: 3px 10px;
   border-radius: var(--radius-pill);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -1358,11 +1358,11 @@ export default {
 
 .projects-panel__member-drasci:hover {
   filter: brightness(0.92);
-  box-shadow: 0 0 0 2px rgba(204, 61, 148, 0.18);
+  box-shadow: 0 0 0 2px var(--iz-accent-bg);
 }
 
 .projects-panel__member-drasci-edit {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   padding: 3px 6px;
   border-radius: var(--radius-pill);
@@ -1377,7 +1377,7 @@ export default {
 
 .projects-panel__member-drasci-edit:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(204, 61, 148, 0.3);
+  box-shadow: 0 0 0 2px var(--iz-accent-bg);
 }
 
 .projects-panel__member-drasci-edit:disabled {
@@ -1387,22 +1387,22 @@ export default {
 
 /* DRASCI role color palette — distinct hues for quick scanning */
 .projects-panel__member-drasci--driver {
-  background: rgba(245, 158, 11, 0.14);
+  background: var(--iz-warning-bg);
   color: var(--color-warning-text);
 }
 
 .projects-panel__member-drasci--responsible {
-  background: rgba(204, 61, 148, 0.14);
+  background: var(--iz-accent-bg);
   color: var(--accent-strong);
 }
 
 .projects-panel__member-drasci--accountable {
-  background: rgba(220, 38, 38, 0.12);
+  background: var(--iz-danger-bg);
   color: var(--color-danger-text);
 }
 
 .projects-panel__member-drasci--supportive {
-  background: rgba(16, 185, 129, 0.14);
+  background: var(--iz-success-bg);
   color: var(--color-success-text);
 }
 
@@ -1426,7 +1426,7 @@ export default {
   padding: 14px 12px;
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-style: italic;
 }
 
@@ -1436,7 +1436,7 @@ export default {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   color: var(--accent);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 700;
   text-transform: none;
   letter-spacing: 0;
@@ -1467,7 +1467,7 @@ export default {
   padding: 7px 12px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-el);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-primary, var(--color-text-primary));
   background: var(--bg-card);
   outline: none;
@@ -1484,7 +1484,7 @@ export default {
   border-radius: var(--radius-sm);
   background: var(--bg-card);
   color: var(--color-text-primary, var(--color-text-primary));
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   padding: 5px 8px;
   cursor: pointer;
   max-width: 140px;
@@ -1498,7 +1498,7 @@ export default {
 
 .projects-panel__add-form-error {
   margin-top: 8px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-danger-text);
   background: var(--color-danger-bg);
   border: 1px solid var(--color-danger-bg);
@@ -1508,7 +1508,7 @@ export default {
 
 .projects-panel__add-form-state {
   margin-top: 8px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-muted));
   font-style: italic;
 }
@@ -1546,7 +1546,7 @@ export default {
 }
 
 .projects-panel__add-form-result-name {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   color: var(--color-text-primary, var(--color-text-primary));
   overflow: hidden;
@@ -1555,7 +1555,7 @@ export default {
 }
 
 .projects-panel__add-form-result-meta {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1569,7 +1569,7 @@ export default {
   border: 1px solid var(--accent);
   background: var(--bg-card);
   color: var(--accent);
-  font-size: 16px;
+  font-size: var(--iz-fs-lg);
   font-weight: 700;
   cursor: pointer;
   display: flex;

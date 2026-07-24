@@ -204,7 +204,7 @@ export default {
 }
 
 .kpi-card__title {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
   text-transform: uppercase;
@@ -232,7 +232,7 @@ export default {
 }
 
 .kpi-card__metric-value {
-  font-size: 22px;
+  font-size: var(--iz-fs-xl);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
   line-height: 1.1;
@@ -240,7 +240,7 @@ export default {
 }
 
 .kpi-card__metric-label {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
   line-height: 1.3;
   font-weight: 400;

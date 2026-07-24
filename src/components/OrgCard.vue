@@ -172,7 +172,7 @@ export default {
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, var(--accent), var(--accent));
   color: #fff;
-  font-size: 17px;
+  font-size: var(--iz-fs-lg);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -188,7 +188,7 @@ export default {
 }
 
 .org-card__name {
-  font-size: 15px;
+  font-size: var(--iz-fs-lg);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
   line-height: 1.2;
@@ -227,14 +227,14 @@ export default {
 }
 
 .org-card__metric-value {
-  font-size: 20px;
+  font-size: var(--iz-fs-xl);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
   line-height: 1.1;
 }
 
 .org-card__metric-label {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
 }
 
@@ -253,7 +253,7 @@ export default {
   align-items: center;
   gap: 4px 6px;
   margin-top: 10px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary, var(--color-text-secondary));
   font-variant-numeric: tabular-nums;
 }

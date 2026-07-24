@@ -280,7 +280,7 @@ export default {
 <style scoped>
 .timeline-chart__empty {
   text-align: center;
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-muted, var(--color-text-muted));
   padding: 24px;
 }
@@ -313,7 +313,7 @@ export default {
 }
 
 .timeline-chart__label-text {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 500;
   color: var(--color-text-primary, var(--color-text-primary));
   white-space: nowrap;
@@ -323,7 +323,7 @@ export default {
 }
 
 .timeline-chart__type-badge {
-  font-size: 9px;
+  font-size: var(--iz-fs-micro);
   font-weight: 700;
   padding: 1px 4px;
   border-radius: var(--radius-sm);
@@ -357,7 +357,7 @@ export default {
   display: flex;
   align-items: center;
   padding-left: 8px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   color: var(--color-text-muted, var(--color-text-muted));
   text-transform: uppercase;
@@ -400,7 +400,7 @@ export default {
   position: absolute;
   top: 4px;
   left: 4px;
-  font-size: 9px;
+  font-size: var(--iz-fs-micro);
   font-weight: 700;
   color: var(--color-danger);
   white-space: nowrap;
@@ -437,7 +437,7 @@ export default {
 }
 
 .timeline-chart__bar-text {
-  font-size: 10px;
+  font-size: var(--iz-fs-micro);
   font-weight: 700;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -448,7 +448,7 @@ export default {
   position: absolute;
   top: 0;
   transform: translateX(-50%);
-  font-size: 9px;
+  font-size: var(--iz-fs-micro);
   font-weight: 700;
   color: var(--chart-5);
   background: var(--accent-bg);

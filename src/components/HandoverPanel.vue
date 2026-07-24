@@ -288,14 +288,14 @@
     <!-- ── Password confirmation modal ─────────────────────────────── -->
     <div
       v-if="confirmOpen"
-      class="ho-panel__modal-backdrop"
+      class="iz-modal-backdrop"
       role="dialog"
       aria-modal="true"
       @click.self="closeConfirm"
       @keydown.esc="closeConfirm"
     >
-      <div class="ho-panel__modal">
-        <div class="ho-panel__modal-header">
+      <div class="iz-modal ho-panel__modal">
+        <div class="iz-modal__header">
           <span>Confirm with your password</span>
           <button
             type="button"
@@ -306,7 +306,7 @@
           >×</button>
         </div>
         <form
-          class="ho-panel__modal-body"
+          class="iz-modal__body ho-panel__modal-body"
           autocomplete="on"
           @submit.prevent="saveAction"
         >
@@ -913,7 +913,7 @@ export default {
 }
 
 .ho-panel__label {
-  font-size: 10px;
+  font-size: var(--iz-fs-micro);
   font-weight: 700;
   color: var(--color-text-muted, var(--color-text-secondary));
   text-transform: uppercase;
@@ -933,12 +933,12 @@ export default {
   text-align: center;
   padding-bottom: 8px;
   color: var(--color-text-muted);
-  font-size: 20px;
+  font-size: var(--iz-fs-xl);
 }
 
 .ho-panel__field-label {
   display: block;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary);
   margin-bottom: 4px;
   font-weight: 600;
@@ -967,7 +967,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-primary);
   margin-bottom: 6px;
   cursor: pointer;
@@ -992,14 +992,14 @@ export default {
   border: 1px solid var(--color-warning-text);
   border-radius: var(--radius-sm);
   padding: 8px 10px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-warning-text);
   margin-bottom: 12px;
   line-height: 1.4;
 }
 
 .ho-panel__dry-result {
-  background: rgba(16, 185, 129, 0.06);
+  background: var(--iz-success-bg);
   border: 1px solid var(--color-success-bg);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
@@ -1010,7 +1010,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 700;
   color: var(--color-success-text);
   margin-bottom: 8px;
@@ -1018,7 +1018,7 @@ export default {
 
 .ho-panel__dry-json {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-primary);
   background: var(--bg-card);
   border: 1px solid var(--color-success-bg);
@@ -1032,14 +1032,14 @@ export default {
 }
 
 .ho-panel__field-state {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted);
   font-style: italic;
   margin-bottom: 10px;
 }
 
 .ho-panel__field-error {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-danger-text);
   background: var(--color-danger-bg);
   border: 1px solid var(--color-danger-bg);
@@ -1057,7 +1057,7 @@ export default {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   color: var(--accent);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   padding: 4px 10px;
   cursor: pointer;
@@ -1112,11 +1112,11 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(16, 185, 129, 0.14);
+  background: var(--iz-success-bg);
   color: var(--color-success-text);
   padding: 3px 8px;
   border-radius: var(--radius-pill);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 700;
 }
 
@@ -1139,7 +1139,7 @@ export default {
   border-radius: var(--radius-sm);
   padding: 3px 10px;
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -1158,7 +1158,7 @@ export default {
 .ho-panel__empty {
   padding: 24px 12px;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-muted);
   font-style: italic;
   background: var(--bg-subtle);
@@ -1177,7 +1177,7 @@ export default {
   grid-template-columns: 2fr 1fr 1.2fr 1.2fr 1fr;
   gap: 10px;
   padding: 10px 14px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   align-items: center;
   border-bottom: 1px solid var(--bg-subtle);
 }
@@ -1188,7 +1188,7 @@ export default {
 
 .ho-panel__jobs-row--head {
   background: var(--bg-subtle);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 700;
   color: var(--color-text-secondary);
   text-transform: uppercase;
@@ -1213,7 +1213,7 @@ export default {
 
 .ho-panel__ts {
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
 }
 
 .ho-panel__jobs-actions {
@@ -1229,7 +1229,7 @@ export default {
   gap: 4px;
   padding: 2px 8px;
   border-radius: var(--radius-pill);
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 700;
   text-transform: capitalize;
 }
@@ -1257,22 +1257,22 @@ export default {
 }
 
 .ho-panel__status--running {
-  background: rgba(204, 61, 148, 0.14);
+  background: var(--iz-accent-bg);
   color: var(--accent-strong);
 }
 
 .ho-panel__status--succeeded {
-  background: rgba(16, 185, 129, 0.14);
+  background: var(--iz-success-bg);
   color: var(--color-success-text);
 }
 
 .ho-panel__status--failed {
-  background: rgba(220, 38, 38, 0.12);
+  background: var(--iz-danger-bg);
   color: var(--color-danger-text);
 }
 
 .ho-panel__status--cancelled {
-  background: rgba(245, 158, 11, 0.14);
+  background: var(--iz-warning-bg);
   color: var(--color-warning-text);
 }
 
@@ -1281,7 +1281,7 @@ export default {
   padding: 12px 20px;
   background: var(--bg-subtle);
   border-bottom: 1px solid var(--bg-subtle);
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary);
 }
 
@@ -1294,7 +1294,7 @@ export default {
   grid-template-columns: auto auto 1fr;
   gap: 6px 14px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
 }
 
 .ho-panel__events-icon {
@@ -1321,7 +1321,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-top: 10px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary);
 }
 
@@ -1340,7 +1340,7 @@ export default {
   color: var(--color-text-primary);
   border-radius: var(--radius-sm);
   padding: 3px 10px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   cursor: pointer;
 }
 
@@ -1350,41 +1350,13 @@ export default {
 }
 
 /* ── Password confirmation modal (mirrors SubscriptionPanel's) ─────── */
-.ho-panel__modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  z-index: 9100;
-  padding: 120px 16px 24px;
-}
 
-.ho-panel__modal {
-  background: var(--bg-card);
-  border-radius: var(--radius-card);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-  width: 100%;
-  max-width: 420px;
-  overflow: hidden;
-}
 
-.ho-panel__modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-}
 
 .ho-panel__modal-close {
   background: transparent;
   border: 0;
-  font-size: 22px;
+  font-size: var(--iz-fs-xl);
   line-height: 1;
   color: var(--color-text-muted);
   cursor: pointer;
@@ -1408,7 +1380,7 @@ export default {
 
 .ho-panel__modal-text {
   margin: 0 0 12px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary);
   line-height: 1.5;
 }
@@ -1427,7 +1399,7 @@ export default {
   padding: 9px 12px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-el);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   background: var(--bg-card);
   box-sizing: border-box;
   outline: none;

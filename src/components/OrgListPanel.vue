@@ -104,10 +104,8 @@
         <span
           v-for="opt in statusOptions"
           :key="opt.value"
-          class="org-list__filter-badge"
-          :class="{
-            'org-list__filter-badge--active': statusFilter === opt.value,
-          }"
+          class="iz-chip"
+          :class="{ 'iz-chip--active': statusFilter === opt.value }"
           @click="
             statusFilter = opt.value;
             currentPage = 1;
@@ -742,7 +740,7 @@ export default {
 }
 
 .org-list__title {
-  font-size: 20px;
+  font-size: var(--iz-fs-xl);
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
   margin: 0;
@@ -752,7 +750,7 @@ export default {
 }
 
 .org-list__count {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   background: var(--accent-bg);
   color: var(--accent-strong);
@@ -780,7 +778,7 @@ export default {
 }
 
 .org-list__sort-label {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary, var(--color-text-secondary));
   font-weight: 500;
 }
@@ -802,7 +800,7 @@ export default {
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 600;
   border-radius: var(--radius-pill);
   cursor: pointer;
@@ -833,29 +831,8 @@ export default {
   gap: 6px;
 }
 
-.org-list__filter-badge {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 4px 12px;
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  background: var(--bg-subtle);
-  color: var(--color-text-secondary);
-  transition: all 0.15s ease;
-  user-select: none;
-  border: 1.5px solid transparent;
-}
 
-.org-list__filter-badge:hover {
-  background: var(--color-border);
-}
 
-.org-list__filter-badge--active {
-  font-weight: 600;
-  background: var(--accent-bg);
-  color: var(--accent-strong);
-  border-color: currentColor;
-}
 
 .org-list__grid {
   display: grid;
@@ -1001,7 +978,7 @@ export default {
   border-radius: var(--radius-el);
   background: linear-gradient(135deg, var(--accent), var(--accent));
   color: #fff;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -1068,7 +1045,7 @@ export default {
   gap: 12px;
   padding: 12px;
   color: var(--color-text-secondary, var(--color-text-secondary));
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
 }
 
 .org-list__detail-state--error {
@@ -1105,7 +1082,7 @@ export default {
 }
 
 .org-list__page-summary {
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary, var(--color-text-secondary));
   font-variant-numeric: tabular-nums;
 }
@@ -1129,7 +1106,7 @@ export default {
   border-radius: var(--radius-el);
   border: 1px solid var(--color-border, var(--color-border));
   background: var(--bg-card);
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   font-weight: 600;
   color: var(--color-text-secondary, var(--color-text-secondary));
   cursor: pointer;
@@ -1141,7 +1118,7 @@ export default {
 }
 
 .org-list__page-btn {
-  font-size: 16px;
+  font-size: var(--iz-fs-lg);
   color: var(--accent);
 }
 
@@ -1168,7 +1145,7 @@ export default {
   min-width: 20px;
   text-align: center;
   color: var(--color-text-muted, var(--color-text-muted));
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   user-select: none;
 }
 
@@ -1176,7 +1153,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary, var(--color-text-secondary));
 }
 

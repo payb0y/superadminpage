@@ -1,7 +1,7 @@
 <template>
   <component
     :is="embedded ? 'div' : 'section'"
-    :class="['activity-feed', { 'activity-feed--embedded': embedded }]"
+    :class="['activity-feed', 'iz-panel', { 'iz-panel--flush': embedded }]"
   >
     <header v-if="!embedded" class="activity-feed__header">
       <h3 class="activity-feed__title">Activity</h3>
@@ -502,25 +502,14 @@ export default {
 </script>
 
 <style scoped>
-.activity-feed {
-  background: var(--bg-card);
-  border-radius: var(--radius-card);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  padding: 20px;
-}
 
-.activity-feed--embedded {
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-}
 
 .activity-feed__header {
   margin-bottom: 16px;
 }
 
 .activity-feed__title {
-  font-size: 15px;
+  font-size: var(--iz-fs-lg);
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
@@ -548,7 +537,7 @@ export default {
 }
 
 .activity-feed__rail-hint {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary);
   line-height: 1.4;
   padding: 6px 10px;
@@ -562,7 +551,7 @@ export default {
   background: transparent;
   border: 0;
   padding: 6px 8px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 500;
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -593,7 +582,7 @@ export default {
   border: 0;
   border-radius: var(--radius-el);
   padding: 8px 10px;
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-secondary);
   cursor: pointer;
   text-align: left;
@@ -667,7 +656,7 @@ export default {
 }
 
 .activity-feed__field-label {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 500;
   color: var(--color-text-secondary);
   text-transform: uppercase;
@@ -683,7 +672,7 @@ export default {
 .activity-feed__input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(204, 61, 148, 0.15);
+  box-shadow: 0 0 0 2px var(--iz-accent-bg);
 }
 
 .activity-feed__clear {
@@ -691,7 +680,7 @@ export default {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-el);
   padding: 6px 12px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 500;
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -747,7 +736,7 @@ export default {
 }
 
 .activity-feed__row-summary {
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-primary);
   line-height: 1.4;
   word-break: break-word;
@@ -758,7 +747,7 @@ export default {
   flex-wrap: wrap;
   gap: 4px;
   margin-top: 2px;
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary);
 }
 
@@ -775,7 +764,7 @@ export default {
 .activity-feed__state {
   text-align: center;
   padding: 24px;
-  font-size: 13px;
+  font-size: var(--iz-fs-md);
   color: var(--color-text-secondary);
 }
 
@@ -801,7 +790,7 @@ export default {
 }
 
 .activity-feed__page-size-label {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 500;
   color: var(--color-text-secondary);
   text-transform: uppercase;
@@ -813,7 +802,7 @@ export default {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   padding: 4px 8px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-secondary);
   cursor: pointer;
 }
@@ -830,7 +819,7 @@ export default {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   padding: 5px 10px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   font-weight: 500;
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -856,7 +845,7 @@ export default {
 
 .activity-feed__page-ellipsis {
   padding: 0 4px;
-  font-size: 12px;
+  font-size: var(--iz-fs-sm);
   color: var(--color-text-muted);
   user-select: none;
 }
