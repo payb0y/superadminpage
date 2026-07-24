@@ -17,7 +17,7 @@
       v-for="project in filteredProjects"
       :key="'proj-' + project.id"
       class="projects-panel__row iz-row--card iz-row--expandable"
-      :class="{ 'projects-panel__row--expanded': isExpanded(project.id) }"
+      :class="{ 'iz-row--expanded': isExpanded(project.id) }"
     >
       <div
         class="projects-panel__row-header iz-row__header"
@@ -28,12 +28,6 @@
         @keydown.enter.prevent="toggleExpand(project.id)"
         @keydown.space.prevent="toggleExpand(project.id)"
       >
-        <span
-          class="projects-panel__chevron"
-          :class="{ 'projects-panel__chevron--open': isExpanded(project.id) }"
-          aria-hidden="true"
-        >▸</span>
-
         <div class="projects-panel__main">
           <span class="projects-panel__name">{{ project.name }}</span>
           <div class="projects-panel__meta">
@@ -59,11 +53,28 @@
           </div>
           <span class="projects-panel__pct">{{ project.progress }}%</span>
         </div>
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="iz-row__chevron"
+          :class="{ 'iz-row__chevron--open': isExpanded(project.id) }"
+          aria-hidden="true"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
       </div>
 
       <div
         v-if="isExpanded(project.id)"
-        class="projects-panel__expanded"
+        class="iz-row__detail projects-panel__expanded"
       >
         <div class="projects-panel__cards-row">
           <div class="projects-panel__card iz-card">
@@ -888,39 +899,15 @@ export default {
 
 /* Shell chrome comes from .iz-row--card .iz-row--expandable. */
 
-
-.projects-panel__row--expanded {
-  border-color: var(--iz-accent);
-}
-
 /* Padding/cursor come from .iz-row__header; this row needs a wider gap. */
 .projects-panel__row-header {
   gap: 14px;
 }
-
-
-.projects-panel__chevron {
-  font-size: var(--iz-fs-sm);
-  color: var(--color-text-muted, var(--color-text-muted));
-  width: 12px;
-  flex-shrink: 0;
-  transition: transform 0.15s ease;
-}
-
-.projects-panel__chevron--open {
-  transform: rotate(90deg);
-  color: var(--accent);
-}
-
+/* Chrome from .iz-row__detail; the internal stack is local. */
 .projects-panel__expanded {
-  border-top: 1px solid var(--bg-subtle);
-  padding: 16px;
-  background: var(--bg-subtle);
   display: flex;
   flex-direction: column;
   gap: 14px;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
 }
 
 .projects-panel__section {

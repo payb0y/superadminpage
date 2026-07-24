@@ -132,7 +132,6 @@
 
     <div v-else class="org-list__grid-table" role="table">
       <div class="org-list__header-row" role="row">
-        <div class="org-list__th org-list__th--expand" role="columnheader" aria-label="Expand"></div>
         <div class="org-list__th" role="columnheader">Name</div>
         <div class="org-list__th" role="columnheader">Status</div>
         <div class="org-list__th org-list__th--plan" role="columnheader">Plan</div>
@@ -143,6 +142,7 @@
         <div class="org-list__th org-list__th--num" role="columnheader">Overdue</div>
         <div class="org-list__th org-list__th--num" role="columnheader">Open</div>
         <div class="org-list__th org-list__th--num org-list__th--storage" role="columnheader">Storage</div>
+        <div class="org-list__th org-list__th--expand" role="columnheader" aria-label="Expand"></div>
       </div>
 
       <div
@@ -159,30 +159,6 @@
           class="org-list__row-summary"
           @click="toggleExpand(org)"
         >
-          <div class="org-list__cell org-list__cell--expand" role="cell">
-            <button
-              type="button"
-              class="org-list__expand-btn"
-              :class="{ 'org-list__expand-btn--open': !!expanded[org.id] }"
-              :aria-expanded="!!expanded[org.id]"
-              aria-label="Toggle organization details"
-              @click.stop="toggleExpand(org)"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          </div>
           <div class="org-list__cell org-list__cell--name" role="cell">
             <span class="org-list__avatar">{{ initial(org) }}</span>
             <span class="org-list__name">{{ org.name }}</span>
@@ -242,6 +218,24 @@
             role="cell"
           >
             {{ storageDisplay(org) }}
+          </div>
+          <div class="org-list__cell org-list__cell--expand" role="cell">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="iz-row__chevron"
+              :class="{ 'iz-row__chevron--open': !!expanded[org.id] }"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </div>
         </div>
 
@@ -856,7 +850,6 @@ export default {
 .org-list__row-summary {
   display: grid !important;
   grid-template-columns:
-    36px
     minmax(0, 2fr)
     minmax(0, 1fr)
     minmax(0, 1fr)
@@ -866,7 +859,8 @@ export default {
     64px   /* Done */
     72px   /* Overdue */
     64px   /* Open */
-    104px; /* Storage */
+    104px  /* Storage */
+    36px;  /* Expand — last, matching the standard expandable row */
   align-items: center;
   gap: 0;
   padding: 10px 14px;
@@ -917,6 +911,9 @@ export default {
    expanded (active) row, like .iz-row--active. */
 .org-list__row:hover .org-list__row-summary {
   background: var(--iz-surface-subtle);
+}
+.org-list__row:hover .iz-row__chevron {
+  color: var(--iz-accent);
 }
 
 .org-list__row--expanded {
@@ -993,30 +990,6 @@ export default {
   border-radius: 50%;
   background: currentColor;
   display: inline-block;
-}
-
-.org-list__expand-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary, var(--color-text-secondary));
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background 0.15s, transform 0.2s, color 0.15s;
-}
-
-.org-list__expand-btn:hover {
-  background: var(--accent-bg);
-  color: var(--accent-strong);
-}
-
-.org-list__expand-btn--open {
-  transform: rotate(90deg);
-  color: var(--accent-strong);
 }
 
 /* ───────── In-place detail (inside the same row container) ───────── */

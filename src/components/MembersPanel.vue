@@ -416,6 +416,7 @@
         v-for="member in paginatedMembers"
         :key="'mem-' + member.userId"
         class="members-panel__card iz-row--card iz-row--expandable"
+        :class="{ 'iz-row--expanded': expanded[member.userId] }"
       >
         <!-- Summary Row (always visible, clickable) -->
         <div class="members-panel__row iz-row__header" @click="toggle(member.userId)">
@@ -435,7 +436,7 @@
           </div>
           <div
             v-if="confirmRemoveUid === member.userId"
-            class="members-panel__right members-panel__right--confirm"
+            class="iz-row__actions members-panel__right--confirm"
             @click.stop
           >
             <span class="members-panel__confirm-text">Remove?</span>
@@ -463,7 +464,7 @@
               @click.stop="cancelRemove()"
             >Cancel</button>
           </div>
-          <div v-else class="members-panel__right">
+          <div v-else class="iz-row__actions">
             <span
               v-if="member.assignedTasks > 0"
               class="iz-pill iz-pill--accent members-panel__stat-pill"
@@ -525,10 +526,8 @@
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="members-panel__expand-icon"
-              :class="{
-                'members-panel__expand-icon--open': expanded[member.userId],
-              }"
+              class="iz-row__chevron"
+              :class="{ 'iz-row__chevron--open': expanded[member.userId] }"
             >
               <polyline points="6 9 12 15 18 9" />
             </svg>
@@ -536,7 +535,7 @@
         </div>
 
         <!-- Expanded Detail -->
-        <div v-if="expanded[member.userId]" class="members-panel__detail">
+        <div v-if="expanded[member.userId]" class="iz-row__detail members-panel__detail">
           <div class="members-panel__detail-grid">
             <div class="members-panel__detail-item" v-if="member.userId">
               <span class="members-panel__detail-label">Username</span>
@@ -1273,23 +1272,8 @@ export default {
   margin-bottom: 0;
 }
 
-.members-panel__card:hover {
-  border-color: var(--color-border);
-}
-
 /* ─── Summary Row ─── */
 /* Layout comes from .iz-row__header; this row uses the standard padding. */
-
-.members-panel__row:hover {
-  background: var(--bg-subtle);
-}
-
-.members-panel__right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
 
 
 
@@ -1320,22 +1304,8 @@ export default {
   color: var(--color-text-secondary);
 }
 
-.members-panel__expand-icon {
-  color: var(--color-text-muted, var(--color-text-muted));
-  transition: transform 0.2s;
-  flex-shrink: 0;
-}
-
-.members-panel__expand-icon--open {
-  transform: rotate(180deg);
-}
-
 /* ─── Expanded Detail ─── */
-.members-panel__detail {
-  padding: 0 14px 14px;
-  background: var(--bg-subtle);
-  border-top: 1px solid var(--bg-subtle);
-}
+/* Chrome from .iz-row__detail; the grid inside it is local. */
 
 .members-panel__detail-grid {
   display: grid;
@@ -1568,9 +1538,6 @@ export default {
 @media (max-width: 700px) {
   .members-panel__detail-grid {
     grid-template-columns: 1fr;
-  }
-  .members-panel__right {
-    flex-wrap: wrap;
   }
 }
 
