@@ -4,7 +4,7 @@
     <div class="ho-panel__card">
       <div class="ho-panel__label">INITIATE HANDOVER</div>
 
-      <div v-if="notEnoughMembers" class="ho-panel__field-state">
+      <div v-if="notEnoughMembers" class="iz-state ho-panel__field-state">
         Need at least two members to hand off.
       </div>
 
@@ -151,7 +151,7 @@
 
       <div v-if="jobsError" class="ho-panel__field-error">{{ jobsError }}</div>
 
-      <div v-if="jobsLoading && jobs.length === 0" class="ho-panel__field-state">
+      <div v-if="jobsLoading && jobs.length === 0" class="iz-state ho-panel__field-state">
         Loading jobs…
       </div>
 
@@ -224,7 +224,7 @@
             <div class="ho-panel__label">EVENTS</div>
             <div
               v-if="eventsByJob[job.id] && eventsByJob[job.id].loading"
-              class="ho-panel__field-state"
+              class="iz-state ho-panel__field-state"
             >Loading events…</div>
             <div
               v-else-if="eventsByJob[job.id] && eventsByJob[job.id].error"
@@ -256,7 +256,7 @@
                 >{{ ev.message || ev.step || "—" }}</span>
               </template>
             </div>
-            <div v-else class="ho-panel__field-state">
+            <div v-else class="iz-state ho-panel__field-state">
               No events recorded for this job.
             </div>
           </div>
@@ -265,7 +265,7 @@
 
       <div
         v-if="totalPages > 1"
-        class="ho-panel__pagination"
+        class="iz-pagination ho-panel__pagination"
       >
         <span class="ho-panel__pagination-info">
           Showing {{ pageRange }} of {{ jobsTotal }} jobs
@@ -310,7 +310,7 @@
           autocomplete="on"
           @submit.prevent="saveAction"
         >
-          <p class="ho-panel__modal-text">
+          <p class="iz-modal__confirm-text">
             {{ confirmActionLabel }} requires re-confirming your admin
             password.
           </p>
@@ -319,7 +319,7 @@
             :value="currentUserUid"
             name="username"
             autocomplete="username"
-            class="ho-panel__modal-hidden-username"
+            class="iz-hidden-username"
             tabindex="-1"
             aria-hidden="true"
             readonly
@@ -339,7 +339,7 @@
             class="ho-panel__field-error ho-panel__modal-error"
           >{{ saveError }}</div>
         </form>
-        <div class="ho-panel__modal-actions">
+        <div class="iz-modal__confirm-actions">
           <button
             type="button"
             class="iz-btn iz-btn--ghost"
@@ -1030,11 +1030,7 @@ export default {
   max-height: 260px;
   overflow-y: auto;
 }
-
 .ho-panel__field-state {
-  font-size: var(--iz-fs-sm);
-  color: var(--color-text-muted);
-  font-style: italic;
   margin-bottom: 10px;
 }
 
@@ -1316,13 +1312,10 @@ export default {
 }
 
 /* Pagination */
+/* Chrome from .iz-pagination; only placement is local. */
 .ho-panel__pagination {
-  display: flex;
   justify-content: space-between;
-  align-items: center;
   margin-top: 10px;
-  font-size: var(--iz-fs-xs);
-  color: var(--color-text-secondary);
 }
 
 .ho-panel__pagination-info {
@@ -1378,22 +1371,6 @@ export default {
   padding: 16px 18px;
 }
 
-.ho-panel__modal-text {
-  margin: 0 0 12px;
-  font-size: var(--iz-fs-sm);
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-}
-
-.ho-panel__modal-hidden-username {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
 .ho-panel__modal-password {
   width: 100%;
   padding: 9px 12px;
@@ -1412,14 +1389,6 @@ export default {
 
 .ho-panel__modal-error {
   margin-top: 12px;
-}
-
-.ho-panel__modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 18px 16px;
-  border-top: 1px solid var(--color-border);
 }
 
 @media (max-width: 720px) {

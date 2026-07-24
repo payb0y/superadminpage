@@ -1,7 +1,7 @@
 <template>
   <section class="alerts-panel iz-panel">
-    <header class="alerts-panel__header">
-      <h3 class="alerts-panel__title">
+    <header class="alerts-panel__header iz-panel__header">
+      <h3 class="alerts-panel__title iz-section-title">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -24,7 +24,7 @@
       </span>
     </header>
 
-    <div class="alerts-panel__grid">
+    <div class="iz-stat-grid">
       <div
         v-for="(alert, key) in alerts"
         :key="key"
@@ -91,12 +91,6 @@ export default {
   color: var(--color-text-muted, var(--color-text-muted));
 }
 
-.alerts-panel__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-md, 16px);
-}
-
 .alerts-panel__card {
   border-radius: var(--radius-lg);
   padding: 14px 16px;
@@ -136,15 +130,5 @@ export default {
   opacity: 0.9;
 }
 
-@media (max-width: 1200px) {
-  .alerts-panel__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
 
-@media (max-width: 600px) {
-  .alerts-panel__grid {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

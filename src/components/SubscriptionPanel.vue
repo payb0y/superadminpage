@@ -75,9 +75,9 @@
               <span class="sub-panel__limit-num">{{ memberCount }}</span>
               <span class="sub-panel__limit-of">of {{ sub.maxMembers || "∞" }}</span>
             </div>
-            <div class="sub-panel__bar">
+            <div class="iz-meter iz-meter--thin">
               <div
-                class="sub-panel__bar-fill"
+                class="iz-meter__fill"
                 :style="{ width: memberPct + '%' }"
               ></div>
             </div>
@@ -88,9 +88,9 @@
               <span class="sub-panel__limit-num">{{ projectCount }}</span>
               <span class="sub-panel__limit-of">of {{ sub.maxProjects || "∞" }}</span>
             </div>
-            <div class="sub-panel__bar">
+            <div class="iz-meter iz-meter--thin">
               <div
-                class="sub-panel__bar-fill"
+                class="iz-meter__fill"
                 :style="{ width: projectPct + '%' }"
               ></div>
             </div>
@@ -146,7 +146,7 @@
         <label class="sub-panel__field-label" for="sub-plan">
           Plan <span class="sub-panel__field-required">*</span>
         </label>
-        <div v-if="plansLoading" class="sub-panel__field-state">Loading plans…</div>
+        <div v-if="plansLoading" class="iz-state sub-panel__field-state">Loading plans…</div>
         <div v-else-if="plansError" class="sub-panel__field-error">
           {{ plansError }}
           <button
@@ -473,7 +473,7 @@
           autocomplete="on"
           @submit.prevent="saveChanges"
         >
-          <p class="sub-panel__modal-body-text">
+          <p class="iz-modal__confirm-text">
             Nextcloud requires re-confirming your admin password before
             applying subscription changes.
           </p>
@@ -489,7 +489,7 @@
             :value="currentUserUid"
             name="username"
             autocomplete="username"
-            class="sub-panel__modal-hidden-username"
+            class="iz-hidden-username"
             tabindex="-1"
             aria-hidden="true"
             readonly
@@ -510,7 +510,7 @@
             class="sub-panel__field-error sub-panel__modal-error"
           >{{ saveError }}</div>
         </form>
-        <div class="sub-panel__modal-actions">
+        <div class="iz-modal__confirm-actions">
           <button
             type="button"
             class="iz-btn iz-btn--ghost"
@@ -1267,20 +1267,6 @@ export default {
   color: var(--color-text-muted, var(--color-text-secondary));
 }
 
-.sub-panel__bar {
-  height: 4px;
-  background: var(--color-border);
-  border-radius: var(--radius-sm);
-  margin-top: 6px;
-  overflow: hidden;
-}
-
-.sub-panel__bar-fill {
-  height: 100%;
-  background: var(--accent);
-  transition: width 0.2s;
-}
-
 /* ── Actions / buttons ───────────────────────────────────────────────── */
 .sub-panel__actions {
   display: flex;
@@ -1353,12 +1339,6 @@ export default {
   font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
   margin-top: 4px;
-}
-
-.sub-panel__field-state {
-  font-size: var(--iz-fs-sm);
-  color: var(--color-text-muted, var(--color-text-muted));
-  font-style: italic;
 }
 
 .sub-panel__field-error {
@@ -1685,13 +1665,6 @@ export default {
   padding: 16px 18px;
 }
 
-.sub-panel__modal-body-text {
-  margin: 0 0 12px;
-  font-size: var(--iz-fs-sm);
-  color: var(--color-text-secondary, var(--color-text-secondary));
-  line-height: 1.5;
-}
-
 .sub-panel__modal-password {
   width: 100%;
   padding: 9px 12px;
@@ -1711,26 +1684,10 @@ export default {
 /* Hidden username companion for password managers. Must remain in the
    DOM (display:none would be ignored by autofill) but invisible to the
    user. position:absolute keeps it off-flow. */
-.sub-panel__modal-hidden-username {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
 
 .sub-panel__modal-error {
   margin-top: 12px;
   margin-bottom: 0;
-}
-
-.sub-panel__modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 18px 16px;
-  border-top: 1px solid var(--color-border);
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */

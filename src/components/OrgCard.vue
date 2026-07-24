@@ -5,7 +5,7 @@
     @click="$emit('click')"
   >
     <div class="org-card__header">
-      <span class="org-card__avatar">{{ initial }}</span>
+      <span class="iz-identity__avatar iz-identity__avatar--lg">{{ initial }}</span>
       <div class="org-card__title-group">
         <span class="org-card__name">{{ org.name }}</span>
         <div class="org-card__pills">
@@ -164,20 +164,6 @@ export default {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-}
-
-.org-card__avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--accent), var(--accent));
-  color: #fff;
-  font-size: var(--iz-fs-lg);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 }
 
 .org-card__title-group {

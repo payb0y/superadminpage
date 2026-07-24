@@ -1,7 +1,7 @@
 <template>
   <section class="system-health iz-panel">
-    <header class="system-health__header">
-      <h3 class="system-health__title">
+    <header class="system-health__header iz-panel__header">
+      <h3 class="system-health__title iz-section-title">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -48,7 +48,7 @@
 
     <template v-else>
       <div class="system-health__subhead system-health__subhead--first">Resources</div>
-      <div class="system-health__grid">
+      <div class="iz-stat-grid">
         <div
           v-for="card in cards"
           :key="card.key"
@@ -58,11 +58,11 @@
           <div class="system-health__card-value">{{ card.valueLine }}</div>
           <div
             v-if="card.percent !== null"
-            class="system-health__bar"
+            class="iz-meter system-health__bar"
           >
             <div
-              class="system-health__bar-fill"
-              :class="'system-health__bar-fill--' + toneFor(card.percent)"
+              class="iz-meter__fill"
+              :class="'iz-meter__fill--' + toneFor(card.percent)"
               :style="{ width: clamp(card.percent) + '%' }"
             ></div>
             <span class="system-health__bar-percent">{{ card.percent }}%</span>
@@ -76,7 +76,7 @@
 
       <template v-if="networkVisible">
         <div class="system-health__subhead">Network</div>
-        <div class="system-health__grid">
+        <div class="iz-stat-grid">
           <div
             v-for="card in networkCards"
             :key="card.key"
@@ -94,7 +94,7 @@
 
       <template v-if="usersVisible">
         <div class="system-health__subhead">Active Users</div>
-        <div class="system-health__grid">
+        <div class="iz-stat-grid">
           <div
             v-for="card in userCards"
             :key="card.key"
@@ -112,7 +112,7 @@
 
       <template v-if="servicesVisible || hpbHostVisible">
         <div class="system-health__subhead">Services</div>
-        <div class="system-health__grid">
+        <div class="iz-stat-grid">
           <div
             v-for="card in serviceCards"
             :key="card.key"
@@ -140,11 +140,11 @@
             <div class="system-health__card-value">{{ card.valueLine }}</div>
             <div
               v-if="card.percent !== null"
-              class="system-health__bar"
+              class="iz-meter system-health__bar"
             >
               <div
-                class="system-health__bar-fill"
-                :class="'system-health__bar-fill--' + toneFor(card.percent)"
+                class="iz-meter__fill"
+                :class="'iz-meter__fill--' + toneFor(card.percent)"
                 :style="{ width: clamp(card.percent) + '%' }"
               ></div>
               <span class="system-health__bar-percent">{{ card.percent }}%</span>
@@ -701,12 +701,6 @@ export default {
 .system-health__status-dot--degraded { background: var(--color-warning-text); }
 .system-health__status-dot--down     { background: var(--color-danger); }
 
-.system-health__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-
 .system-health__card {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -732,26 +726,12 @@ export default {
   line-height: 1.2;
   word-break: break-word;
 }
-
-.system-health__bar {
-  position: relative;
-  height: 6px;
-  border-radius: var(--radius-pill);
-  background: var(--bg-subtle);
-  overflow: visible;
-}
+/* Chrome from .iz-meter; this one lets its marker overflow the track. */
+.system-health__bar { overflow: visible; }
 
 .system-health__bar--empty {
   background: transparent;
   height: 6px;
-}
-
-.system-health__bar-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  height: 100%;
-  border-radius: var(--radius-pill);
-  transition: width 0.2s ease, background-color 0.2s ease;
 }
 
 .system-health__bar-fill--ok      { background: var(--color-success); }
@@ -775,15 +755,5 @@ export default {
   word-break: break-word;
 }
 
-@media (max-width: 1200px) {
-  .system-health__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
 
-@media (max-width: 768px) {
-  .system-health__grid {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

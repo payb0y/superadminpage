@@ -53,7 +53,7 @@
 
     <div class="org-detail__body">
       <div v-if="activeTab === 'overview'" class="org-detail__overview">
-        <div class="org-detail__kpi-strip">
+        <div class="iz-stat-grid">
           <KpiCard
             title="Projects"
             :metrics="[
@@ -416,12 +416,6 @@ export default {
   gap: var(--spacing-lg, 24px);
 }
 
-.org-detail__kpi-strip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-md, 16px);
-}
-
 .org-detail__profile-card {
   border: 1px solid var(--color-border, var(--color-border));
   border-radius: var(--radius-lg);
@@ -483,16 +477,8 @@ export default {
   padding: var(--spacing-md, 16px) 0 0;
 }
 
-@media (max-width: 1200px) {
-  .org-detail__kpi-strip {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
 
 @media (max-width: 768px) {
-  .org-detail__kpi-strip {
-    grid-template-columns: 1fr;
-  }
   .org-detail__profile-grid {
     grid-template-columns: 1fr;
   }

@@ -147,7 +147,7 @@
           <!-- Plan (Standard only) -->
           <template v-if="form.mode === 'standard'">
             <div class="co-modal__section-label">PLAN</div>
-            <div v-if="plansLoading" class="co-modal__state">Loading plans…</div>
+            <div v-if="plansLoading" class="iz-state co-modal__state">Loading plans…</div>
             <div v-else-if="plansError" class="co-modal__field-error">
               {{ plansError }}
               <button
@@ -564,7 +564,7 @@
           autocomplete="on"
           @submit.prevent="saveOrg"
         >
-          <p class="co-modal__confirm-text">
+          <p class="iz-modal__confirm-text">
             Nextcloud requires re-confirming your super-admin password
             before creating an organization.
           </p>
@@ -573,7 +573,7 @@
             :value="currentUserUid"
             name="username"
             autocomplete="username"
-            class="co-modal__hidden-username"
+            class="iz-hidden-username"
             tabindex="-1"
             aria-hidden="true"
             readonly
@@ -594,7 +594,7 @@
             class="co-modal__field-error co-modal__confirm-error"
           >{{ saveError }}</div>
         </form>
-        <div class="co-modal__confirm-actions">
+        <div class="iz-modal__confirm-actions">
           <button
             type="button"
             class="iz-btn iz-btn--ghost"
@@ -1283,11 +1283,7 @@ export default {
   justify-content: space-between;
   gap: 8px;
 }
-
 .co-modal__state {
-  font-size: var(--iz-fs-sm);
-  color: var(--color-text-muted);
-  font-style: italic;
   margin-bottom: 10px;
 }
 
@@ -1612,22 +1608,6 @@ export default {
   padding: 16px 18px;
 }
 
-.co-modal__confirm-text {
-  margin: 0 0 12px;
-  font-size: var(--iz-fs-sm);
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-}
-
-.co-modal__hidden-username {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
 .co-modal__confirm-password {
   width: 100%;
   padding: 9px 12px;
@@ -1646,14 +1626,6 @@ export default {
 
 .co-modal__confirm-error {
   margin-top: 12px;
-}
-
-.co-modal__confirm-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 18px 16px;
-  border-top: 1px solid var(--color-border);
 }
 
 @media (max-width: 720px) {

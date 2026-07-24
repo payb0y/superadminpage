@@ -50,9 +50,9 @@
         </div>
 
         <div class="projects-panel__progress">
-          <div class="projects-panel__bar">
+          <div class="iz-meter">
             <div
-              class="projects-panel__fill"
+              class="iz-meter__fill"
               :class="fillClass(project)"
               :style="{ width: project.progress + '%' }"
             ></div>
@@ -109,9 +109,9 @@
                 <span class="projects-panel__completion-label">Task Completion</span>
                 <span class="projects-panel__completion-pct">{{ project.progress }}%</span>
               </div>
-              <div class="projects-panel__completion-bar">
+              <div class="iz-meter">
                 <div
-                  class="projects-panel__completion-fill"
+                  class="iz-meter__fill"
                   :class="fillClass(project)"
                   :style="{ width: project.progress + '%' }"
                 ></div>
@@ -151,7 +151,7 @@
                 <span class="projects-panel__info-value projects-panel__info-value--multiline">{{ project.clientAddress }}</span>
               </div>
             </div>
-            <div v-else class="projects-panel__no-client">
+            <div v-else class="iz-state projects-panel__no-client">
               No client information
             </div>
             <h4 class="projects-panel__card-title projects-panel__card-title--sub">Resources</h4>
@@ -247,32 +247,32 @@
           <div class="projects-panel__section-body">
             <div
               v-if="addPanelByProject[project.id] && addPanelByProject[project.id].open"
-              class="projects-panel__add-form"
+              class="iz-user-picker projects-panel__add-form"
             >
               <input
                 type="search"
-                class="projects-panel__add-form-input"
+                class="iz-input"
                 v-model="addPanelByProject[project.id].search"
                 placeholder="Search org members…"
               />
               <div
                 v-if="addPanelByProject[project.id].error"
-                class="projects-panel__add-form-error"
+                class="iz-error projects-panel__add-form-error"
               >{{ addPanelByProject[project.id].error }}</div>
               <ul
                 v-if="availableMembersForProject(project).length"
-                class="projects-panel__add-form-results"
+                class="iz-user-picker__results"
               >
                 <li
                   v-for="u in availableMembersForProject(project)"
                   :key="'avail-' + project.id + '-' + u.userId"
-                  class="projects-panel__add-form-result"
+                  class="iz-user-picker__result"
                 >
-                  <div class="projects-panel__add-form-result-info">
-                    <span class="projects-panel__add-form-result-name">
+                  <div class="iz-identity__body">
+                    <span class="iz-identity__name">
                       {{ u.displayName || u.userId }}
                     </span>
-                    <span class="projects-panel__add-form-result-meta">
+                    <span class="iz-identity__meta">
                       <template v-if="u.email">{{ u.email }} · </template>uid: {{ u.userId }}
                     </span>
                   </div>
@@ -292,7 +292,7 @@
                   </select>
                   <button
                     type="button"
-                    class="projects-panel__add-form-add-btn"
+                    class="iz-user-picker__add"
                     :disabled="addPanelByProject[project.id].addingUid !== null || !rowRoleFor(project.id, u.userId)"
                     :title="rowRoleFor(project.id, u.userId) ? '' : 'Choose a DRASCI role first'"
                     :aria-label="'Add ' + (u.displayName || u.userId)"
@@ -309,7 +309,7 @@
               </ul>
               <div
                 v-else
-                class="projects-panel__add-form-state"
+                class="iz-state"
               >
                 <template v-if="addPanelByProject[project.id].search.trim()">
                   No matches.
@@ -329,9 +329,9 @@
                 :key="m.userId"
                 class="projects-panel__member"
               >
-                <span class="projects-panel__member-avatar">{{ initials(m.displayName) }}</span>
-                <div class="projects-panel__member-info">
-                  <span class="projects-panel__member-name">{{ m.displayName }}</span>
+                <span class="iz-identity__avatar iz-identity__avatar--sm iz-identity__avatar--soft">{{ initials(m.displayName) }}</span>
+                <div class="iz-identity__body projects-panel__member-info">
+                  <span class="iz-identity__name projects-panel__member-name">{{ m.displayName }}</span>
                   <a
                     v-if="m.email"
                     :href="'mailto:' + m.email"
@@ -469,10 +469,14 @@ export default {
     },
   },
   methods: {
+    // Progress: HIGH is good, so it maps to the "ok" tone. The health panel
+    // uses the same tones with the opposite thresholds (high usage is bad) —
+    // which is exactly why the shared tones are named ok/warn/danger and not
+    // high/mid/low.
     fillClass(p) {
-      if (p.progress >= 75) return "projects-panel__fill--high";
-      if (p.progress >= 40) return "projects-panel__fill--mid";
-      return "projects-panel__fill--low";
+      if (p.progress >= 75) return "iz-meter__fill--ok";
+      if (p.progress >= 40) return "iz-meter__fill--warn";
+      return "iz-meter__fill--danger";
     },
     formatDate(s) {
       if (!s) return "—";
@@ -988,30 +992,6 @@ export default {
   min-width: 180px;
 }
 
-.projects-panel__bar {
-  flex: 1;
-  height: 6px;
-  background: var(--color-border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.projects-panel__fill {
-  height: 100%;
-  border-radius: var(--radius-sm);
-  transition: width 0.4s ease;
-}
-
-.projects-panel__fill--high {
-  background: var(--color-success);
-}
-.projects-panel__fill--mid {
-  background: var(--color-warning-text);
-}
-.projects-panel__fill--low {
-  background: var(--color-danger-text);
-}
-
 .projects-panel__pct {
   font-size: var(--iz-fs-sm);
   font-weight: 700;
@@ -1121,12 +1101,6 @@ export default {
   text-decoration: underline;
 }
 
-.projects-panel__no-client {
-  font-size: var(--iz-fs-sm);
-  color: var(--color-text-muted, var(--color-text-muted));
-  font-style: italic;
-}
-
 .projects-panel__completion {
   display: flex;
   flex-direction: column;
@@ -1143,19 +1117,6 @@ export default {
 
 .projects-panel__completion-pct {
   color: var(--color-text-primary, var(--color-text-primary));
-}
-
-.projects-panel__completion-bar {
-  height: 6px;
-  background: var(--color-border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.projects-panel__completion-fill {
-  height: 100%;
-  border-radius: var(--radius-sm);
-  transition: width 0.4s ease;
 }
 
 .projects-panel__completion-detail {
@@ -1291,32 +1252,6 @@ export default {
 }
 .projects-panel__member:hover {
   background: var(--bg-subtle);
-}
-.projects-panel__member-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--iz-accent-bg);
-  color: var(--accent);
-  font-weight: 700;
-  font-size: var(--iz-fs-md);
-  letter-spacing: 0.5px;
-}
-.projects-panel__member-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.projects-panel__member-name {
-  font-weight: 600;
-  color: var(--color-text-primary);
-  font-size: var(--iz-fs-md);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .projects-panel__member-email {
   font-size: var(--iz-fs-sm);
@@ -1454,31 +1389,6 @@ export default {
   color: #fff;
 }
 
-.projects-panel__add-form {
-  background: var(--bg-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 12px 14px;
-  margin-bottom: 12px;
-}
-
-.projects-panel__add-form-input {
-  width: 100%;
-  padding: 7px 12px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-el);
-  font-size: var(--iz-fs-md);
-  color: var(--color-text-primary, var(--color-text-primary));
-  background: var(--bg-card);
-  outline: none;
-  transition: border-color 0.15s;
-  box-sizing: border-box;
-}
-
-.projects-panel__add-form-input:focus {
-  border-color: var(--accent);
-}
-
 .projects-panel__add-form-role {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
@@ -1494,99 +1404,6 @@ export default {
 .projects-panel__add-form-role:focus {
   outline: none;
   border-color: var(--accent);
-}
-
-.projects-panel__add-form-error {
-  margin-top: 8px;
-  font-size: var(--iz-fs-sm);
-  color: var(--color-danger-text);
-  background: var(--color-danger-bg);
-  border: 1px solid var(--color-danger-bg);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-}
-
-.projects-panel__add-form-state {
-  margin-top: 8px;
-  font-size: var(--iz-fs-sm);
-  color: var(--color-text-muted, var(--color-text-muted));
-  font-style: italic;
-}
-
-.projects-panel__add-form-results {
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
-  background: var(--bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-el);
-  overflow: hidden;
-  max-height: 220px;
-  overflow-y: auto;
-}
-
-.projects-panel__add-form-result {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--bg-subtle);
-}
-
-.projects-panel__add-form-result:last-child {
-  border-bottom: none;
-}
-
-.projects-panel__add-form-result-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;
-}
-
-.projects-panel__add-form-result-name {
-  font-size: var(--iz-fs-md);
-  font-weight: 600;
-  color: var(--color-text-primary, var(--color-text-primary));
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.projects-panel__add-form-result-meta {
-  font-size: var(--iz-fs-xs);
-  color: var(--color-text-muted, var(--color-text-muted));
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.projects-panel__add-form-add-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-el);
-  border: 1px solid var(--accent);
-  background: var(--bg-card);
-  color: var(--accent);
-  font-size: var(--iz-fs-lg);
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
-  flex-shrink: 0;
-}
-
-.projects-panel__add-form-add-btn:hover:not(:disabled) {
-  background: var(--accent);
-  color: #fff;
-}
-
-.projects-panel__add-form-add-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .projects-panel__add-form-spinner {

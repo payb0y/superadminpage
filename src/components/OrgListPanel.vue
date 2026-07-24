@@ -1,6 +1,6 @@
 <template>
   <section class="org-list" :data-build="buildMarker">
-    <header class="org-list__header">
+    <header class="org-list__header iz-panel__header">
       <h2 class="org-list__title">
         Organizations
         <span class="org-list__count">{{ orgs.length }}</span>
@@ -292,7 +292,7 @@
         of <strong>{{ filteredOrgs.length }}</strong>
       </div>
 
-      <div v-if="totalPages > 1" class="org-list__pagination">
+      <div v-if="totalPages > 1" class="iz-pagination org-list__pagination">
         <button
           type="button"
           class="iz-btn iz-btn--sm org-list__page-btn"
@@ -1092,11 +1092,6 @@ export default {
   font-weight: 700;
 }
 
-.org-list__pagination {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
 
 .org-list__page-btn,
 .org-list__page-num {

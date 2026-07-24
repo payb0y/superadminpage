@@ -99,7 +99,7 @@
         >+ Add member</button>
       </div>
 
-      <div v-if="addMode" class="members-panel__add-form">
+      <div v-if="addMode" class="iz-user-picker members-panel__add-form">
         <div class="members-panel__add-form-header">
           <span class="members-panel__add-form-title">Add member</span>
           <button
@@ -186,43 +186,43 @@
           <div v-if="addTab === 'existing'">
             <input
               type="search"
-              class="members-panel__add-form-input"
+              class="iz-input"
               :value="addSearchTerm"
               @input="onAddSearchInput($event)"
               placeholder="Search by name, email, or UID (min 2 characters)…"
             />
-            <div v-if="addError" class="members-panel__add-form-error">
+            <div v-if="addError" class="iz-error members-panel__add-form-error">
               {{ addError }}
             </div>
-            <div v-if="addSearchLoading" class="members-panel__add-form-state">
+            <div v-if="addSearchLoading" class="iz-state">
               Searching…
             </div>
             <div
               v-else-if="addSearchTerm.trim().length >= 2 && addSearchResults.length === 0"
-              class="members-panel__add-form-state"
+              class="iz-state"
             >
               No users match.
             </div>
             <ul
               v-else-if="addSearchResults.length > 0"
-              class="members-panel__add-form-results"
+              class="iz-user-picker__results"
             >
               <li
                 v-for="u in addSearchResults"
                 :key="'avail-' + u.uid"
-                class="members-panel__add-form-result"
+                class="iz-user-picker__result"
               >
-                <div class="members-panel__add-form-result-info">
-                  <span class="members-panel__add-form-result-name">
+                <div class="iz-identity__body">
+                  <span class="iz-identity__name">
                     {{ u.displayName || u.uid }}
                   </span>
-                  <span class="members-panel__add-form-result-meta">
+                  <span class="iz-identity__meta">
                     <template v-if="u.email">{{ u.email }} · </template>uid: {{ u.uid }}
                   </span>
                 </div>
                 <button
                   type="button"
-                  class="members-panel__add-form-add-btn"
+                  class="iz-user-picker__add"
                   :disabled="addingUid !== null"
                   :aria-label="'Add ' + (u.displayName || u.uid)"
                   @click="addMember(u.uid)"
@@ -247,7 +247,7 @@
               <input
                 id="newuser-uid"
                 type="text"
-                class="members-panel__add-form-input"
+                class="iz-input"
                 v-model="newUser.uid"
                 autocomplete="off"
                 spellcheck="false"
@@ -267,7 +267,7 @@
               <input
                 id="newuser-display"
                 type="text"
-                class="members-panel__add-form-input"
+                class="iz-input"
                 v-model="newUser.displayName"
                 :disabled="newUserSubmitting"
                 @blur="markBlurred('displayName')"
@@ -283,7 +283,7 @@
               <input
                 id="newuser-email"
                 type="email"
-                class="members-panel__add-form-input"
+                class="iz-input"
                 v-model="newUser.email"
                 autocomplete="off"
                 :disabled="newUserSubmitting"
@@ -380,7 +380,7 @@
 
             <div
               v-if="newUserError"
-              class="members-panel__add-form-error"
+              class="iz-error members-panel__add-form-error"
             >{{ newUserError }}</div>
 
             <div class="members-panel__form-actions">
@@ -419,15 +419,15 @@
       >
         <!-- Summary Row (always visible, clickable) -->
         <div class="members-panel__row iz-row__header" @click="toggle(member.userId)">
-          <span class="members-panel__avatar">{{
+          <span class="iz-identity__avatar">{{
             (member.displayName || member.userId).charAt(0).toUpperCase()
           }}</span>
-          <div class="members-panel__info">
-            <span class="members-panel__name">{{
+          <div class="iz-identity__body members-panel__info">
+            <span class="iz-identity__name members-panel__name">{{
               member.displayName || member.userId
             }}</span>
             <span
-              class="members-panel__sub"
+              class="iz-identity__meta members-panel__sub"
               v-if="member.title || member.email"
             >
               {{ member.title ? member.title : member.email }}
@@ -598,9 +598,9 @@
                 >{{ taskPct(member) }}% complete</span
               >
             </div>
-            <div class="members-panel__tasks-bar">
+            <div class="iz-meter">
               <div
-                class="members-panel__tasks-fill"
+                class="iz-meter__fill"
                 :style="{ width: taskPct(member) + '%' }"
                 :class="taskFillClass(member)"
               ></div>
@@ -639,7 +639,7 @@
       </div>
 
       <!-- Pagination -->
-      <div v-if="totalPages > 1" class="members-panel__pagination">
+      <div v-if="totalPages > 1" class="iz-pagination members-panel__pagination">
         <button
           class="iz-btn iz-btn--icon members-panel__page-btn"
           :disabled="currentPage <= 1"
@@ -843,9 +843,9 @@ export default {
     },
     taskFillClass: function (m) {
       var pct = this.taskPct(m);
-      if (pct >= 75) return "members-panel__tasks-fill--high";
-      if (pct >= 40) return "members-panel__tasks-fill--mid";
-      return "members-panel__tasks-fill--low";
+      if (pct >= 75) return "iz-meter__fill--ok";
+      if (pct >= 40) return "iz-meter__fill--warn";
+      return "iz-meter__fill--danger";
     },
     isOwner: function (member) {
       return !!this.ownerUid && member && member.userId === this.ownerUid;
@@ -1251,11 +1251,9 @@ export default {
 }
 
 /* ── Pagination ── */
+/* Chrome from .iz-pagination; only placement is local. */
 .members-panel__pagination {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 12px;
   margin-top: 12px;
 }
 
@@ -1314,45 +1312,6 @@ export default {
 
 .members-panel__row:hover {
   background: var(--bg-subtle);
-}
-
-.members-panel__avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--accent), var(--accent));
-  color: #fff;
-  font-size: var(--iz-fs-lg);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.members-panel__info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;
-}
-
-.members-panel__name {
-  font-size: var(--iz-fs-md);
-  font-weight: 600;
-  color: var(--color-text-primary, var(--color-text-primary));
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.members-panel__sub {
-  font-size: var(--iz-fs-xs);
-  color: var(--color-text-muted, var(--color-text-muted));
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .members-panel__right {
@@ -1470,30 +1429,8 @@ export default {
   font-weight: 700;
   color: var(--color-text-primary, var(--color-text-primary));
 }
-
-.members-panel__tasks-bar {
-  height: 6px;
-  background: var(--color-border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.members-panel__tasks-fill {
-  height: 100%;
-  border-radius: var(--radius-sm);
-  transition: width 0.4s ease;
-}
-
-.members-panel__tasks-fill--high {
-  background: var(--color-success);
-}
-.members-panel__tasks-fill--mid {
-  background: var(--color-warning-text);
-}
-.members-panel__tasks-fill--low {
-  background: var(--color-danger-text);
-}
+/* Track chrome from .iz-meter; the spacing below it is local. */
+.members-panel__tasks-wrap { margin-bottom: 8px; }
 
 .members-panel__tasks-legend {
   display: flex;
@@ -1550,14 +1487,6 @@ export default {
   background: var(--accent-hover);
 }
 
-.members-panel__add-form {
-  background: var(--bg-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 12px 14px;
-  margin-bottom: 12px;
-}
-
 .members-panel__add-form-header {
   display: flex;
   align-items: center;
@@ -1587,116 +1516,6 @@ export default {
 .members-panel__add-form-close:hover {
   background: var(--bg-subtle);
   color: var(--color-text-primary, var(--color-text-primary));
-}
-
-.members-panel__add-form-input {
-  width: 100%;
-  padding: 7px 12px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-el);
-  font-size: var(--iz-fs-md);
-  color: var(--color-text-primary, var(--color-text-primary));
-  background: var(--bg-card);
-  outline: none;
-  transition: border-color 0.15s;
-  box-sizing: border-box;
-}
-
-.members-panel__add-form-input:focus {
-  border-color: var(--accent);
-}
-
-.members-panel__add-form-state {
-  margin-top: 8px;
-  font-size: var(--iz-fs-sm);
-  color: var(--color-text-muted, var(--color-text-muted));
-  font-style: italic;
-}
-
-.members-panel__add-form-error {
-  margin-top: 8px;
-  font-size: var(--iz-fs-sm);
-  color: var(--color-danger-text);
-  background: var(--color-danger-bg);
-  border: 1px solid var(--color-danger-bg);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-}
-
-.members-panel__add-form-results {
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
-  background: var(--bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-el);
-  overflow: hidden;
-  max-height: 220px;
-  overflow-y: auto;
-}
-
-.members-panel__add-form-result {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--bg-subtle);
-}
-
-.members-panel__add-form-result:last-child {
-  border-bottom: none;
-}
-
-.members-panel__add-form-result-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;
-}
-
-.members-panel__add-form-result-name {
-  font-size: var(--iz-fs-md);
-  font-weight: 600;
-  color: var(--color-text-primary, var(--color-text-primary));
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.members-panel__add-form-result-meta {
-  font-size: var(--iz-fs-xs);
-  color: var(--color-text-muted, var(--color-text-muted));
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.members-panel__add-form-add-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-el);
-  border: 1px solid var(--accent);
-  background: var(--bg-card);
-  color: var(--accent);
-  font-size: var(--iz-fs-lg);
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
-  flex-shrink: 0;
-}
-
-.members-panel__add-form-add-btn:hover:not(:disabled) {
-  background: var(--accent);
-  color: #fff;
-}
-
-.members-panel__add-form-add-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .members-panel__remove-btn {

@@ -3,8 +3,8 @@
     :is="embedded ? 'div' : 'section'"
     :class="['activity-feed', 'iz-panel', { 'iz-panel--flush': embedded }]"
   >
-    <header v-if="!embedded" class="activity-feed__header">
-      <h3 class="activity-feed__title">Activity</h3>
+    <header v-if="!embedded" class="activity-feed__header iz-panel__header">
+      <h3 class="activity-feed__title iz-section-title">Activity</h3>
     </header>
 
     <div class="activity-feed__layout">
@@ -124,13 +124,13 @@
           </button>
         </div>
 
-        <div v-if="loading && rows.length === 0" class="activity-feed__state">
+        <div v-if="loading && rows.length === 0" class="iz-state activity-feed__state">
           Loading…
         </div>
         <div v-else-if="error" class="activity-feed__state activity-feed__state--error">
           {{ error }}
         </div>
-        <div v-else-if="rows.length === 0" class="activity-feed__state">
+        <div v-else-if="rows.length === 0" class="iz-state activity-feed__state">
           No activity matches the current filters.
         </div>
 
@@ -157,7 +157,7 @@
 
         <nav
           v-if="rows.length > 0 || currentPage > 1"
-          class="activity-feed__pagination"
+          class="iz-pagination activity-feed__pagination"
           aria-label="Pagination"
         >
           <label class="activity-feed__page-size">
@@ -761,25 +761,15 @@ export default {
   letter-spacing: 0.04em;
 }
 
-.activity-feed__state {
-  text-align: center;
-  padding: 24px;
-  font-size: var(--iz-fs-md);
-  color: var(--color-text-secondary);
-}
-
 .activity-feed__state--error {
   color: var(--color-danger-text);
 }
 
+/* Chrome from .iz-pagination; only placement is local. */
 .activity-feed__pagination {
-  display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
   justify-content: space-between;
   margin-top: 16px;
-  padding-top: 12px;
   border-top: 1px solid var(--bg-subtle);
 }
 
