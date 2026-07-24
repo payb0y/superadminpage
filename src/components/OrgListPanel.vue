@@ -29,14 +29,14 @@
           </select>
         </div>
         <div
-          class="org-list__view-toggle"
+          class="iz-segment org-list__view-toggle"
           role="group"
           aria-label="Organization view mode"
         >
           <button
             type="button"
-            class="org-list__view-btn"
-            :class="{ 'org-list__view-btn--active': viewMode === 'grid' }"
+            class="iz-btn iz-btn--sm"
+            :class="{ 'iz-btn--active': viewMode === 'grid' }"
             :aria-pressed="viewMode === 'grid'"
             title="Grid view"
             @click="viewMode = 'grid'"
@@ -61,8 +61,8 @@
         </button>
         <button
           type="button"
-          class="org-list__view-btn"
-          :class="{ 'org-list__view-btn--active': viewMode === 'table' }"
+          class="iz-btn iz-btn--sm"
+          :class="{ 'iz-btn--active': viewMode === 'table' }"
           :aria-pressed="viewMode === 'table'"
           title="Table view"
           @click="viewMode = 'table'"
@@ -248,7 +248,7 @@
             v-if="detailLoading[org.id]"
             class="org-list__detail-state"
           >
-            <div class="org-list__spinner"></div>
+            <div class="iz-spinner"></div>
             <span>Loading organization…</span>
           </div>
 
@@ -776,40 +776,7 @@ export default {
   color: var(--color-text-secondary, var(--color-text-secondary));
   font-weight: 500;
 }
-
-
-
-.org-list__view-toggle {
-  display: inline-flex;
-  background: var(--bg-subtle);
-  border-radius: var(--radius-pill);
-  padding: 3px;
-}
-
-.org-list__view-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-size: var(--iz-fs-sm);
-  font-weight: 600;
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
-}
-
-.org-list__view-btn:hover {
-  color: var(--color-text-primary, var(--color-text-primary));
-}
-
-.org-list__view-btn--active {
-  background: var(--bg-card);
-  color: var(--accent-strong);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-}
+/* Chrome from .iz-segment. */
 
 .org-list__filters {
   display: flex;
@@ -1018,22 +985,6 @@ export default {
   flex-wrap: wrap;
 }
 
-
-
-.org-list__spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--color-border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: org-list-spin 0.8s linear infinite;
-}
-
-@keyframes org-list-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 /* ───────── Pagination ───────── */
 

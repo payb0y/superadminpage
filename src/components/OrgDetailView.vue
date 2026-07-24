@@ -36,16 +36,16 @@
       </div>
     </header>
 
-    <nav class="org-detail__tabs">
+    <nav class="iz-tabs org-detail__tabs">
       <button
         v-for="tab in tabs"
         :key="tab.key"
-        class="org-detail__tab"
-        :class="{ 'org-detail__tab--active': activeTab === tab.key }"
+        class="iz-tab"
+        :class="{ 'iz-tab--active': activeTab === tab.key }"
         @click="activeTab = tab.key"
       >
         {{ tab.label }}
-        <span v-if="tab.count !== null" class="org-detail__tab-count">
+        <span v-if="tab.count !== null" class="iz-tab__count">
           {{ tab.count }}
         </span>
       </button>
@@ -356,51 +356,9 @@ export default {
   font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-muted));
 }
-
+/* Chrome from .iz-tabs; the inset padding is local. */
 .org-detail__tabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--color-border, var(--color-border));
   padding: 0 4px;
-}
-
-.org-detail__tab {
-  background: none;
-  border: none;
-  padding: 10px 16px;
-  font-size: var(--iz-fs-md);
-  font-weight: 600;
-  color: var(--color-text-secondary, var(--color-text-secondary));
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.org-detail__tab:hover {
-  color: var(--color-text-primary, var(--color-text-primary));
-}
-
-.org-detail__tab--active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-
-.org-detail__tab-count {
-  font-size: var(--iz-fs-xs);
-  font-weight: 600;
-  background: var(--bg-subtle);
-  color: var(--color-text-secondary);
-  padding: 1px 7px;
-  border-radius: var(--radius-el);
-}
-
-.org-detail__tab--active .org-detail__tab-count {
-  background: var(--accent-bg);
-  color: var(--accent-strong);
 }
 
 .org-detail__body {

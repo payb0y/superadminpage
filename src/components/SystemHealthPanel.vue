@@ -636,13 +636,6 @@ export default {
   line-height: 1;
 }
 
-.system-health__refresh-icon--spinning {
-  animation: system-health-spin 0.9s linear infinite;
-}
-
-@keyframes system-health-spin {
-  to { transform: rotate(360deg); }
-}
 
 .system-health__error {
   font-size: var(--iz-fs-md);

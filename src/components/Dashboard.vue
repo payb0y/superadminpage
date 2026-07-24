@@ -1,7 +1,7 @@
 <template>
   <div class="superadmin-dashboard iz-app">
     <div v-if="loading" class="superadmin-dashboard__loading">
-      <div class="superadmin-dashboard__spinner"></div>
+      <div class="iz-spinner iz-spinner--lg"></div>
       <p>Loading super-admin dashboard…</p>
     </div>
 
@@ -22,13 +22,13 @@
         </p>
       </header>
 
-      <div class="superadmin-dashboard__tabs" role="tablist">
+      <div class="iz-tabs iz-tabs--display superadmin-dashboard__tabs" role="tablist">
         <button
           type="button"
           role="tab"
-          class="superadmin-dashboard__tab"
+          class="iz-tab"
           :class="{
-            'superadmin-dashboard__tab--active': activeTab === 'health',
+            'iz-tab--active': activeTab === 'health',
           }"
           :aria-selected="activeTab === 'health'"
           @click="setActiveTab('health')"
@@ -36,9 +36,9 @@
         <button
           type="button"
           role="tab"
-          class="superadmin-dashboard__tab"
+          class="iz-tab"
           :class="{
-            'superadmin-dashboard__tab--active': activeTab === 'orgs',
+            'iz-tab--active': activeTab === 'orgs',
           }"
           :aria-selected="activeTab === 'orgs'"
           @click="setActiveTab('orgs')"
@@ -371,20 +371,6 @@ export default {
   font-size: var(--iz-fs-md);
 }
 
-.superadmin-dashboard__spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--color-border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: superadmin-spin 0.8s linear infinite;
-}
-
-@keyframes superadmin-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .superadmin-dashboard__error {
   color: var(--color-danger);
@@ -395,49 +381,8 @@ export default {
   text-align: center;
   margin: 0;
 }
-
+/* Chrome from .iz-tabs; only the pull-up against the page padding is local. */
 .superadmin-dashboard__tabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--color-border);
   margin-bottom: calc(-1 * var(--spacing-lg) + 4px);
-}
-
-.superadmin-dashboard__tab {
-  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  background: transparent;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  color: var(--color-text-muted);
-  padding: 10px 16px;
-  font-size: var(--iz-fs-md);
-  font-weight: 600;
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  transition: color 0.15s, border-color 0.15s;
-  margin-bottom: -1px;
-}
-
-/* NC core styles bare <button> with `button:not(.button-vue, [class^="vs__"]):hover`
-   (specificity 0,2,1), which beats a scoped single-class rule (0,2,0) and paints
-   these tabs navy-on-pink on hover. Match its specificity so the tab keeps the
-   In Zicht treatment: quiet tint, accent text, no pill background. */
-.superadmin-dashboard__tabs .superadmin-dashboard__tab:hover {
-  color: var(--color-text-primary);
-  background: transparent;
-}
-
-.superadmin-dashboard__tabs .superadmin-dashboard__tab--active,
-.superadmin-dashboard__tabs .superadmin-dashboard__tab--active:hover {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-  background: transparent;
-}
-
-.superadmin-dashboard__tab:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent);
-  border-radius: var(--radius-sm);
 }
 </style>

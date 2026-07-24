@@ -111,48 +111,48 @@
         </div>
 
         <!-- Credentials reveal card (auto-generated success) -->
-        <div v-if="createdUser" class="members-panel__reveal">
-          <div class="members-panel__reveal-heading">
-            <span class="members-panel__reveal-check" aria-hidden="true">✓</span>
+        <div v-if="createdUser" class="iz-reveal members-panel__reveal">
+          <div class="iz-reveal__heading">
+            <span class="iz-reveal__check" aria-hidden="true">✓</span>
             User created and added
           </div>
-          <div class="members-panel__reveal-row">
-            <span class="members-panel__reveal-label">UID</span>
-            <span class="members-panel__reveal-value">{{ createdUser.uid }}</span>
+          <div class="iz-reveal__row">
+            <span class="iz-reveal__label">UID</span>
+            <span class="iz-reveal__value">{{ createdUser.uid }}</span>
             <button
               type="button"
-              class="members-panel__reveal-btn"
+              class="iz-btn iz-btn--sm"
               @click="copyToClipboard(createdUser.uid, 'uid')"
             >{{ copyFlags.uid ? "Copied!" : "Copy" }}</button>
           </div>
-          <div class="members-panel__reveal-row">
-            <span class="members-panel__reveal-label">Password</span>
-            <span class="members-panel__reveal-value">
+          <div class="iz-reveal__row">
+            <span class="iz-reveal__label">Password</span>
+            <span class="iz-reveal__value">
               <template v-if="revealCreatedPassword">{{ createdUser.password }}</template>
               <template v-else>{{ "•".repeat(createdUser.password.length) }}</template>
             </span>
             <button
               type="button"
-              class="members-panel__reveal-btn"
+              class="iz-btn iz-btn--sm"
               @click="revealCreatedPassword = !revealCreatedPassword"
             >{{ revealCreatedPassword ? "Hide" : "Show" }}</button>
             <button
               type="button"
-              class="members-panel__reveal-btn"
+              class="iz-btn iz-btn--sm"
               @click="copyToClipboard(createdUser.password, 'password')"
             >{{ copyFlags.password ? "Copied!" : "Copy" }}</button>
           </div>
-          <div class="members-panel__reveal-row members-panel__reveal-row--full">
+          <div class="iz-reveal__row iz-reveal__row--actions">
             <button
               type="button"
-              class="members-panel__reveal-btn members-panel__reveal-btn--wide"
+              class="iz-btn iz-btn--sm"
               @click="copyToClipboard(createdUser.uid + ' / ' + createdUser.password, 'both')"
             >{{ copyFlags.both ? "Copied!" : "Copy both" }}</button>
           </div>
-          <p class="members-panel__reveal-warning">
+          <p class="iz-reveal__warning">
             Share these credentials with the user now — the password won't be visible again.
           </p>
-          <div class="members-panel__reveal-actions">
+          <div class="iz-reveal__row iz-reveal__row--actions">
             <button
               type="button"
               class="iz-btn iz-btn--primary"
@@ -229,7 +229,7 @@
                 >
                   <span
                     v-if="addingUid === u.uid"
-                    class="members-panel__spinner"
+                    class="iz-spinner iz-spinner--sm"
                     aria-hidden="true"
                   ></span>
                   <span v-else aria-hidden="true">+</span>
@@ -398,7 +398,7 @@
               >
                 <span
                   v-if="newUserSubmitting"
-                  class="members-panel__spinner members-panel__spinner--inline"
+                  class="iz-spinner iz-spinner--sm"
                   aria-hidden="true"
                 ></span>
                 Create &amp; add member
@@ -452,7 +452,7 @@
             >
               <span
                 v-if="removingUid === member.userId"
-                class="members-panel__spinner"
+                class="iz-spinner iz-spinner--sm"
                 aria-hidden="true"
               ></span>
               Confirm
@@ -1521,19 +1521,6 @@ export default {
   border-color: var(--color-danger-text);
 }
 
-.members-panel__spinner {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: members-panel-spin 0.7s linear infinite;
-}
-
-@keyframes members-panel-spin {
-  to { transform: rotate(360deg); }
-}
 
 @media (max-width: 700px) {
   .members-panel__detail-grid {
@@ -1661,121 +1648,5 @@ export default {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 14px;
-}
-
-
-
-
-
-
-
-.members-panel__spinner--inline {
-  width: 12px;
-  height: 12px;
-  border-width: 2px;
-}
-
-/* ── Credentials reveal card ────────────────────────────────────────── */
-.members-panel__reveal {
-  background: var(--bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-el);
-  padding: 14px;
-}
-
-.members-panel__reveal-heading {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--iz-fs-md);
-  font-weight: 700;
-  color: var(--color-success-text);
-  margin-bottom: 12px;
-}
-
-.members-panel__reveal-check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
-  font-size: var(--iz-fs-xs);
-  font-weight: 700;
-}
-
-.members-panel__reveal-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--bg-subtle);
-  font-size: var(--iz-fs-md);
-}
-
-.members-panel__reveal-row:last-of-type {
-  border-bottom: none;
-}
-
-.members-panel__reveal-row--full {
-  justify-content: flex-end;
-  border-bottom: none;
-  padding-top: 8px;
-}
-
-.members-panel__reveal-label {
-  font-weight: 600;
-  color: var(--color-text-secondary, var(--color-text-secondary));
-  width: 80px;
-  flex-shrink: 0;
-}
-
-.members-panel__reveal-value {
-  flex: 1;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  color: var(--color-text-primary, var(--color-text-primary));
-  word-break: break-all;
-}
-
-.members-panel__reveal-btn {
-  background: var(--bg-card);
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text-secondary, var(--color-text-secondary));
-  border-radius: var(--radius-sm);
-  padding: 4px 10px;
-  font-size: var(--iz-fs-xs);
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.members-panel__reveal-btn:hover {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary, var(--color-text-primary));
-  border-color: var(--color-text-muted);
-}
-
-.members-panel__reveal-btn--wide {
-  padding: 6px 14px;
-  font-size: var(--iz-fs-sm);
-}
-
-.members-panel__reveal-warning {
-  margin: 12px 0 0;
-  font-size: var(--iz-fs-xs);
-  color: var(--color-warning-text);
-  background: var(--color-warning-bg);
-  border: 1px solid var(--color-warning-text);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  line-height: 1.4;
-}
-
-.members-panel__reveal-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 12px;
 }
 </style>

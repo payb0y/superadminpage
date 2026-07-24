@@ -121,7 +121,7 @@
         >
           <span
             v-if="saving && confirmAction === 'start'"
-            class="ho-panel__spinner"
+            class="iz-spinner"
             aria-hidden="true"
           ></span>
           {{ form.dryRun ? "Preview" : "Start handover" }}
@@ -188,7 +188,7 @@
               >
                 <span
                   v-if="isRunning(job)"
-                  class="ho-panel__status-spinner"
+                  class="iz-spinner iz-spinner--sm"
                   aria-hidden="true"
                 ></span>
                 <span
@@ -354,7 +354,7 @@
           >
             <span
               v-if="saving"
-              class="ho-panel__spinner"
+              class="iz-spinner"
               aria-hidden="true"
             ></span>
             Confirm &amp; {{ confirmVerb }}
@@ -1044,28 +1044,6 @@ export default {
 /* ── Buttons ─────────────────────────────────────────────────────────── */
 
 
-
-
-
-
-
-
-
-
-
-.ho-panel__spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: ho-panel-spin 0.8s linear infinite;
-}
-
-@keyframes ho-panel-spin {
-  to { transform: rotate(360deg); }
-}
-
 /* ── Jobs section ────────────────────────────────────────────────────── */
 .ho-panel__jobs-header {
   display: flex;
@@ -1211,16 +1189,6 @@ export default {
   height: 6px;
   border-radius: 50%;
   background: currentColor;
-}
-
-.ho-panel__status-spinner {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: ho-panel-spin 0.8s linear infinite;
 }
 
 .ho-panel__status--queued {

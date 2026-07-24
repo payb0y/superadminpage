@@ -22,49 +22,49 @@
       <!-- Body -->
       <div class="iz-modal__body co-modal__body">
         <!-- ── Credentials reveal (post-success with auto-generated pw) ─── -->
-        <div v-if="createdOrg" class="co-modal__reveal">
-          <div class="co-modal__reveal-heading">
-            <span class="co-modal__reveal-check" aria-hidden="true">✓</span>
+        <div v-if="createdOrg" class="iz-reveal co-modal__reveal">
+          <div class="iz-reveal__heading">
+            <span class="iz-reveal__check" aria-hidden="true">✓</span>
             Organization created
           </div>
-          <div class="co-modal__reveal-row">
-            <span class="co-modal__reveal-label">Org</span>
-            <span class="co-modal__reveal-value">{{ createdOrg.displayname }}</span>
+          <div class="iz-reveal__row">
+            <span class="iz-reveal__label">Org</span>
+            <span class="iz-reveal__value">{{ createdOrg.displayname }}</span>
           </div>
-          <div class="co-modal__reveal-row">
-            <span class="co-modal__reveal-label">Admin UID</span>
-            <span class="co-modal__reveal-value">{{ createdOrg.adminUserId }}</span>
+          <div class="iz-reveal__row">
+            <span class="iz-reveal__label">Admin UID</span>
+            <span class="iz-reveal__value">{{ createdOrg.adminUserId }}</span>
             <button
               type="button"
-              class="co-modal__reveal-btn"
+              class="iz-btn iz-btn--sm"
               @click="copyToClipboard(createdOrg.adminUserId, 'uid')"
             >{{ copyFlags.uid ? "Copied!" : "Copy" }}</button>
           </div>
-          <div class="co-modal__reveal-row">
-            <span class="co-modal__reveal-label">Password</span>
-            <span class="co-modal__reveal-value">
+          <div class="iz-reveal__row">
+            <span class="iz-reveal__label">Password</span>
+            <span class="iz-reveal__value">
               <template v-if="revealPassword">{{ createdOrg.adminPassword }}</template>
               <template v-else>{{ "•".repeat(createdOrg.adminPassword.length) }}</template>
             </span>
             <button
               type="button"
-              class="co-modal__reveal-btn"
+              class="iz-btn iz-btn--sm"
               @click="revealPassword = !revealPassword"
             >{{ revealPassword ? "Hide" : "Show" }}</button>
             <button
               type="button"
-              class="co-modal__reveal-btn"
+              class="iz-btn iz-btn--sm"
               @click="copyToClipboard(createdOrg.adminPassword, 'password')"
             >{{ copyFlags.password ? "Copied!" : "Copy" }}</button>
           </div>
-          <div class="co-modal__reveal-row co-modal__reveal-row--full">
+          <div class="iz-reveal__row iz-reveal__row--actions">
             <button
               type="button"
-              class="co-modal__reveal-btn co-modal__reveal-btn--wide"
+              class="iz-btn iz-btn--sm"
               @click="copyToClipboard(createdOrg.adminUserId + ' / ' + createdOrg.adminPassword, 'both')"
             >{{ copyFlags.both ? "Copied!" : "Copy both" }}</button>
           </div>
-          <p class="co-modal__reveal-warning">
+          <p class="iz-reveal__warning">
             Share these credentials with the new admin now — the password
             won't be visible again.
           </p>
@@ -73,10 +73,10 @@
         <!-- ── Form (hidden while reveal is showing) ──────────────────── -->
         <template v-else>
           <!-- Mode toggle -->
-          <div class="co-modal__mode" role="tablist">
+          <div class="iz-segment iz-segment--fill" role="tablist">
             <label
-              class="co-modal__mode-pill"
-              :class="{ 'co-modal__mode-pill--active': form.mode === 'trial' }"
+              class="iz-btn iz-btn--sm"
+              :class="{ 'iz-btn--active': form.mode === 'trial' }"
             >
               <input
                 type="radio"
@@ -88,8 +88,8 @@
               <span aria-hidden="true">⚡</span> Trial
             </label>
             <label
-              class="co-modal__mode-pill"
-              :class="{ 'co-modal__mode-pill--active': form.mode === 'standard' }"
+              class="iz-btn iz-btn--sm"
+              :class="{ 'iz-btn--active': form.mode === 'standard' }"
             >
               <input
                 type="radio"
@@ -609,7 +609,7 @@
           >
             <span
               v-if="saving"
-              class="co-modal__spinner"
+              class="iz-spinner"
               aria-hidden="true"
             ></span>
             Confirm &amp; create
@@ -1157,42 +1157,6 @@ export default {
 
 
 /* ── Mode toggle ─────────────────────────────────────────────────── */
-.co-modal__mode {
-  display: flex;
-  gap: 6px;
-  background: var(--bg-subtle);
-  padding: 3px;
-  border-radius: var(--radius-el);
-  margin-bottom: 14px;
-}
-
-.co-modal__mode-pill {
-  flex: 1;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  text-align: center;
-  font-size: var(--iz-fs-sm);
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
-}
-
-.co-modal__mode-pill input {
-  display: none;
-}
-
-.co-modal__mode-pill--active {
-  background: var(--bg-card);
-  color: var(--accent);
-  font-weight: 700;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-}
 
 .co-modal__hint {
   background: var(--iz-accent-bg);
@@ -1390,120 +1354,6 @@ export default {
 .co-modal__autogen input {
   margin: 0;
   cursor: pointer;
-}
-
-/* ── Buttons ─────────────────────────────────────────────────────── */
-
-
-
-
-
-
-.co-modal__spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: co-modal-spin 0.8s linear infinite;
-}
-
-@keyframes co-modal-spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ── Reveal card ─────────────────────────────────────────────────── */
-.co-modal__reveal {
-  background: var(--bg-card);
-}
-
-.co-modal__reveal-heading {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--iz-fs-md);
-  font-weight: 700;
-  color: var(--color-success-text);
-  margin-bottom: 14px;
-}
-
-.co-modal__reveal-check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
-  font-size: var(--iz-fs-sm);
-  font-weight: 700;
-}
-
-.co-modal__reveal-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--bg-subtle);
-  font-size: var(--iz-fs-sm);
-}
-
-.co-modal__reveal-row:last-of-type {
-  border-bottom: none;
-}
-
-.co-modal__reveal-row--full {
-  justify-content: flex-end;
-  border-bottom: none;
-  padding-top: 8px;
-}
-
-.co-modal__reveal-label {
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  width: 100px;
-  flex-shrink: 0;
-}
-
-.co-modal__reveal-value {
-  flex: 1;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  color: var(--color-text-primary);
-  word-break: break-all;
-}
-
-.co-modal__reveal-btn {
-  background: var(--bg-card);
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text-secondary);
-  border-radius: var(--radius-sm);
-  padding: 3px 10px;
-  font-size: var(--iz-fs-xs);
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.co-modal__reveal-btn:hover {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary);
-}
-
-.co-modal__reveal-btn--wide {
-  padding: 5px 14px;
-  font-size: var(--iz-fs-sm);
-}
-
-.co-modal__reveal-warning {
-  margin: 12px 0 0;
-  font-size: var(--iz-fs-xs);
-  color: var(--color-warning-text);
-  background: var(--color-warning-bg);
-  border: 1px solid var(--color-warning-text);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  line-height: 1.4;
 }
 
 /* ── Password confirmation modal ────────────────────────────────── */

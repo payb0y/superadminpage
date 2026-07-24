@@ -311,7 +311,7 @@
                   >
                     <span
                       v-if="addPanelByProject[project.id].addingUid === u.userId"
-                      class="projects-panel__add-form-spinner"
+                      class="iz-spinner iz-spinner--sm"
                       aria-hidden="true"
                     ></span>
                     <span v-else aria-hidden="true">+</span>
@@ -1393,17 +1393,4 @@ export default {
   border-color: var(--accent);
 }
 
-.projects-panel__add-form-spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--accent);
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: projects-panel-spin 0.8s linear infinite;
-  display: inline-block;
-}
-
-@keyframes projects-panel-spin {
-  to { transform: rotate(360deg); }
-}
 </style>

@@ -525,7 +525,7 @@
           >
             <span
               v-if="saving"
-              class="sub-panel__spinner"
+              class="iz-spinner"
               aria-hidden="true"
             ></span>
             Confirm &amp; save
@@ -1239,24 +1239,6 @@ export default {
   margin-top: 4px;
 }
 
-
-
-
-
-
-
-.sub-panel__spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: sub-panel-spin 0.8s linear infinite;
-}
-
-@keyframes sub-panel-spin {
-  to { transform: rotate(360deg); }
-}
 
 /* ── Edit mode header ────────────────────────────────────────────────── */
 .sub-panel__edit-header {
