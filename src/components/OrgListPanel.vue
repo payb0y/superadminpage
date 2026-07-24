@@ -1121,13 +1121,6 @@ export default {
   font-weight: 500;
 }
 
-
-.org-list__page-size-select:hover,
-.org-list__page-size-select:focus {
-  border-color: var(--accent);
-  outline: none;
-}
-
 /* ───────── Responsive ───────── */
 
 @media (max-width: 1200px) {

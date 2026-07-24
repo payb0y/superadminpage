@@ -728,10 +728,6 @@ export default {
   height: 6px;
 }
 
-.system-health__bar-fill--ok      { background: var(--color-success); }
-.system-health__bar-fill--warn    { background: var(--color-warning-text); }
-.system-health__bar-fill--danger  { background: var(--color-danger); }
-.system-health__bar-fill--neutral { background: var(--color-text-muted); }
 
 .system-health__bar-percent {
   position: absolute;

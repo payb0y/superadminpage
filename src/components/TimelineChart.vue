@@ -278,12 +278,6 @@ export default {
 </script>
 
 <style scoped>
-.timeline-chart__empty {
-  text-align: center;
-  font-size: var(--iz-fs-md);
-  color: var(--color-text-muted, var(--color-text-muted));
-  padding: 24px;
-}
 
 .timeline-chart__container {
   display: flex;

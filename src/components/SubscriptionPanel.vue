@@ -1149,13 +1149,6 @@ export default {
 
 /* ── Status pill ─────────────────────────────────────────────────────── */
 
-.sub-panel__pill-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
 /* ── Plan pill ───────────────────────────────────────────────────────── */
 .sub-panel__plan-line {
   display: flex;

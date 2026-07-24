@@ -947,13 +947,6 @@ export default {
 .ho-panel__req {
   color: var(--color-danger-text);
 }
-
-
-
-.ho-panel__input:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 /* Chrome from .iz-inset; only the spacing below it is local. */
 .ho-panel__options { margin-bottom: 14px; }
 

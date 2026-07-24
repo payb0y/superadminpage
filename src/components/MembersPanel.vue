@@ -597,7 +597,7 @@
                 >{{ taskPct(member) }}% complete</span
               >
             </div>
-            <div class="iz-meter">
+            <div class="iz-meter members-panel__tasks-wrap">
               <div
                 class="iz-meter__fill"
                 :style="{ width: taskPct(member) + '%' }"
