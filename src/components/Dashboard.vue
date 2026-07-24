@@ -1,5 +1,5 @@
 <template>
-  <div class="superadmin-dashboard">
+  <div class="superadmin-dashboard iz-app">
     <div v-if="loading" class="superadmin-dashboard__loading">
       <div class="superadmin-dashboard__spinner"></div>
       <p>Loading super-admin dashboard…</p>
@@ -252,64 +252,71 @@ export default {
 .superadmin-dashboard {
   /* ---- In Zicht wiring: tokens consume the theme's NC variables ---- */
   /* surfaces */
+  /* ── App tokens are now ALIASES of the In Zicht theme's .iz-* primitives ──
+     The real definitions live in the theme (server.css §8), which is shared
+     with the other In Zicht apps and — unlike this bundle — gets Nextcloud's
+     ?v= cache-buster. These aliases exist so components not yet converted to
+     .iz-* classes still resolve to the same values; as a component is
+     converted, its uses of these names go away. Do not re-add a literal value
+     here — change it in the theme. */
+
+  /* surfaces */
   --bg-page: var(--image-background, linear-gradient(135deg, #f7e9f2, #fdf9fc)); /* gradient → use with `background:` */
-  --bg-card: var(--color-main-background, #ffffff);
-  --bg-subtle: var(--color-background-hover, #faf6fa);
-  --bg-inset: var(--color-background-dark, #f3ecf3);
+  --bg-card: var(--iz-surface, var(--color-main-background, #fff));
+  --bg-subtle: var(--iz-surface-subtle, var(--color-background-hover, #faf6fa));
+  --bg-inset: var(--iz-surface-inset, var(--color-background-dark, #f3ecf3));
 
   /* text */
-  --color-text-primary: var(--color-main-text, #24172e);
-  --color-text-secondary: var(--color-text-maxcontrast, #6a6472);
-  --color-text-muted: color-mix(in oklab, var(--color-text-maxcontrast, #6a6472) 70%, var(--color-main-background, #fff));
+  --color-text-primary: var(--iz-text, var(--color-main-text, #24172e));
+  --color-text-secondary: var(--iz-text-secondary, var(--color-text-maxcontrast, #6a6472));
+  --color-text-muted: var(--iz-text-muted, color-mix(in oklab, var(--color-text-maxcontrast, #6a6472) 70%, var(--color-main-background, #fff)));
 
   /* borders — --color-border is inherited from the theme (do NOT redefine: cycle) */
-  --color-border-strong: var(--color-border-dark, #e6d8e6);
+  --color-border-strong: var(--iz-border-strong, var(--color-border-dark, #e6d8e6));
 
   /* accent (pink) */
-  --accent: var(--color-primary-element, #cc3d94);
-  --accent-hover: var(--color-primary-element-hover, #bd3487);
-  --accent-strong: var(--color-primary, #3a2350);
-  --accent-bg: var(--color-primary-element-light, #f6e4f0);
-  --accent-on-bg: var(--color-primary-element-light-text, #8a2b6b);
+  --accent: var(--iz-accent, var(--color-primary-element, #cc3d94));
+  --accent-hover: var(--iz-accent-hover, var(--color-primary-element-hover, #bd3487));
+  --accent-strong: var(--iz-cat-2, var(--color-primary, #3a2350));
+  --accent-bg: var(--iz-accent-bg, var(--color-primary-element-light, #f6e4f0));
+  --accent-on-bg: var(--iz-accent-bg-text, var(--color-primary-element-light-text, #8a2b6b));
 
   /* radii */
-  --radius-card: var(--border-radius-container, 14px);
-  --radius-el: var(--border-radius-element, 8px);
-  --radius-sm: var(--border-radius-small, 6px);
-  --radius-lg: var(--border-radius-large, 10px);
-  --radius-pill: var(--border-radius-pill, 9999px);
+  --radius-card: var(--iz-radius-card, var(--border-radius-container, 14px));
+  --radius-el: var(--iz-radius, var(--border-radius-element, 8px));
+  --radius-sm: var(--iz-radius-sm, var(--border-radius-small, 6px));
+  --radius-lg: var(--iz-radius-lg, var(--border-radius-large, 10px));
+  --radius-pill: var(--iz-radius-pill, var(--border-radius-pill, 9999px));
 
   /* shadows — In Zicht pink glow */
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-card-hover: 0 12px 32px -8px rgba(204, 61, 148, 0.15), 0 4px 12px -4px rgba(0, 0, 0, 0.08);
+  --shadow-card: var(--iz-shadow, 0 1px 3px rgba(0, 0, 0, 0.08));
+  --shadow-card-hover: var(--iz-shadow-lift, 0 12px 32px -8px rgba(204, 61, 148, 0.15), 0 4px 12px -4px rgba(0, 0, 0, 0.08));
 
-  /* status — semantic; danger wired to theme, warning renamed off the theme var (cycle) */
-  --color-danger: var(--color-error, #c9314a);
-  --color-danger-text: var(--color-error, #b42318);
-  --color-danger-bg: color-mix(in oklab, var(--color-error, #c9314a) 14%, var(--color-main-background, #fff));
-  --color-warning-text: #a86a12;
-  --color-warning-bg: color-mix(in oklab, var(--color-warning, #ecc980) 30%, var(--color-main-background, #fff));
-  --color-success: #1f7a3e;
-  --color-success-text: #166534;
-  --color-success-bg: color-mix(in oklab, #1f7a3e 14%, var(--color-main-background, #fff));
+  /* status — semantic; warning is renamed off the theme var to avoid a cycle */
+  --color-danger: var(--iz-danger, var(--color-error, #c9314a));
+  --color-danger-text: var(--iz-danger-text, var(--color-error, #b42318));
+  --color-danger-bg: var(--iz-danger-bg, color-mix(in oklab, var(--color-error, #c9314a) 14%, var(--color-main-background, #fff)));
+  --color-warning-text: var(--iz-warning-text, #a86a12);
+  --color-warning-bg: var(--iz-warning-bg, color-mix(in oklab, var(--color-warning, #ecc980) 30%, var(--color-main-background, #fff)));
+  --color-success: var(--iz-success, #1f7a3e);
+  --color-success-text: var(--iz-success-text, #166534);
+  --color-success-bg: var(--iz-success-bg, color-mix(in oklab, #1f7a3e 14%, var(--color-main-background, #fff)));
 
   /* legacy badge token names (children reference them) → point at the ramps */
-  --color-badge-danger-bg: var(--color-danger-bg);
-  --color-badge-danger-text: var(--color-danger-text);
-  --color-badge-warning-bg: var(--color-warning-bg);
-  --color-badge-warning-text: var(--color-warning-text);
-  --color-badge-success-bg: var(--color-success-bg);
-  --color-badge-success-text: var(--color-success-text);
+  --color-badge-danger-bg: var(--iz-danger-bg, color-mix(in oklab, var(--color-error, #c9314a) 14%, var(--color-main-background, #fff)));
+  --color-badge-danger-text: var(--iz-danger-text, var(--color-error, #b42318));
+  --color-badge-warning-bg: var(--iz-warning-bg, color-mix(in oklab, var(--color-warning, #ecc980) 30%, var(--color-main-background, #fff)));
+  --color-badge-warning-text: var(--iz-warning-text, #a86a12);
+  --color-badge-success-bg: var(--iz-success-bg, color-mix(in oklab, #1f7a3e 14%, var(--color-main-background, #fff)));
+  --color-badge-success-text: var(--iz-success-text, #166534);
 
   /* chart palette — series 1 = pink, reharmonized for light + dark */
-  --chart-1: var(--color-primary-element, #cc3d94);
-  --chart-2: var(--color-primary, #3a2350);
-  --chart-3: #2f9e8f;
-  --chart-4: #d98a2b;
-  --chart-5: #7c5cbf;
-  /* soft purple background pair for chart-5 badges (the sweep collapsed light
-     purple tints and dark purple text both onto --chart-5, hiding badge text) */
-  --chart-5-bg: color-mix(in oklab, var(--chart-5, #7c5cbf) 16%, var(--bg-card, #fff));
+  --chart-1: var(--iz-cat-1, var(--color-primary-element, #cc3d94));
+  --chart-2: var(--iz-cat-2, var(--color-primary, #3a2350));
+  --chart-3: var(--iz-cat-3, #2f9e8f);
+  --chart-4: var(--iz-cat-4, #d98a2b);
+  --chart-5: var(--iz-cat-5, #7c5cbf);
+  --chart-5-bg: var(--iz-cat-5-bg, color-mix(in oklab, #7c5cbf 16%, var(--color-main-background, #fff)));
 
   /* spacing — unchanged */
   --spacing-xs: 4px;

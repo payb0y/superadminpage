@@ -1,24 +1,24 @@
 <template>
-  <div class="task-browser">
-    <div v-if="loading" class="task-browser__state">Loading tasks…</div>
-    <div v-else-if="error" class="task-browser__state task-browser__state--error">
+  <div class="task-browser iz-stack iz-stack--tight">
+    <div v-if="loading" class="iz-empty">Loading tasks…</div>
+    <div v-else-if="error" class="iz-error">
       {{ error }}
     </div>
 
     <template v-else>
       <div class="task-browser__filters">
         <div class="task-browser__filter">
-          <label class="task-browser__label">Search</label>
+          <label class="iz-label">Search</label>
           <input
             v-model="filterName"
             type="text"
-            class="task-browser__input"
+            class="iz-input"
             placeholder="Task name…"
           />
         </div>
         <div class="task-browser__filter">
-          <label class="task-browser__label">Status</label>
-          <select v-model="filterStatus" class="task-browser__select">
+          <label class="iz-label">Status</label>
+          <select v-model="filterStatus" class="iz-select">
             <option value="">All</option>
             <option value="open">Open</option>
             <option value="done">Done</option>
@@ -26,8 +26,8 @@
           </select>
         </div>
         <div class="task-browser__filter">
-          <label class="task-browser__label">Stack</label>
-          <select v-model="filterStack" class="task-browser__select">
+          <label class="iz-label">Stack</label>
+          <select v-model="filterStack" class="iz-select">
             <option value="">All</option>
             <option v-for="s in stackOptions" :key="s" :value="s">
               {{ s }}
@@ -35,8 +35,8 @@
           </select>
         </div>
         <div class="task-browser__filter">
-          <label class="task-browser__label">Label</label>
-          <select v-model="filterLabel" class="task-browser__select">
+          <label class="iz-label">Label</label>
+          <select v-model="filterLabel" class="iz-select">
             <option value="">All</option>
             <option v-for="l in labelOptions" :key="l" :value="l">
               {{ l }}
@@ -44,8 +44,8 @@
           </select>
         </div>
         <div class="task-browser__filter">
-          <label class="task-browser__label">Assignee</label>
-          <select v-model="filterAssignee" class="task-browser__select">
+          <label class="iz-label">Assignee</label>
+          <select v-model="filterAssignee" class="iz-select">
             <option value="">All</option>
             <option v-for="a in assigneeOptions" :key="a" :value="a">
               {{ a }}
@@ -53,8 +53,8 @@
           </select>
         </div>
         <div class="task-browser__filter">
-          <label class="task-browser__label">Due</label>
-          <select v-model="filterDue" class="task-browser__select">
+          <label class="iz-label">Due</label>
+          <select v-model="filterDue" class="iz-select">
             <option value="">All</option>
             <option value="overdue">Overdue</option>
             <option value="today">Today</option>
@@ -70,13 +70,13 @@
         {{ filteredTasks.length }} of {{ tasks.length }} tasks
       </div>
 
-      <div class="task-browser__table-wrap">
-        <table class="task-browser__table">
+      <div class="iz-table-wrap">
+        <table class="iz-table">
           <thead>
             <tr>
               <th
-                class="task-browser__th-sort"
-                :class="{ 'task-browser__th-sort--active': sortKey === 'title' }"
+                class="iz-table__sort"
+                :class="{ 'iz-table__sort--active': sortKey === 'title' }"
                 @click="toggleSort('title')"
               >
                 Task
@@ -84,8 +84,8 @@
               </th>
               <th>Stack</th>
               <th
-                class="task-browser__th-sort"
-                :class="{ 'task-browser__th-sort--active': sortKey === 'status' }"
+                class="iz-table__sort"
+                :class="{ 'iz-table__sort--active': sortKey === 'status' }"
                 @click="toggleSort('status')"
               >
                 Status
@@ -94,16 +94,16 @@
               <th>Labels</th>
               <th>Assignees</th>
               <th
-                class="task-browser__th-sort"
-                :class="{ 'task-browser__th-sort--active': sortKey === 'due' }"
+                class="iz-table__sort"
+                :class="{ 'iz-table__sort--active': sortKey === 'due' }"
                 @click="toggleSort('due')"
               >
                 Due Date
                 <span class="task-browser__sort-arrow">{{ sortArrow('due') }}</span>
               </th>
               <th
-                class="task-browser__th-sort"
-                :class="{ 'task-browser__th-sort--active': sortKey === 'age' }"
+                class="iz-table__sort"
+                :class="{ 'iz-table__sort--active': sortKey === 'age' }"
                 @click="toggleSort('age')"
               >
                 Opened
@@ -120,19 +120,18 @@
             <tr v-for="task in paginatedTasks" :key="'tb-' + task.id">
               <td class="task-browser__cell-title">{{ task.title }}</td>
               <td>
-                <span class="task-browser__stack-badge">{{ task.stack }}</span>
+                <span class="iz-badge iz-badge--accent">{{ task.stack }}</span>
               </td>
               <td>
-                <span
-                  class="task-browser__status"
-                  :class="'task-browser__status--' + task.status"
-                >{{ task.status }}</span>
+                <span class="iz-badge" :class="statusToneClass(task.status)">{{
+                  task.status
+                }}</span>
               </td>
               <td>
                 <span
                   v-for="lbl in task.labels"
                   :key="lbl"
-                  class="task-browser__label-badge"
+                  class="iz-badge iz-badge--cat-5 task-browser__label-badge"
                 >{{ lbl }}</span>
                 <span v-if="!task.labels.length" class="task-browser__muted">&mdash;</span>
               </td>
@@ -161,9 +160,9 @@
         </table>
       </div>
 
-      <div v-if="totalPages > 1" class="task-browser__pagination">
+      <div v-if="totalPages > 1" class="iz-pagination task-browser__pagination">
         <button
-          class="task-browser__page-btn"
+          class="iz-btn iz-btn--sm"
           :disabled="page <= 1"
           @click="page--"
         >
@@ -173,7 +172,7 @@
           Page {{ page }} of {{ totalPages }}
         </span>
         <button
-          class="task-browser__page-btn"
+          class="iz-btn iz-btn--sm"
           :disabled="page >= totalPages"
           @click="page++"
         >
@@ -279,6 +278,18 @@ export default {
     },
   },
   methods: {
+    // Deck status -> In Zicht badge tone. Kept as a map (not string concat)
+    // so an unknown status degrades to the neutral tone instead of emitting a
+    // class that doesn't exist.
+    statusToneClass(status) {
+      return (
+        {
+          open: "iz-badge--success",
+          done: "iz-badge--cat-5",
+          archived: "iz-badge--muted",
+        }[status] || "iz-badge--muted"
+      );
+    },
     toggleSort(key) {
       if (this.sortKey === key) {
         this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
@@ -323,22 +334,7 @@ export default {
 </script>
 
 <style scoped>
-.task-browser {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.task-browser__state {
-  padding: 20px;
-  text-align: center;
-  color: var(--color-text-muted, var(--color-text-muted));
-  font-size: 13px;
-}
-
-.task-browser__state--error {
-  color: var(--color-danger-text);
-}
+/* .task-browser is .iz-stack--tight; loading/error states are .iz-empty/.iz-error. */
 
 .task-browser__filters {
   display: flex;
@@ -346,6 +342,7 @@ export default {
   gap: 12px;
 }
 
+/* Layout only — the field chrome comes from .iz-label / .iz-input / .iz-select. */
 .task-browser__filter {
   display: flex;
   flex-direction: column;
@@ -354,87 +351,18 @@ export default {
   min-width: 120px;
   max-width: 200px;
 }
-
-.task-browser__label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-text-muted, var(--color-text-muted));
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.task-browser__input,
-.task-browser__select {
-  padding: 7px 10px;
-  border: 1px solid var(--color-border, var(--color-border));
-  border-radius: var(--radius-el);
-  font-size: 13px;
-  color: var(--color-text-primary, var(--color-text-primary));
-  background: var(--bg-card);
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.task-browser__input:focus,
-.task-browser__select:focus {
-  border-color: var(--accent);
+.task-browser__filter .iz-label {
+  margin-bottom: 0;
 }
 
 .task-browser__count {
-  font-size: 12px;
-  color: var(--color-text-muted, var(--color-text-muted));
+  font-size: var(--iz-fs-sm);
+  color: var(--color-text-muted);
 }
 
-.task-browser__table-wrap {
-  overflow-x: auto;
-  border: 1px solid var(--color-border, var(--color-border));
-  border-radius: var(--radius-el);
-  background: var(--bg-card);
-}
-
-.task-browser__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.task-browser__table th,
-.task-browser__table td {
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--color-border, var(--bg-subtle));
-  color: var(--color-text-primary, var(--color-text-primary));
-}
-
-.task-browser__table th {
-  background: var(--bg-subtle);
-  white-space: nowrap;
-  font-weight: 600;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: var(--color-text-muted, var(--color-text-secondary));
-}
-
-.task-browser__table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.task-browser__table tbody tr:hover {
-  background: var(--bg-subtle);
-}
-
-.task-browser__th-sort {
-  cursor: pointer;
-  user-select: none;
-}
-
-.task-browser__th-sort--active {
-  color: var(--accent);
-}
-
+/* Table chrome is .iz-table-wrap / .iz-table; only column behaviour is local. */
 .task-browser__sort-arrow {
-  font-size: 10px;
+  font-size: var(--iz-fs-micro);
   margin-left: 2px;
 }
 
@@ -446,55 +374,13 @@ export default {
   white-space: nowrap;
 }
 
-.task-browser__stack-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  background: var(--accent-bg);
-  color: var(--accent);
-  white-space: nowrap;
-}
-
-.task-browser__status {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  text-transform: capitalize;
-}
-
-.task-browser__status--open {
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
-}
-
-.task-browser__status--done {
-  background: var(--chart-5-bg);
-  color: var(--chart-5);
-}
-
-.task-browser__status--archived {
-  background: var(--bg-subtle);
-  color: var(--color-text-secondary);
-}
-
+/* Labels sit several to a cell, so they need the gap the shared badge omits. */
 .task-browser__label-badge {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--chart-5-bg);
-  color: var(--chart-5);
   margin-right: 4px;
-  white-space: nowrap;
 }
 
 .task-browser__muted {
-  color: var(--color-text-muted, var(--color-text-muted));
+  color: var(--color-text-muted);
 }
 
 .task-browser__due--overdue {
@@ -519,43 +405,20 @@ export default {
 }
 
 .task-browser__age {
-  font-size: 11px;
+  font-size: var(--iz-fs-xs);
   font-weight: 600;
-  color: var(--color-text-secondary, var(--color-text-secondary));
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
+/* Centred rather than the shared space-between: this pager has no page list. */
 .task-browser__pagination {
-  display: flex;
-  align-items: center;
   justify-content: center;
   gap: 12px;
-  padding-top: 6px;
-}
-
-.task-browser__page-btn {
-  padding: 5px 14px;
-  border: 1px solid var(--color-border, var(--color-border));
-  border-radius: var(--radius-sm);
-  background: var(--bg-card);
-  font-size: 13px;
-  color: var(--color-text-primary, var(--color-text-primary));
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.task-browser__page-btn:hover:not(:disabled) {
-  background: var(--bg-subtle);
-  border-color: var(--accent);
-}
-
-.task-browser__page-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
 }
 
 .task-browser__page-info {
-  font-size: 12px;
-  color: var(--color-text-muted, var(--color-text-muted));
+  font-size: var(--iz-fs-sm);
+  color: var(--color-text-muted);
 }
 </style>
