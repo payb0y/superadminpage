@@ -1,7 +1,7 @@
 <template>
   <div :class="['backups-panel', { 'backups-panel--embedded': embedded }]">
     <!-- Empty state (no jobs at all) -->
-    <div v-if="!jobs || jobs.length === 0" class="backups-panel__empty">
+    <div v-if="!jobs || jobs.length === 0" class="iz-empty backups-panel__empty">
       <p class="backups-panel__empty-text">No backup jobs found.</p>
     </div>
 
@@ -52,7 +52,7 @@
       </div>
 
       <!-- No results after filtering -->
-      <div v-if="filteredJobs.length === 0" class="backups-panel__empty">
+      <div v-if="filteredJobs.length === 0" class="iz-empty backups-panel__empty">
         <p class="backups-panel__empty-text">No backup jobs match your filters.</p>
       </div>
 

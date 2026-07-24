@@ -16,7 +16,7 @@
           <select
             id="ho-source"
             v-model="form.sourceUserId"
-            class="ho-panel__input"
+            class="iz-input"
             :disabled="saving || notEnoughMembers"
             @change="onSourceChange"
           >
@@ -36,7 +36,7 @@
           <select
             id="ho-target"
             v-model="form.targetUserId"
-            class="ho-panel__input"
+            class="iz-input"
             :disabled="saving || notEnoughMembers"
             @change="clearDryRun"
           >
@@ -109,13 +109,13 @@
       <div class="ho-panel__actions">
         <button
           type="button"
-          class="ho-panel__btn ho-panel__btn--ghost"
+          class="iz-btn iz-btn--ghost"
           :disabled="saving"
           @click="resetForm"
         >Reset</button>
         <button
           type="button"
-          class="ho-panel__btn ho-panel__btn--primary"
+          class="iz-btn iz-btn--primary"
           :disabled="!canStart"
           @click="onStartClick"
         >
@@ -204,13 +204,13 @@
             <span class="ho-panel__jobs-actions">
               <button
                 type="button"
-                class="ho-panel__btn-sm"
+                class="iz-btn iz-btn--sm"
                 @click="toggleExpandJob(job.id)"
               >{{ expandedJobs[job.id] ? "Hide" : "Events" }}</button>
               <button
                 v-if="isFailed(job)"
                 type="button"
-                class="ho-panel__btn-sm ho-panel__btn-sm--primary"
+                class="iz-btn iz-btn--sm iz-btn--primary"
                 :disabled="saving"
                 @click="onRetryClick(job)"
               >↻ Retry</button>
@@ -342,13 +342,13 @@
         <div class="ho-panel__modal-actions">
           <button
             type="button"
-            class="ho-panel__btn ho-panel__btn--ghost"
+            class="iz-btn iz-btn--ghost"
             :disabled="saving"
             @click="closeConfirm"
           >Cancel</button>
           <button
             type="button"
-            class="ho-panel__btn ho-panel__btn--primary"
+            class="iz-btn iz-btn--primary"
             :disabled="!canConfirm"
             @click="saveAction"
           >
@@ -948,22 +948,7 @@ export default {
   color: var(--color-danger-text);
 }
 
-.ho-panel__input {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-el);
-  font-size: 13px;
-  background: var(--bg-card);
-  color: var(--color-text-primary);
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.15s;
-}
 
-.ho-panel__input:focus {
-  border-color: var(--accent);
-}
 
 .ho-panel__input:disabled {
   opacity: 0.6;
@@ -1085,77 +1070,16 @@ export default {
 }
 
 /* ── Buttons ─────────────────────────────────────────────────────────── */
-.ho-panel__btn {
-  border: 1px solid transparent;
-  border-radius: var(--radius-el);
-  padding: 7px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
 
-.ho-panel__btn--primary {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
 
-.ho-panel__btn--primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-}
 
-.ho-panel__btn--ghost {
-  background: transparent;
-  color: var(--color-text-secondary);
-  border-color: var(--color-border-strong);
-}
 
-.ho-panel__btn--ghost:hover:not(:disabled) {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary);
-}
 
-.ho-panel__btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
-.ho-panel__btn-sm {
-  background: transparent;
-  border: 1px solid var(--color-border-strong);
-  color: var(--accent);
-  border-radius: var(--radius-sm);
-  padding: 3px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
 
-.ho-panel__btn-sm:hover:not(:disabled) {
-  background: var(--bg-subtle);
-}
 
-.ho-panel__btn-sm--primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
 
-.ho-panel__btn-sm--primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-}
 
-.ho-panel__btn-sm:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 .ho-panel__spinner {
   width: 12px;

@@ -17,13 +17,13 @@
         <h2 class="org-detail__name">{{ org.profile.name }}</h2>
         <div class="org-detail__pills">
           <span
-            class="org-detail__pill"
-            :class="'org-detail__pill--' + statusTone"
+            class="iz-pill"
+            :class="'iz-pill--' + statusTone"
           >
-            <span class="org-detail__dot"></span>
+            <span class="iz-dot"></span>
             {{ statusLabel }}
           </span>
-          <span class="org-detail__pill org-detail__pill--plan">
+          <span class="iz-pill iz-pill--accent">
             {{ org.subscription.planName }}
           </span>
           <span
@@ -349,44 +349,8 @@ export default {
   flex-wrap: wrap;
 }
 
-.org-detail__pill {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: var(--radius-pill);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  text-transform: capitalize;
-}
 
-.org-detail__pill--success {
-  background: var(--color-badge-success-bg, var(--color-success-bg));
-  color: var(--color-badge-success-text, var(--color-success-text));
-}
-.org-detail__pill--warning {
-  background: var(--color-badge-warning-bg, var(--color-warning-bg));
-  color: var(--color-badge-warning-text, var(--color-warning-text));
-}
-.org-detail__pill--danger {
-  background: var(--color-badge-danger-bg, var(--color-danger-bg));
-  color: var(--color-badge-danger-text, var(--color-danger-text));
-}
-.org-detail__pill--muted {
-  background: var(--bg-subtle);
-  color: var(--color-text-secondary);
-}
-.org-detail__pill--plan {
-  background: var(--accent-bg);
-  color: var(--accent-strong);
-}
 
-.org-detail__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
 
 .org-detail__contact {
   font-size: 12px;

@@ -1,6 +1,6 @@
 <template>
   <div class="timeline-chart">
-    <div v-if="items.length === 0" class="timeline-chart__empty">
+    <div v-if="items.length === 0" class="iz-empty">
       No timeline data available
     </div>
     <div v-else class="timeline-chart__container">

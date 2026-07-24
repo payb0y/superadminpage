@@ -115,7 +115,7 @@
             <input
               id="co-displayname"
               type="text"
-              class="co-modal__input"
+              class="iz-input"
               v-model="form.displayname"
               :disabled="saving"
               @blur="markBlurred('displayname')"
@@ -132,7 +132,7 @@
             </label>
             <select
               id="co-validity"
-              class="co-modal__input"
+              class="iz-input"
               v-model="form.validity"
               :disabled="saving"
             >
@@ -159,7 +159,7 @@
             <div v-else class="co-modal__plan-row">
               <select
                 v-model.number="form.planId"
-                class="co-modal__input co-modal__plan-select"
+                class="iz-input co-modal__plan-select"
                 :disabled="saving || form.customPlanOpen"
               >
                 <option
@@ -194,7 +194,7 @@
                 </label>
                 <input
                   type="text"
-                  class="co-modal__input"
+                  class="iz-input"
                   v-model="form.customPlan.name"
                   :disabled="saving"
                   @blur="markBlurred('cpName')"
@@ -213,7 +213,7 @@
                     type="number"
                     min="1"
                     step="1"
-                    class="co-modal__input"
+                    class="iz-input"
                     v-model.number="form.customPlan.maxMembers"
                     :disabled="saving"
                     @blur="markBlurred('cpMembers')"
@@ -231,7 +231,7 @@
                     type="number"
                     min="1"
                     step="1"
-                    class="co-modal__input"
+                    class="iz-input"
                     v-model.number="form.customPlan.maxProjects"
                     :disabled="saving"
                     @blur="markBlurred('cpProjects')"
@@ -252,7 +252,7 @@
                       type="number"
                       min="0"
                       step="0.1"
-                      class="co-modal__input"
+                      class="iz-input"
                       v-model.number="form.customPlan.sharedStorageGb"
                       :disabled="saving"
                       @blur="markBlurred('cpShared')"
@@ -273,7 +273,7 @@
                       type="number"
                       min="0"
                       step="0.1"
-                      class="co-modal__input"
+                      class="iz-input"
                       v-model.number="form.customPlan.privateStorageGb"
                       :disabled="saving"
                       @blur="markBlurred('cpPrivate')"
@@ -295,7 +295,7 @@
                     type="number"
                     min="0"
                     step="0.01"
-                    class="co-modal__input"
+                    class="iz-input"
                     v-model="form.customPlan.price"
                     :disabled="saving"
                     @blur="markBlurred('cpPrice')"
@@ -309,7 +309,7 @@
                   <label class="co-modal__label">Currency</label>
                   <select
                     v-model="form.customPlan.currency"
-                    class="co-modal__input"
+                    class="iz-input"
                     :disabled="saving"
                   >
                     <option value="EUR">EUR</option>
@@ -330,7 +330,7 @@
             <div class="co-modal__field">
               <input
                 type="text"
-                class="co-modal__input"
+                class="iz-input"
                 v-model="form.contactFirstName"
                 placeholder="First name"
                 :disabled="saving"
@@ -339,7 +339,7 @@
             <div class="co-modal__field">
               <input
                 type="text"
-                class="co-modal__input"
+                class="iz-input"
                 v-model="form.contactLastName"
                 placeholder="Last name"
                 :disabled="saving"
@@ -349,7 +349,7 @@
           <div class="co-modal__field">
             <input
               type="email"
-              class="co-modal__input"
+              class="iz-input"
               v-model="form.contactEmail"
               placeholder="Email"
               :disabled="saving"
@@ -363,7 +363,7 @@
           <div class="co-modal__field">
             <input
               type="text"
-              class="co-modal__input"
+              class="iz-input"
               v-model="form.contactPhone"
               placeholder="Phone"
               :disabled="saving"
@@ -382,7 +382,7 @@
               </label>
               <input
                 type="text"
-                class="co-modal__input"
+                class="iz-input"
                 v-model="form.adminUserId"
                 autocomplete="off"
                 spellcheck="false"
@@ -400,7 +400,7 @@
               </label>
               <input
                 type="text"
-                class="co-modal__input"
+                class="iz-input"
                 v-model="form.adminDisplayName"
                 :disabled="saving"
                 @blur="markBlurred('adminDisplayName')"
@@ -415,7 +415,7 @@
             <label class="co-modal__label">Email</label>
             <input
               type="email"
-              class="co-modal__input"
+              class="iz-input"
               v-model="form.adminEmail"
               :disabled="saving"
               @blur="markBlurred('adminEmail')"
@@ -432,7 +432,7 @@
             <div class="co-modal__password-row">
               <input
                 :type="form.adminShowPassword ? 'text' : 'password'"
-                class="co-modal__input co-modal__password-input"
+                class="iz-input co-modal__password-input"
                 v-model="form.adminPassword"
                 :readonly="form.adminAutoGenerate"
                 :disabled="saving"
@@ -518,20 +518,20 @@
         <template v-if="createdOrg">
           <button
             type="button"
-            class="co-modal__btn co-modal__btn--primary"
+            class="iz-btn iz-btn--primary"
             @click="confirmCreatedOrg"
           >Done</button>
         </template>
         <template v-else>
           <button
             type="button"
-            class="co-modal__btn co-modal__btn--ghost"
+            class="iz-btn iz-btn--ghost"
             :disabled="saving"
             @click="cancel"
           >Cancel</button>
           <button
             type="button"
-            class="co-modal__btn co-modal__btn--primary"
+            class="iz-btn iz-btn--primary"
             :disabled="!canSave"
             @click="openConfirm"
           >Create organization</button>
@@ -597,13 +597,13 @@
         <div class="co-modal__confirm-actions">
           <button
             type="button"
-            class="co-modal__btn co-modal__btn--ghost"
+            class="iz-btn iz-btn--ghost"
             :disabled="saving"
             @click="closeConfirm"
           >Cancel</button>
           <button
             type="button"
-            class="co-modal__btn co-modal__btn--primary"
+            class="iz-btn iz-btn--primary"
             :disabled="!canConfirm"
             @click="saveOrg"
           >
@@ -1307,27 +1307,8 @@ export default {
   color: var(--color-danger-text);
 }
 
-.co-modal__input {
-  width: 100%;
-  padding: 7px 10px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  background: var(--bg-card);
-  color: var(--color-text-primary);
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.15s;
-}
 
-.co-modal__input:focus {
-  border-color: var(--accent);
-}
 
-.co-modal__input:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 
 .co-modal__grid {
   display: grid;
@@ -1511,45 +1492,11 @@ export default {
 }
 
 /* ── Buttons ─────────────────────────────────────────────────────── */
-.co-modal__btn {
-  border: 1px solid transparent;
-  border-radius: var(--radius-el);
-  padding: 7px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
 
-.co-modal__btn--primary {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
 
-.co-modal__btn--primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-}
 
-.co-modal__btn--ghost {
-  background: transparent;
-  color: var(--color-text-secondary);
-  border-color: var(--color-border-strong);
-}
 
-.co-modal__btn--ghost:hover:not(:disabled) {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary);
-}
 
-.co-modal__btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 .co-modal__spinner {
   width: 12px;

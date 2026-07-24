@@ -57,7 +57,7 @@
             <span class="activity-feed__field-label">From</span>
             <input
               type="date"
-              class="activity-feed__input"
+              class="iz-input iz-input--sm activity-feed__input"
               :value="filterFrom"
               @change="onDateChange('filterFrom', $event)"
             />
@@ -66,7 +66,7 @@
             <span class="activity-feed__field-label">To</span>
             <input
               type="date"
-              class="activity-feed__input"
+              class="iz-input iz-input--sm activity-feed__input"
               :value="filterTo"
               @change="onDateChange('filterTo', $event)"
             />
@@ -74,7 +74,7 @@
           <label v-if="showProjectFilter" class="activity-feed__field">
             <span class="activity-feed__field-label">Project</span>
             <select
-              class="activity-feed__input"
+              class="iz-input iz-input--sm activity-feed__input"
               :value="filterProjectId"
               @change="onProjectChange($event)"
             >
@@ -91,7 +91,7 @@
           <label class="activity-feed__field">
             <span class="activity-feed__field-label">Actor</span>
             <select
-              class="activity-feed__input"
+              class="iz-input iz-input--sm activity-feed__input"
               :value="filterActor"
               @change="onActorChange($event)"
             >
@@ -109,7 +109,7 @@
             <span class="activity-feed__field-label">Search</span>
             <input
               type="search"
-              class="activity-feed__input"
+              class="iz-input iz-input--sm activity-feed__input"
               placeholder="match summary or actor"
               :value="filterQ"
               @input="onTextInput('filterQ', $event)"
@@ -674,15 +674,10 @@ export default {
   letter-spacing: 0.04em;
 }
 
+/* Chrome comes from .iz-input--sm; only the flex sizing is local. */
 .activity-feed__input {
-  background: var(--bg-card);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-el);
-  padding: 6px 10px;
-  font-size: 13px;
-  color: var(--color-text-primary);
+  flex: 1;
   min-width: 0;
-  width: 100%;
 }
 
 .activity-feed__input:focus {

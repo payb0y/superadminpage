@@ -10,13 +10,13 @@
         <span class="org-card__name">{{ org.name }}</span>
         <div class="org-card__pills">
           <span
-            class="org-card__pill"
-            :class="'org-card__pill--' + statusTone"
+            class="iz-pill"
+            :class="'iz-pill--' + statusTone"
           >
-            <span class="org-card__dot"></span>
+            <span class="iz-dot"></span>
             {{ statusLabel }}
           </span>
-          <span class="org-card__pill org-card__pill--plan">
+          <span class="iz-pill iz-pill--accent">
             {{ org.planName || "No plan" }}
           </span>
         </div>
@@ -203,45 +203,8 @@ export default {
   flex-wrap: wrap;
 }
 
-.org-card__pill {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: var(--radius-pill);
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  text-transform: capitalize;
-}
 
-.org-card__pill--success {
-  background: var(--color-badge-success-bg, var(--color-success-bg));
-  color: var(--color-badge-success-text, var(--color-success-text));
-}
-.org-card__pill--warning {
-  background: var(--color-badge-warning-bg, var(--color-warning-bg));
-  color: var(--color-badge-warning-text, var(--color-warning-text));
-}
-.org-card__pill--danger {
-  background: var(--color-badge-danger-bg, var(--color-danger-bg));
-  color: var(--color-badge-danger-text, var(--color-danger-text));
-}
-.org-card__pill--muted {
-  background: var(--bg-subtle);
-  color: var(--color-text-secondary);
-}
-.org-card__pill--plan {
-  background: var(--accent-bg);
-  color: var(--accent-strong);
-}
 
-.org-card__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-  display: inline-block;
-}
 
 .org-card__metrics {
   display: flex;

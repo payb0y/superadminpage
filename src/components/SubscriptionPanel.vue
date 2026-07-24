@@ -3,7 +3,7 @@
     <!-- ── Empty state (no active subscription) ─────────────────────── -->
     <div
       v-if="!hasSubscription"
-      class="sub-panel__empty"
+      class="iz-empty sub-panel__empty"
     >
       <div class="sub-panel__empty-title">No active subscription</div>
       <div class="sub-panel__empty-body">
@@ -25,7 +25,7 @@
             class="sub-panel__pill"
             :class="'sub-panel__pill--' + statusTone"
           >
-            <span class="sub-panel__pill-dot" aria-hidden="true"></span>
+            <span class="iz-dot" aria-hidden="true"></span>
             {{ statusLabel }}
           </span>
           <div class="sub-panel__sub" v-if="sub.startedAt">
@@ -128,7 +128,7 @@
       <div class="sub-panel__actions">
         <button
           type="button"
-          class="sub-panel__btn sub-panel__btn--primary"
+          class="iz-btn iz-btn--primary"
           @click="enterEditMode"
         >Edit subscription…</button>
       </div>
@@ -159,7 +159,7 @@
           <select
             id="sub-plan"
             v-model.number="form.planId"
-            class="sub-panel__input sub-panel__plan-select"
+            class="iz-input sub-panel__plan-select"
             :disabled="saving || customPlanOpen"
           >
             <option
@@ -202,7 +202,7 @@
             <input
               type="text"
               v-model="customPlan.name"
-              class="sub-panel__input"
+              class="iz-input"
               :disabled="saving"
               @blur="markCustomBlurred('name')"
             />
@@ -222,7 +222,7 @@
                 min="1"
                 step="1"
                 v-model.number="customPlan.maxMembers"
-                class="sub-panel__input"
+                class="iz-input"
                 :disabled="saving"
                 @blur="markCustomBlurred('maxMembers')"
               />
@@ -240,7 +240,7 @@
                 min="1"
                 step="1"
                 v-model.number="customPlan.maxProjects"
-                class="sub-panel__input"
+                class="iz-input"
                 :disabled="saving"
                 @blur="markCustomBlurred('maxProjects')"
               />
@@ -262,7 +262,7 @@
                   min="0"
                   step="0.1"
                   v-model.number="customPlan.sharedStorageGb"
-                  class="sub-panel__input"
+                  class="iz-input"
                   :disabled="saving"
                   @blur="markCustomBlurred('sharedStorageGb')"
                 />
@@ -283,7 +283,7 @@
                   min="0"
                   step="0.1"
                   v-model.number="customPlan.privateStorageGb"
-                  class="sub-panel__input"
+                  class="iz-input"
                   :disabled="saving"
                   @blur="markCustomBlurred('privateStorageGb')"
                 />
@@ -306,7 +306,7 @@
                 min="0"
                 step="0.01"
                 v-model="customPlan.price"
-                class="sub-panel__input"
+                class="iz-input"
                 :disabled="saving"
                 @blur="markCustomBlurred('price')"
               />
@@ -319,7 +319,7 @@
               <label class="sub-panel__custom-label">Currency</label>
               <select
                 v-model="customPlan.currency"
-                class="sub-panel__input"
+                class="iz-input"
                 :disabled="saving"
               >
                 <option value="EUR">EUR</option>
@@ -435,13 +435,13 @@
       <div class="sub-panel__actions">
         <button
           type="button"
-          class="sub-panel__btn sub-panel__btn--ghost"
+          class="iz-btn iz-btn--ghost"
           :disabled="saving"
           @click="cancelEdit"
         >Cancel</button>
         <button
           type="button"
-          class="sub-panel__btn sub-panel__btn--primary"
+          class="iz-btn iz-btn--primary"
           :disabled="!canSave"
           @click="openConfirm"
         >Save changes</button>
@@ -513,13 +513,13 @@
         <div class="sub-panel__modal-actions">
           <button
             type="button"
-            class="sub-panel__btn sub-panel__btn--ghost"
+            class="iz-btn iz-btn--ghost"
             :disabled="saving"
             @click="closeConfirm"
           >Cancel</button>
           <button
             type="button"
-            class="sub-panel__btn sub-panel__btn--primary"
+            class="iz-btn iz-btn--primary"
             :disabled="!canConfirm"
             @click="saveChanges"
           >
@@ -1289,45 +1289,11 @@ export default {
   margin-top: 4px;
 }
 
-.sub-panel__btn {
-  border: 1px solid transparent;
-  border-radius: var(--radius-el);
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
 
-.sub-panel__btn--primary {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
 
-.sub-panel__btn--primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-}
 
-.sub-panel__btn--ghost {
-  background: transparent;
-  color: var(--color-text-secondary, var(--color-text-secondary));
-  border-color: var(--color-border-strong);
-}
 
-.sub-panel__btn--ghost:hover:not(:disabled) {
-  background: var(--bg-subtle);
-  color: var(--color-text-primary, var(--color-text-primary));
-}
 
-.sub-panel__btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 .sub-panel__spinner {
   width: 12px;
@@ -1420,22 +1386,7 @@ export default {
   cursor: pointer;
 }
 
-.sub-panel__input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-el);
-  font-size: 13px;
-  background: var(--bg-card);
-  color: var(--color-text-primary, var(--color-text-primary));
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.15s;
-}
 
-.sub-panel__input:focus {
-  border-color: var(--accent);
-}
 
 /* ── Status radio pills ──────────────────────────────────────────────── */
 .sub-panel__status-row {
@@ -1651,7 +1602,7 @@ export default {
   gap: 6px;
 }
 
-.sub-panel__unit-row .sub-panel__input {
+.sub-panel__unit-row .iz-input {
   flex: 1;
   min-width: 0;
 }

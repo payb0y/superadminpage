@@ -8,7 +8,7 @@
       <div class="org-list__header-controls">
         <button
           type="button"
-          class="org-list__create-btn"
+          class="iz-btn iz-btn--primary org-list__create-btn"
           @click="openCreate"
         >+ Create organization</button>
         <div class="org-list__sort">
@@ -16,7 +16,7 @@
           <select
             :id="sortSelectId"
             v-model="sortBy"
-            class="org-list__sort-select"
+            class="iz-select iz-select--sm org-list__sort-select"
           >
             <option value="planDesc">Plan: high → low</option>
             <option value="planAsc">Plan: low → high</option>
@@ -91,7 +91,7 @@
     <div class="org-list__filters">
       <input
         v-model="searchQuery"
-        class="org-list__search"
+        class="iz-input org-list__search"
         type="text"
         name="superadminpage-org-search"
         autocomplete="off"
@@ -118,7 +118,7 @@
       </div>
     </div>
 
-    <div v-if="filteredOrgs.length === 0" class="org-list__empty">
+    <div v-if="filteredOrgs.length === 0" class="iz-empty">
       No organizations match your filters.
     </div>
 
@@ -191,15 +191,15 @@
           </div>
           <div class="org-list__cell" role="cell">
             <span
-              class="org-list__pill"
-              :class="'org-list__pill--' + statusTone(org)"
+              class="iz-pill"
+              :class="'iz-pill--' + statusTone(org)"
             >
               <span class="org-list__dot"></span>
               {{ statusLabel(org) }}
             </span>
           </div>
           <div class="org-list__cell org-list__cell--plan" role="cell">
-            <span class="org-list__pill org-list__pill--plan">
+            <span class="iz-pill iz-pill--accent">
               {{ org.planName || "No plan" }}
             </span>
           </div>
@@ -267,7 +267,7 @@
             <span>{{ detailError[org.id] }}</span>
             <button
               type="button"
-              class="org-list__retry-btn"
+              class="iz-btn iz-btn--sm"
               @click="loadDetail(org.id)"
             >
               Retry
@@ -297,7 +297,7 @@
       <div v-if="totalPages > 1" class="org-list__pagination">
         <button
           type="button"
-          class="org-list__page-btn"
+          class="iz-btn iz-btn--sm org-list__page-btn"
           :disabled="currentPage === 1"
           aria-label="First page"
           @click="currentPage = 1"
@@ -306,7 +306,7 @@
         </button>
         <button
           type="button"
-          class="org-list__page-btn"
+          class="iz-btn iz-btn--sm org-list__page-btn"
           :disabled="currentPage <= 1"
           aria-label="Previous page"
           @click="currentPage--"
@@ -335,7 +335,7 @@
         </template>
         <button
           type="button"
-          class="org-list__page-btn"
+          class="iz-btn iz-btn--sm org-list__page-btn"
           :disabled="currentPage >= totalPages"
           aria-label="Next page"
           @click="currentPage++"
@@ -344,7 +344,7 @@
         </button>
         <button
           type="button"
-          class="org-list__page-btn"
+          class="iz-btn iz-btn--sm org-list__page-btn"
           :disabled="currentPage === totalPages"
           aria-label="Last page"
           @click="currentPage = totalPages"
@@ -358,7 +358,7 @@
         <select
           :id="pageSizeId"
           v-model.number="pageSize"
-          class="org-list__page-size-select"
+          class="iz-select iz-select--sm"
         >
           <option
             v-for="n in pageSizeOptions"
@@ -767,17 +767,6 @@ export default {
   flex-wrap: wrap;
 }
 
-.org-list__create-btn {
-  background: var(--accent);
-  color: #fff;
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-el);
-  padding: 7px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
 
 .org-list__create-btn:hover {
   background: var(--accent-hover);
@@ -796,21 +785,7 @@ export default {
   font-weight: 500;
 }
 
-.org-list__sort-select {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border, var(--color-border));
-  background: var(--bg-card);
-  color: var(--color-text-primary, var(--color-text-primary));
-  cursor: pointer;
-}
 
-.org-list__sort-select:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(204, 61, 148, 0.15);
-}
 
 .org-list__view-toggle {
   display: inline-flex;
@@ -851,22 +826,7 @@ export default {
   flex-wrap: wrap;
 }
 
-.org-list__search {
-  flex: 1;
-  min-width: 200px;
-  padding: 8px 14px;
-  border: 1px solid var(--color-border, var(--color-border));
-  border-radius: var(--radius-el);
-  font-size: 13px;
-  color: var(--color-text-primary, var(--color-text-primary));
-  background: var(--bg-card);
-  outline: none;
-  transition: border-color 0.15s;
-}
 
-.org-list__search:focus {
-  border-color: var(--accent);
-}
 
 .org-list__filter-group {
   display: flex;
@@ -903,22 +863,14 @@ export default {
   gap: var(--spacing-md, 16px);
 }
 
-.org-list__empty {
-  background: var(--bg-card, #fff);
-  border-radius: var(--radius-card, 12px);
-  padding: var(--spacing-2xl, 40px);
-  text-align: center;
-  color: var(--color-text-muted, var(--color-text-muted));
-  font-size: 14px;
-}
 
 /* ───────── Grid-table (DataGridPremium-style) ───────── */
 
 .org-list__grid-table {
   display: block;
-  background: var(--bg-card, #fff);
-  border-radius: var(--radius-card, 12px);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
+  background: var(--iz-surface);
+  border-radius: var(--iz-radius-card);
+  box-shadow: var(--iz-shadow);
   overflow: hidden;
   width: 100%;
 }
@@ -945,14 +897,17 @@ export default {
   box-sizing: border-box;
 }
 
+/* Matches .iz-table th — this is a role="table" div grid (11 columns don't
+   lay out in a real table), so it can't use .iz-table, but it must read the
+   same as the Backups and Tasks tables. */
 .org-list__header-row {
-  background: var(--bg-subtle);
-  border-bottom: 1px solid var(--color-border, var(--color-border));
-  font-size: 11px;
+  background: var(--iz-surface-subtle);
+  border-bottom: 1px solid var(--iz-border);
+  font-size: var(--iz-fs-micro);
   font-weight: 600;
-  color: var(--color-text-secondary, var(--color-text-secondary));
+  color: var(--iz-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
 }
 
 .org-list__th {
@@ -971,8 +926,8 @@ export default {
 .org-list__row {
   display: block !important;
   position: relative;
-  border-bottom: 1px solid var(--bg-subtle);
-  transition: background 0.15s;
+  border-bottom: 1px solid var(--iz-border);
+  transition: background var(--iz-transition);
   width: 100%;
   box-sizing: border-box;
 }
@@ -981,23 +936,25 @@ export default {
   border-bottom: none;
 }
 
+/* Hover matches .iz-row--clickable; the accent tint is reserved for the
+   expanded (active) row, like .iz-row--active. */
 .org-list__row:hover .org-list__row-summary {
-  background: var(--accent-bg);
+  background: var(--iz-surface-subtle);
 }
 
 .org-list__row--expanded {
-  background: var(--bg-subtle);
+  background: var(--iz-surface-subtle);
 }
 
 .org-list__row--expanded .org-list__row-summary {
-  background: var(--accent-bg);
-  border-bottom: 1px dashed var(--color-border);
+  background: var(--iz-accent-bg);
+  border-bottom: 1px dashed var(--iz-border);
 }
 
 .org-list__row-summary {
   cursor: pointer;
-  font-size: 13px;
-  color: var(--color-text-primary, var(--color-text-primary));
+  font-size: var(--iz-fs-md);
+  color: var(--iz-text);
 }
 
 .org-list__cell {
@@ -1059,38 +1016,7 @@ export default {
   white-space: nowrap;
 }
 
-.org-list__pill {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: var(--radius-pill);
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  text-transform: capitalize;
-  white-space: nowrap;
-}
 
-.org-list__pill--success {
-  background: var(--color-badge-success-bg, var(--color-success-bg));
-  color: var(--color-badge-success-text, var(--color-success-text));
-}
-.org-list__pill--warning {
-  background: var(--color-badge-warning-bg, var(--color-warning-bg));
-  color: var(--color-badge-warning-text, var(--color-warning-text));
-}
-.org-list__pill--danger {
-  background: var(--color-badge-danger-bg, var(--color-danger-bg));
-  color: var(--color-badge-danger-text, var(--color-danger-text));
-}
-.org-list__pill--muted {
-  background: var(--bg-subtle);
-  color: var(--color-text-secondary);
-}
-.org-list__pill--plan {
-  background: var(--accent-bg);
-  color: var(--accent-strong);
-}
 
 .org-list__dot {
   width: 6px;
@@ -1150,20 +1076,7 @@ export default {
   flex-wrap: wrap;
 }
 
-.org-list__retry-btn {
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent);
-  background: var(--bg-card);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
 
-.org-list__retry-btn:hover {
-  background: var(--accent-bg);
-}
 
 .org-list__spinner {
   width: 18px;
@@ -1271,18 +1184,6 @@ export default {
   font-weight: 500;
 }
 
-.org-list__page-size-select {
-  height: 32px;
-  padding: 0 8px;
-  border-radius: var(--radius-el);
-  border: 1px solid var(--color-border, var(--color-border));
-  background: var(--bg-card);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-primary, var(--color-text-primary));
-  cursor: pointer;
-  font-variant-numeric: tabular-nums;
-}
 
 .org-list__page-size-select:hover,
 .org-list__page-size-select:focus {
