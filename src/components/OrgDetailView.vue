@@ -86,7 +86,7 @@
           />
         </div>
 
-        <div class="org-detail__profile-card">
+        <div class="iz-card org-detail__profile-card">
           <h3 class="org-detail__section-title">Organization profile</h3>
           <div class="org-detail__profile-grid">
             <div class="org-detail__profile-item">
@@ -416,9 +416,8 @@ export default {
   gap: var(--spacing-lg, 24px);
 }
 
+/* Chrome from .iz-card; this one is slightly roomier than the default. */
 .org-detail__profile-card {
-  border: 1px solid var(--color-border, var(--color-border));
-  border-radius: var(--radius-lg);
   padding: 16px 20px;
 }
 

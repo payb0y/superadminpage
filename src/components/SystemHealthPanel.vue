@@ -52,7 +52,7 @@
         <div
           v-for="card in cards"
           :key="card.key"
-          class="system-health__card"
+          class="iz-card iz-card--flat system-health__card"
         >
           <div class="system-health__card-title">{{ card.title }}</div>
           <div class="system-health__card-value">{{ card.valueLine }}</div>
@@ -80,7 +80,7 @@
           <div
             v-for="card in networkCards"
             :key="card.key"
-            class="system-health__card"
+            class="iz-card iz-card--flat system-health__card"
           >
             <div class="system-health__card-title">{{ card.title }}</div>
             <div class="system-health__card-value">{{ card.valueLine }}</div>
@@ -98,7 +98,7 @@
           <div
             v-for="card in userCards"
             :key="card.key"
-            class="system-health__card"
+            class="iz-card iz-card--flat system-health__card"
           >
             <div class="system-health__card-title">{{ card.title }}</div>
             <div class="system-health__card-value">{{ card.valueLine }}</div>
@@ -116,7 +116,7 @@
           <div
             v-for="card in serviceCards"
             :key="card.key"
-            class="system-health__card"
+            class="iz-card iz-card--flat system-health__card"
           >
             <div class="system-health__card-title">{{ card.name }}</div>
             <div class="system-health__card-value">
@@ -134,7 +134,7 @@
           <div
             v-for="card in hpbCards"
             :key="card.key"
-            class="system-health__card"
+            class="iz-card iz-card--flat system-health__card"
           >
             <div class="system-health__card-title">{{ card.title }}</div>
             <div class="system-health__card-value">{{ card.valueLine }}</div>
@@ -697,14 +697,12 @@ export default {
 .system-health__status-dot--degraded { background: var(--color-warning-text); }
 .system-health__status-dot--down     { background: var(--color-danger); }
 
+/* Chrome from .iz-card--flat; the internal stack is local. */
 .system-health__card {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 0;
+  padding: 14px 16px;
 }
 
 .system-health__card-title {
