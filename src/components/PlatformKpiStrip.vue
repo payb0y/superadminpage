@@ -77,55 +77,27 @@
           </button>
         </div>
 
-        <div
-          class="projects-kpi__bar"
-          role="img"
-          :aria-label="barAriaLabel"
-        >
-          <div
-            v-if="kpis.tasks.done > 0"
-            class="projects-kpi__seg projects-kpi__seg--done"
-            :style="{ flex: kpis.tasks.done }"
-            :title="kpis.tasks.done + ' done'"
-          ></div>
-          <div
-            v-if="kpis.tasks.overdue > 0"
-            class="projects-kpi__seg projects-kpi__seg--overdue"
-            :style="{ flex: kpis.tasks.overdue }"
-            :title="kpis.tasks.overdue + ' overdue'"
-          ></div>
-          <div
-            v-if="openTasks > 0"
-            class="projects-kpi__seg projects-kpi__seg--open"
-            :style="{ flex: openTasks }"
-            :title="openTasks + ' open'"
-          ></div>
-        </div>
-
-        <div class="projects-kpi__legend">
+        <div class="projects-kpi__chips">
           <button
             type="button"
-            class="kpi-link projects-kpi__legend-item"
+            class="projects-kpi__chip"
             @click="$emit('drill-down', { sortBy: 'doneDesc' })"
           >
-            <span class="projects-kpi__dot projects-kpi__dot--done"></span>
-            <strong>{{ kpis.tasks.done }}</strong> done
+            <span class="iz-badge iz-badge--success"><strong>{{ kpis.tasks.done }}</strong> done</span>
           </button>
           <button
             type="button"
-            class="kpi-link projects-kpi__legend-item"
+            class="projects-kpi__chip"
             @click="$emit('drill-down', { sortBy: 'overdueDesc' })"
           >
-            <span class="projects-kpi__dot projects-kpi__dot--overdue"></span>
-            <strong>{{ kpis.tasks.overdue }}</strong> overdue
+            <span class="iz-badge iz-badge--danger"><strong>{{ kpis.tasks.overdue }}</strong> overdue</span>
           </button>
           <button
             type="button"
-            class="kpi-link projects-kpi__legend-item"
+            class="projects-kpi__chip"
             @click="$emit('drill-down', { sortBy: 'openDesc' })"
           >
-            <span class="projects-kpi__dot projects-kpi__dot--open"></span>
-            <strong>{{ openTasks }}</strong> open
+            <span class="iz-badge iz-badge--accent"><strong>{{ openTasks }}</strong> open</span>
           </button>
         </div>
       </div>
@@ -160,11 +132,6 @@ export default {
       const done = this.kpis.tasks.done || 0;
       const overdue = this.kpis.tasks.overdue || 0;
       return Math.max(0, total - done - overdue);
-    },
-    barAriaLabel() {
-      const d = this.kpis.tasks.done || 0;
-      const o = this.kpis.tasks.overdue || 0;
-      return `${d} done, ${o} overdue, ${this.openTasks} open`;
     },
     mrrDisplay() {
       return this.formatMoney(this.kpis.mrr.value);
@@ -239,69 +206,45 @@ export default {
   font-weight: 700;
 }
 
-.projects-kpi__bar {
-  display: flex;
-  height: 8px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-subtle);
-  overflow: hidden;
-}
-
-.projects-kpi__seg {
-  height: 100%;
-  min-width: 2px;
-  transition: flex-grow 0.3s ease;
-}
-
-.projects-kpi__seg--done {
-  background: var(--color-success);
-}
-
-.projects-kpi__seg--overdue {
-  background: var(--color-danger);
-}
-
-.projects-kpi__seg--open {
-  background: var(--accent);
-}
-
-.projects-kpi__legend {
+/* Status chips: chrome (tint + text) comes from the theme's .iz-badge--*
+   primitive. The chip is a bare drill-down button that never changes on
+   hover/focus/active — the badge is the whole visual — so clicking one leaves
+   it looking exactly as it did. Only a keyboard focus ring remains, for a11y
+   (mouse clicks don't trigger :focus-visible). Selectors are qualified on
+   `button` to beat NC core's bare-element button styling. */
+.projects-kpi__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 12px;
-  font-size: var(--iz-fs-xs);
-  color: var(--color-text-secondary, var(--color-text-secondary));
+  gap: 6px;
+}
+
+button.projects-kpi__chip {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  border-radius: var(--iz-radius-pill);
+  cursor: pointer;
+  font: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+button.projects-kpi__chip:hover,
+button.projects-kpi__chip:focus,
+button.projects-kpi__chip:active {
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+button.projects-kpi__chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.projects-kpi__chip .iz-badge {
   font-variant-numeric: tabular-nums;
-}
-
-.projects-kpi__legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.projects-kpi__legend-item strong {
-  color: var(--color-text-primary, var(--color-text-primary));
-  font-weight: 700;
-}
-
-.projects-kpi__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-}
-
-.projects-kpi__dot--done {
-  background: var(--color-success);
-}
-
-.projects-kpi__dot--overdue {
-  background: var(--color-danger);
-}
-
-.projects-kpi__dot--open {
-  background: var(--accent);
 }
 
 @media (max-width: 1200px) {
