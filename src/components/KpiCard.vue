@@ -2,6 +2,10 @@
   <div class="kpi-card">
     <div class="kpi-card__header">
       <div class="kpi-card__icon" :style="{ backgroundColor: iconBgColor }">
+        <!-- Callers with an icon outside this component's fixed set (e.g. the
+             alert cards) pass their own glyph; everything else keeps the
+             title-keyed default below. -->
+        <slot name="icon">
         <svg
           v-if="title === 'Projects'"
           class="kpi-card__icon-svg"
@@ -109,6 +113,7 @@
           />
           <polyline points="22,6 12,13 2,6" />
         </svg>
+        </slot>
       </div>
       <span class="kpi-card__title">{{ title }}</span>
     </div>

@@ -64,7 +64,7 @@
             class="kpi-link"
             @click="$emit('drill-down', { sortBy: 'projectsDesc' })"
           >
-            <span class="projects-kpi__hero-value">{{ kpis.projects.total }}</span>
+            <span class="projects-kpi__hero-value iz-figure">{{ kpis.projects.total }}</span>
             <span class="projects-kpi__hero-label">projects</span>
           </button>
           <span class="projects-kpi__hero-sep">·</span>
@@ -73,7 +73,7 @@
             class="kpi-link projects-kpi__hero-tasks"
             @click="$emit('drill-down', { sortBy: 'tasksDesc' })"
           >
-            <strong>{{ kpis.tasks.total }}</strong> tasks
+            <strong class="iz-figure">{{ kpis.tasks.total }}</strong> tasks
           </button>
         </div>
 

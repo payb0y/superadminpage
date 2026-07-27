@@ -1,134 +1,131 @@
 <template>
-  <section class="alerts-panel iz-panel">
-    <header class="alerts-panel__header iz-panel__header">
-      <h3 class="alerts-panel__title iz-section-title">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-          <line x1="12" y1="9" x2="12" y2="13" />
-          <line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
-        Platform Alerts
-      </h3>
-      <span class="alerts-panel__summary">
-        {{ totalIssues }} {{ totalIssues === 1 ? "issue" : "issues" }}
-      </span>
-    </header>
-
+  <section class="alerts-panel">
     <div class="iz-stat-grid">
-      <div
+      <KpiCard
         v-for="(alert, key) in alerts"
         :key="key"
-        class="alerts-panel__card"
-        :class="'alerts-panel__card--' + alert.tone"
+        :title="alert.label"
+        :icon-color="toneColor(alert.tone)"
       >
-        <div class="alerts-panel__card-value">{{ alert.count }}</div>
-        <div class="alerts-panel__card-label">{{ alert.label }}</div>
-      </div>
+        <template #icon>
+          <svg
+            class="alerts-panel__icon"
+            :style="{ color: toneColor(alert.tone) }"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <template v-if="key === 'failedBackups7d'">
+              <line x1="22" y1="12" x2="2" y2="12" />
+              <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+            </template>
+            <template v-else-if="key === 'stuckAhoJobs'">
+              <polyline points="17 1 21 5 17 9" />
+              <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+              <polyline points="7 23 3 19 7 15" />
+              <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+            </template>
+            <template v-else-if="key === 'staleProjects30d'">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </template>
+            <template v-else-if="key === 'orgsNoSub'">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+              <line x1="1" y1="10" x2="23" y2="10" />
+            </template>
+            <template v-else>
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </template>
+          </svg>
+        </template>
+
+        <div class="alerts-panel__metrics">
+          <div class="alerts-panel__metric">
+            <span class="alerts-panel__metric-value">{{ alert.count }}</span>
+            <span class="alerts-panel__metric-label">{{ alert.tone === "success" ? "all clear" : "to review" }}</span>
+          </div>
+        </div>
+      </KpiCard>
     </div>
   </section>
 </template>
 
 <script>
+import KpiCard from "./KpiCard.vue";
+
+// Explicit tone → colour table. Mapping through a table (rather than building
+// a var name from `alert.tone`) keeps an unexpected tone falling back to the
+// accent instead of resolving to nothing.
+const TONE_COLORS = {
+  success: "var(--color-success)",
+  warning: "var(--color-warning-text)",
+  danger: "var(--color-danger)",
+};
+
 export default {
   name: "AlertsPanel",
+  components: { KpiCard },
   props: {
     alerts: {
       type: Object,
       required: true,
     },
   },
-  computed: {
-    totalIssues() {
-      let total = 0;
-      for (const key in this.alerts) {
-        const a = this.alerts[key];
-        if (a.tone !== "success" && a.count > 0) total += a.count;
-      }
-      return total;
+  methods: {
+    toneColor(tone) {
+      return TONE_COLORS[tone] || "var(--accent)";
     },
   },
 };
 </script>
 
 <style scoped>
-
-.alerts-panel__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--spacing-md, 16px);
+/* The cards themselves are KpiCard — same surface, padding, header and hover
+   lift as the Organization KPI strip, so the two read as one system. Only the
+   slotted icon and value need sizing here, since slot content is compiled in
+   this component's scope and so cannot pick up KpiCard's scoped rules. */
+.alerts-panel__icon {
+  width: 18px;
+  height: 18px;
 }
 
-.alerts-panel__title {
-  font-size: var(--iz-fs-md);
-  font-weight: 600;
-  color: var(--color-text-secondary, var(--color-text-secondary));
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.alerts-panel__title svg {
-  color: var(--color-warning-text);
-}
-
-.alerts-panel__summary {
-  font-size: var(--iz-fs-sm);
-  font-weight: 600;
-  color: var(--color-text-muted, var(--color-text-muted));
-}
-
-.alerts-panel__card {
-  border-radius: var(--radius-lg);
-  padding: 14px 16px;
-  border: 1px solid transparent;
+/* Alert labels are sentences, so some wrap to two lines. Make the card a
+   column and push the value to the bottom, otherwise the numbers sit at
+   different heights across the row. (A child component's root element carries
+   the parent's scope id, so this reaches KpiCard's root.) */
+.kpi-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
-.alerts-panel__card--success {
-  background: var(--color-badge-success-bg, var(--color-success-bg));
-  border-color: var(--color-success-bg);
-  color: var(--color-badge-success-text, var(--color-success-text));
+.alerts-panel__metrics {
+  display: flex;
+  margin-top: auto;
 }
 
-.alerts-panel__card--warning {
-  background: var(--color-badge-warning-bg, var(--color-warning-bg));
-  border-color: var(--color-warning-bg);
-  color: var(--color-badge-warning-text, var(--color-warning-text));
+.alerts-panel__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.alerts-panel__card--danger {
-  background: var(--color-badge-danger-bg, var(--color-danger-bg));
-  border-color: var(--color-danger-bg);
-  color: var(--color-badge-danger-text, var(--color-danger-text));
-}
-
-.alerts-panel__card-value {
-  font-size: var(--iz-fs-2xl);
+.alerts-panel__metric-value {
+  font-size: var(--iz-fs-xl);
   font-weight: 700;
+  color: var(--color-text-primary, var(--color-text-primary));
   line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
-.alerts-panel__card-label {
+.alerts-panel__metric-label {
   font-size: var(--iz-fs-xs);
-  font-weight: 500;
-  opacity: 0.9;
+  color: var(--color-text-muted, var(--color-text-muted));
+  line-height: 1.3;
 }
-
-
 </style>
