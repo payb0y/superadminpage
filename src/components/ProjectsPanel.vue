@@ -44,7 +44,7 @@
         </div>
 
         <div class="projects-panel__progress">
-          <div class="iz-meter">
+          <div class="iz-meter iz-meter--grow">
             <div
               class="iz-meter__fill"
               :class="fillClass(project)"
