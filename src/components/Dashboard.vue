@@ -15,13 +15,6 @@
     </div>
 
     <template v-else>
-      <header class="superadmin-dashboard__page-header">
-        <h1 class="superadmin-dashboard__page-title">Super Admin</h1>
-        <p class="superadmin-dashboard__page-sub">
-          Platform-wide overview across all organizations
-        </p>
-      </header>
-
       <div class="iz-tabs iz-tabs--display superadmin-dashboard__tabs" role="tablist">
         <button
           type="button"
@@ -336,27 +329,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
-}
-
-.superadmin-dashboard__page-header {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.superadmin-dashboard__page-title {
-  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  font-size: var(--iz-fs-2xl);
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0;
-  line-height: 1.2;
-}
-
-.superadmin-dashboard__page-sub {
-  font-size: var(--iz-fs-md);
-  color: var(--color-text-secondary);
-  margin: 0;
 }
 
 .superadmin-dashboard__loading,
