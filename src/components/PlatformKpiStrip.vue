@@ -245,6 +245,14 @@ button.projects-kpi__chip:focus-visible {
 
 .projects-kpi__chip .iz-badge {
   font-variant-numeric: tabular-nums;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+/* Hover feedback lives on the badge and only while the pointer is over it, so
+   it clears the moment you leave — nothing persists after a click. */
+button.projects-kpi__chip:hover .iz-badge {
+  transform: translateY(-1px);
+  filter: brightness(0.96);
 }
 
 @media (max-width: 1200px) {
