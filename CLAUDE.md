@@ -73,7 +73,7 @@ Nextcloud appends `themes/<active>/core/css/server.css` on every page **with a
 `?v=` cache-buster**. This app's webpack bundle gets no such buster. So a styling
 fix shipped in the theme reaches users with `git pull` + deploy — no rebuild, no
 stale-bundle debugging — and the same fix lands in `adminpage` and
-`employee-dashboard` at the same time.
+`employee_dashboard` at the same time.
 
 ### The rule
 
@@ -173,7 +173,7 @@ If you change a service's return shape in PHP, update the corresponding Vue comp
 ## Sibling Apps
 
 - `../adminpage` — single-org analytics dashboard (architectural reference).
-- `../employee-dashboard` — per-employee task view; same DB.
+- `../employee_dashboard` — per-employee task view; same DB.
 
 Both are **still on the old blue styling** — this app is the only one migrated to
 the In Zicht theme so far. They are the intended next consumers of the `.iz-*`
