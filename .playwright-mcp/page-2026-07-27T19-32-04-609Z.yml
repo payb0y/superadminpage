@@ -1,0 +1,185 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]:
+      - /url: "#app-content"
+    - link "Skip to navigation of app" [ref=e4] [cursor=pointer]:
+      - /url: "#app-navigation"
+  - banner [ref=e5]:
+    - link "Go to Dashboard" [ref=e7] [cursor=pointer]:
+      - /url: /index.php
+    - generic [ref=e9]:
+      - button "Unified search" [ref=e12] [cursor=pointer]
+      - button "Search contacts" [ref=e19] [cursor=pointer]
+      - navigation [ref=e25]:
+        - button "Settings menu" [ref=e26] [cursor=pointer]
+        - generic [ref=e33]: Avatar of admin — Online
+  - generic [ref=e34]:
+    - heading "Nextcloud" [level=1] [ref=e35]
+    - generic [ref=e37]:
+      - banner [ref=e38]:
+        - heading "Super Admin" [level=1] [ref=e39]
+        - paragraph [ref=e40]: Platform-wide overview across all organizations
+      - tablist [ref=e41]:
+        - tab "System Health" [ref=e42] [cursor=pointer]
+        - tab "Organizations" [active] [selected] [ref=e43] [cursor=pointer]
+      - generic [ref=e199]:
+        - generic [ref=e200]:
+          - generic [ref=e201]: Organizations
+          - generic [ref=e207]:
+            - button "2 total" [ref=e208] [cursor=pointer]:
+              - generic [ref=e209]: "2"
+              - generic [ref=e210]: total
+            - button "1 active" [ref=e211] [cursor=pointer]:
+              - generic [ref=e212]: "1"
+              - generic [ref=e213]: active
+            - button "0 paused" [ref=e214] [cursor=pointer]:
+              - generic [ref=e215]: "0"
+              - generic [ref=e216]: paused
+        - generic [ref=e217]:
+          - generic [ref=e218]: Human Resources
+          - generic [ref=e224]:
+            - button "2 admins" [ref=e225] [cursor=pointer]:
+              - generic [ref=e226]: "2"
+              - generic [ref=e227]: admins
+            - button "3 members" [ref=e228] [cursor=pointer]:
+              - generic [ref=e229]: "3"
+              - generic [ref=e230]: members
+            - button "3 projects" [ref=e231] [cursor=pointer]:
+              - generic [ref=e232]: "3"
+              - generic [ref=e233]: projects
+        - generic [ref=e234]:
+          - generic [ref=e235]: Projects
+          - generic [ref=e240]:
+            - generic [ref=e241]:
+              - button "3 projects" [ref=e242] [cursor=pointer]
+              - generic [ref=e243]: ·
+              - button [ref=e244] [cursor=pointer]:
+                - strong [ref=e245]: "33"
+                - text: tasks
+            - img "0 done, 0 overdue, 33 open" [ref=e246]:
+              - generic "33 open" [ref=e247]
+            - generic [ref=e248]:
+              - button [ref=e249] [cursor=pointer]:
+                - strong [ref=e251]: "0"
+                - text: done
+              - button [ref=e252] [cursor=pointer]:
+                - strong [ref=e254]: "0"
+                - text: overdue
+              - button [ref=e255] [cursor=pointer]:
+                - strong [ref=e257]: "33"
+                - text: open
+        - generic [ref=e258]:
+          - generic [ref=e259]: Financial
+          - generic [ref=e264]:
+            - generic [ref=e265]:
+              - generic [ref=e266]: €0
+              - generic [ref=e267]: MRR
+            - generic [ref=e268]:
+              - generic [ref=e269]: €0
+              - generic [ref=e270]: ARR
+            - generic [ref=e271]:
+              - generic [ref=e272]: "1"
+              - generic [ref=e273]: paying
+      - generic [ref=e274]:
+        - generic [ref=e275]:
+          - heading "Organizations 2" [level=2] [ref=e276]:
+            - text: Organizations
+            - generic [ref=e277]: "2"
+          - generic [ref=e278]:
+            - button "+ Create organization" [ref=e279] [cursor=pointer]
+            - generic [ref=e280]:
+              - generic [ref=e281] [cursor=pointer]: Sort
+              - combobox "Sort" [ref=e282] [cursor=pointer]:
+                - 'option "Plan: high → low" [selected]'
+                - 'option "Plan: low → high"'
+                - option "Members ↓"
+                - option "Projects ↓"
+                - option "Tasks total ↓"
+                - option "Tasks done ↓"
+                - option "Tasks overdue ↓"
+                - option "Tasks open ↓"
+            - group "Organization view mode" [ref=e283]:
+              - button "Grid" [ref=e284] [cursor=pointer]
+              - button "Table" [pressed] [ref=e290] [cursor=pointer]
+        - generic [ref=e292]:
+          - textbox "Search organizations…" [ref=e293] [cursor=pointer]
+          - generic [ref=e294]:
+            - generic [ref=e295] [cursor=pointer]: All
+            - generic [ref=e296] [cursor=pointer]: Active
+            - generic [ref=e297] [cursor=pointer]: Paused
+            - generic [ref=e298] [cursor=pointer]: Cancelled
+            - generic [ref=e299] [cursor=pointer]: No plan
+        - table [ref=e300]:
+          - row [ref=e301]:
+            - columnheader "Expand"
+            - columnheader "Name" [ref=e302]
+            - columnheader "Status" [ref=e303]
+            - columnheader "Plan" [ref=e304]
+            - columnheader "Members" [ref=e305]
+            - columnheader "Projects" [ref=e306]
+            - columnheader "Tasks" [ref=e307]
+            - columnheader "Done" [ref=e308]
+            - columnheader "Overdue" [ref=e309]
+            - columnheader "Open" [ref=e310]
+            - columnheader "Storage" [ref=e311]
+          - row [ref=e312]:
+            - generic [ref=e313] [cursor=pointer]:
+              - cell [ref=e314]:
+                - button "Toggle organization details" [ref=e315]
+              - cell "T Test" [ref=e317]:
+                - generic [ref=e318]: T
+                - generic [ref=e319]: Test
+              - cell [ref=e320]
+              - cell "Custom Plan for Org 1" [ref=e323]
+              - cell "3" [ref=e325]
+              - cell "3" [ref=e327]
+              - cell "33" [ref=e329]
+              - cell "0" [ref=e331]
+              - cell "0" [ref=e333]
+              - cell "33" [ref=e335]
+              - cell "—" [ref=e337]
+          - row [ref=e338]:
+            - generic [ref=e339] [cursor=pointer]:
+              - cell [ref=e340]:
+                - button "Toggle organization details" [ref=e341]
+              - cell "T testorg" [ref=e343]:
+                - generic [ref=e344]: T
+                - generic [ref=e345]: testorg
+              - cell [ref=e346]
+              - cell "No plan" [ref=e349]
+              - cell "2" [ref=e351]
+              - cell "0" [ref=e353]
+              - cell "0" [ref=e355]
+              - cell "0" [ref=e357]
+              - cell "0" [ref=e359]
+              - cell "0" [ref=e361]
+              - cell "—" [ref=e363]
+        - generic [ref=e364]:
+          - generic [ref=e365]:
+            - text: Showing
+            - strong [ref=e366]: "1"
+            - text: –
+            - strong [ref=e367]: "2"
+            - text: of
+            - strong [ref=e368]: "2"
+          - generic [ref=e369]:
+            - generic [ref=e370] [cursor=pointer]: Per page
+            - combobox "Per page" [ref=e371] [cursor=pointer]:
+              - option "10"
+              - option "20" [selected]
+              - option "50"
+              - option "100"
+  - navigation "Custom application sidebar" [ref=e90]:
+    - button "Toggle sidebar" [ref=e92] [cursor=pointer]
+    - generic [ref=e95]:
+      - generic [ref=e96]:
+        - link "Dashboard" [ref=e97] [cursor=pointer]:
+          - /url: /index.php/apps/dashboard/
+        - link "Admin Page" [ref=e101] [cursor=pointer]:
+          - /url: /index.php/apps/adminpage/
+        - link "Super Admin" [ref=e105] [cursor=pointer]:
+          - /url: /index.php/apps/superadminpage/
+      - link "Projects" [ref=e110] [cursor=pointer]:
+        - /url: /index.php/apps/projectcreatoraio/
+      - link "Files" [ref=e115] [cursor=pointer]:
+        - /url: /index.php/apps/files/
