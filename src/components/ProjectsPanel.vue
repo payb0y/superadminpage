@@ -420,6 +420,16 @@
         </section>
       </div>
     </div>
+
+    <ConfirmDialog
+      v-if="notice"
+      title="Couldn't save"
+      :message="notice"
+      confirm-label="OK"
+      alert-only
+      @confirm="notice = null"
+      @cancel="notice = null"
+    />
   </section>
 </template>
 
@@ -430,8 +440,11 @@ import TimelineChart from "./TimelineChart.vue";
 import ProjectTaskBrowser from "./ProjectTaskBrowser.vue";
 import ProjectMap from "./ProjectMap.vue";
 
+import ConfirmDialog from "./ConfirmDialog.vue";
+
 export default {
   name: "ProjectsPanel",
+  components: { ConfirmDialog },
   components: { TimelineChart, ProjectTaskBrowser, ProjectMap },
   emits: ["reload"],
   props: {
@@ -446,6 +459,8 @@ export default {
   },
   data() {
     return {
+      // Message for the shared notice dialog; null when closed.
+      notice: null,
       searchQuery: "",
       expandedIds: [],
       tasksByProject: {},
@@ -739,14 +754,12 @@ export default {
         await this.loadProjectMemberRoles(projectId);
         this.editingRoleKey = null;
       } catch (e) {
-        // Surface a transient error and leave the editor open so the admin
-        // can try again. Window.alert is intentionally simple — a richer
-        // inline error UI can come later if this hits often.
-        const msg =
+        // Surface the failure in the shared dialog and leave the editor open
+        // so the admin can try again. This used to be a window.alert, which
+        // could not be themed and looked nothing like the rest of the app.
+        this.notice =
           (e && e.response && e.response.data && e.response.data.message) ||
           "Couldn't update DRASCI role. Try again.";
-        // eslint-disable-next-line no-alert
-        window.alert(msg);
       } finally {
         this.savingRoleKey = null;
       }
