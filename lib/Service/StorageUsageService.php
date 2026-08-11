@@ -120,14 +120,11 @@ class StorageUsageService {
 
     private function getSharedUsage(int $organizationId): array {
         $sql = "
-            SELECT cp.id AS project_id, gf.folder_id, fc.size
+            SELECT cp.id AS project_id, cp.folder_id, fc.size
             FROM *PREFIX*custom_projects cp
-            LEFT JOIN *PREFIX*group_folders gf ON gf.folder_id = cp.group_folder_id
-            LEFT JOIN *PREFIX*filecache fc
-                   ON fc.fileid = gf.root_id
-                  AND fc.storage = gf.storage_id
+            LEFT JOIN *PREFIX*filecache fc ON fc.fileid = cp.folder_id
             WHERE cp.organization_id = ?
-              AND cp.group_folder_id IS NOT NULL
+              AND cp.folder_id IS NOT NULL
         ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$organizationId]);
