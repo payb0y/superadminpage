@@ -5,6 +5,7 @@
   >
     <header v-if="!embedded" class="activity-feed__header iz-panel__header">
       <h3 class="activity-feed__title iz-section-title">Activity</h3>
+
     </header>
 
     <div class="activity-feed__layout">
