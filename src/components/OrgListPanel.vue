@@ -26,6 +26,7 @@
             <option value="doneDesc">Tasks done ↓</option>
             <option value="overdueDesc">Tasks overdue ↓</option>
             <option value="openDesc">Tasks open ↓</option>
+            <option value="storageDesc">Storage used ↓</option>
           </select>
         </div>
         <div
@@ -217,7 +218,10 @@
             class="org-list__cell org-list__cell--num org-list__cell--storage"
             role="cell"
           >
-            {{ storageDisplay(org) }}
+            <div class="org-list__storage-value">{{ storageDisplay(org) }}</div>
+            <div class="org-list__storage-meter iz-meter iz-meter--thin">
+              <div class="iz-meter__fill" :style="{ width: storageMeterWidth(org) + '%' }"></div>
+            </div>
           </div>
           <div class="org-list__cell org-list__cell--expand" role="cell">
             <svg
@@ -484,6 +488,7 @@ export default {
         case "doneDesc":     return byDesc("doneTasks");
         case "overdueDesc":  return byDesc("overdueTasks");
         case "openDesc":     return arr.sort((a, b) => (openOf(b) - openOf(a)) || tieBreak(a, b));
+        case "storageDesc":  return arr.sort((a, b) => (this.storageUsed(b) - this.storageUsed(a)) || tieBreak(a, b));
         case "planAsc":
         case "planDesc": {
           const dir = sb === "planAsc" ? 1 : -1;
@@ -506,6 +511,7 @@ export default {
         case "doneDesc":     return "done";
         case "overdueDesc":  return "overdue";
         case "openDesc":     return "open";
+        case "storageDesc":  return "storage";
         default:             return null;
       }
     },
@@ -649,8 +655,20 @@ export default {
       return s.charAt(0).toUpperCase() + s.slice(1);
     },
     storageDisplay(org) {
-      const bytes = org.storageBytes || 0;
-      if (bytes <= 0) return "—";
+      const storage = org.storage || {};
+      const used = this.formatBytes(storage.usedBytes);
+      if (storage.capacityBytes == null) return used;
+      return used + " / " + this.formatBytes(storage.capacityBytes);
+    },
+    storageUsed(org) {
+      return Number(org.storage && org.storage.usedBytes) || 0;
+    },
+    storageMeterWidth(org) {
+      return Math.min(100, Math.max(0, Number(org.storage && org.storage.percentage) || 0));
+    },
+    formatBytes(value) {
+      const bytes = Number(value) || 0;
+      if (bytes <= 0) return "0 B";
       if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + " KB";
       if (bytes < 1024 * 1024 * 1024)
         return Math.round(bytes / (1024 * 1024)) + " MB";
@@ -912,6 +930,17 @@ export default {
 .org-list__metric {
   display: inline-block;
   font-variant-numeric: tabular-nums;
+}
+
+.org-list__storage-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--iz-fs-xs);
+}
+
+.org-list__storage-meter {
+  margin-top: 4px;
 }
 
 .org-list__cell--expand {

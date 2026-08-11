@@ -78,6 +78,13 @@
             ]"
           />
           <KpiCard
+            title="Storage"
+            :metrics="[
+              { value: storageUsedDisplay, label: 'used' },
+              { value: storageCapacityDisplay, label: 'allocated' },
+            ]"
+          />
+          <KpiCard
             title="Financial"
             :metrics="[
               { value: planPriceDisplay, label: 'plan price' },
@@ -256,6 +263,15 @@ export default {
       const price = Number(this.org.subscription.price) || 0;
       return this.formatMoney(price * 12, this.org.subscription.currency);
     },
+    storage() {
+      return (this.org.usageSummary && this.org.usageSummary.storage) || {};
+    },
+    storageUsedDisplay() {
+      return this.formatBytes(this.storage.usedBytes);
+    },
+    storageCapacityDisplay() {
+      return this.formatBytes(this.storage.capacityBytes);
+    },
   },
   methods: {
     formatDate(d) {
@@ -276,6 +292,15 @@ export default {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
+    },
+    formatBytes(value) {
+      if (value == null) return "—";
+      const bytes = Number(value) || 0;
+      if (bytes <= 0) return "0 B";
+      const units = ["B", "KB", "MB", "GB", "TB"];
+      const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+      const scaled = bytes / Math.pow(1024, index);
+      return scaled.toFixed(index >= 3 && scaled < 10 ? 1 : 0) + " " + units[index];
     },
   },
 };

@@ -102,13 +102,30 @@
       <div class="sub-panel__row sub-panel__row--two">
         <div class="sub-panel__card">
           <div class="sub-panel__label">STORAGE</div>
-          <div class="sub-panel__kv-line">
-            <span>Shared per project</span>
-            <span class="sub-panel__kv-strong">{{ sub.sharedStorageGb }} GB</span>
+          <div class="sub-panel__storage-total">
+            <div class="sub-panel__limit-row">
+              <span class="sub-panel__limit-num">{{ formatBytes(storage.usedBytes) }}</span>
+              <span class="sub-panel__limit-of">of {{ formatBytes(storage.capacityBytes) }}</span>
+            </div>
+            <span>{{ storagePercentageDisplay }}</span>
           </div>
-          <div class="sub-panel__kv-line">
-            <span>Private per user</span>
-            <span class="sub-panel__kv-strong">{{ sub.privateStorageGb }} GB</span>
+          <div class="iz-meter iz-meter--thin">
+            <div class="iz-meter__fill" :style="{ width: storageMeterWidth + '%' }"></div>
+          </div>
+          <div class="sub-panel__storage-breakdown">
+            <div class="sub-panel__kv-line">
+              <span>Private · {{ privateStorage.memberCount || 0 }} members</span>
+              <span class="sub-panel__kv-strong">{{ storagePartDisplay(privateStorage) }}</span>
+            </div>
+            <div class="sub-panel__kv-line">
+              <span>Shared · {{ sharedStorage.projectCount || 0 }} projects</span>
+              <span class="sub-panel__kv-strong">{{ storagePartDisplay(sharedStorage) }}</span>
+            </div>
+          </div>
+          <div class="sub-panel__sub">
+            Allocation: {{ sub.privateStorageGb }} GB per user and {{ sub.sharedStorageGb }} GB per project.
+            <template v-if="storage.calculatedAt"> Calculated {{ formatDateTime(storage.calculatedAt) }}.</template>
+            <template v-if="storage.complete === false"> Some storage could not be measured.</template>
           </div>
         </div>
         <div class="sub-panel__card">
@@ -658,6 +675,21 @@ export default {
       if (max <= 0) return 0;
       return Math.min(100, Math.round((this.projectCount / max) * 100));
     },
+    storage() {
+      return (this.org.usageSummary && this.org.usageSummary.storage) || {};
+    },
+    privateStorage() {
+      return this.storage.private || {};
+    },
+    sharedStorage() {
+      return this.storage.shared || {};
+    },
+    storageMeterWidth() {
+      return Math.min(100, Math.max(0, Number(this.storage.percentage) || 0));
+    },
+    storagePercentageDisplay() {
+      return this.storage.percentage == null ? "—" : this.storage.percentage + "%";
+    },
     endsRelative() {
       if (!this.sub.endedAt) return "";
       const end = new Date(this.sub.endedAt);
@@ -777,6 +809,29 @@ export default {
       } catch (e) {
         return n.toFixed(0) + " " + cur;
       }
+    },
+    formatBytes(value) {
+      if (value == null) return "—";
+      const bytes = Number(value) || 0;
+      if (bytes <= 0) return "0 B";
+      const units = ["B", "KB", "MB", "GB", "TB"];
+      const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+      const scaled = bytes / Math.pow(1024, index);
+      return scaled.toFixed(index >= 3 && scaled < 10 ? 1 : 0) + " " + units[index];
+    },
+    storagePartDisplay(part) {
+      return this.formatBytes(part.usedBytes) + " / " + this.formatBytes(part.capacityBytes);
+    },
+    formatDateTime(input) {
+      if (!input) return "";
+      const date = new Date(input);
+      if (isNaN(date.getTime())) return "";
+      return date.toLocaleString(undefined, {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     },
     planSummary(p) {
       const price =
@@ -1229,6 +1284,20 @@ export default {
 .sub-panel__limit-of {
   font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-secondary));
+}
+
+.sub-panel__storage-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: var(--color-text-secondary);
+  font-size: var(--iz-fs-sm);
+}
+
+.sub-panel__storage-breakdown {
+  margin-top: 10px;
 }
 
 /* ── Actions / buttons ───────────────────────────────────────────────── */

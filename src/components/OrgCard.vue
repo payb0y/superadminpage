@@ -44,6 +44,16 @@
       </div>
     </div>
 
+    <div class="org-card__storage">
+      <div class="org-card__storage-line">
+        <span>{{ storageCapacityDisplay }}</span>
+        <span>{{ storagePercentageDisplay }}</span>
+      </div>
+      <div class="iz-meter iz-meter--thin">
+        <div class="iz-meter__fill" :style="{ width: storageMeterWidth + '%' }"></div>
+      </div>
+    </div>
+
     <div class="org-card__tasks">
       <span
         class="org-card__task"
@@ -121,8 +131,28 @@ export default {
       return s.charAt(0).toUpperCase() + s.slice(1);
     },
     storageDisplay() {
-      const bytes = this.org.storageBytes || 0;
-      if (bytes <= 0) return "—";
+      return this.formatBytes(this.storage.usedBytes);
+    },
+    storage() {
+      return this.org.storage || {};
+    },
+    storageCapacityDisplay() {
+      if (this.storage.capacityBytes == null) return "No plan capacity";
+      return this.formatBytes(this.storage.usedBytes) + " of " + this.formatBytes(this.storage.capacityBytes);
+    },
+    storageMeterWidth() {
+      return Math.min(100, Math.max(0, Number(this.storage.percentage) || 0));
+    },
+    storagePercentageDisplay() {
+      const suffix = this.storage.complete === false ? " · incomplete" : "";
+      if (this.storage.percentage == null) return "—" + suffix;
+      return this.storage.percentage + "%" + suffix;
+    },
+  },
+  methods: {
+    formatBytes(value) {
+      const bytes = Number(value) || 0;
+      if (bytes <= 0) return "0 B";
       if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + " KB";
       if (bytes < 1024 * 1024 * 1024)
         return Math.round(bytes / (1024 * 1024)) + " MB";
@@ -233,6 +263,20 @@ export default {
   font-size: var(--iz-fs-xs);
   color: var(--color-text-secondary, var(--color-text-secondary));
   font-variant-numeric: tabular-nums;
+}
+
+.org-card__storage {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.org-card__storage-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--color-text-muted);
+  font-size: var(--iz-fs-xs);
 }
 
 .org-card__task {

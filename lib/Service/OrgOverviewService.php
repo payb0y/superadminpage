@@ -12,7 +12,10 @@ class OrgOverviewService {
 
     private IDBConnection $db;
 
-    public function __construct(IDBConnection $db) {
+    public function __construct(
+        IDBConnection $db,
+        private StorageUsageService $storageUsageService,
+    ) {
         $this->db = $db;
     }
 
@@ -74,6 +77,7 @@ class OrgOverviewService {
 
         $rows = [];
         foreach ($stmt->fetchAll() as $r) {
+            $storage = $this->storageUsageService->getOrganizationUsage((int)$r['id']);
             $rows[] = [
                 'id'                 => (int)$r['id'],
                 'name'               => $r['name'],
@@ -84,8 +88,12 @@ class OrgOverviewService {
                 'overdueTasks'       => (int)$r['overdue_tasks'],
                 'planName'           => $r['plan_name'] ?? 'No plan',
                 'subscriptionStatus' => $r['subscription_status'] ?? 'none',
-                // TODO: storage rollup via oc_filecache + oc_group_folders (expensive, deferred)
-                'storageBytes'       => 0,
+                'storage'            => [
+                    'usedBytes' => $storage['usedBytes'],
+                    'capacityBytes' => $storage['capacityBytes'],
+                    'percentage' => $storage['percentage'],
+                    'complete' => $storage['complete'],
+                ],
             ];
         }
         return $rows;
@@ -680,6 +688,7 @@ class OrgOverviewService {
             'projectCount' => $projectCount,
             'totalTasks'   => (int)($r3['total_tasks'] ?? 0),
             'doneTasks'    => (int)($r3['done_tasks']  ?? 0),
+            'storage'      => $this->storageUsageService->getOrganizationUsage($orgId),
         ];
     }
 }
