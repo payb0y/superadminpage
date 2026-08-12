@@ -147,7 +147,7 @@ class PlatformService {
             SELECT COUNT(*) AS cnt
             FROM *PREFIX*org_backup_jobs
             WHERE status = 'failed'
-              AND created_at >= {$this->nowEpoch()} - 7 * 86400
+              AND {$this->toEpoch('created_at')} >= {$this->nowEpoch()} - 7 * 86400
         ";
         try {
             $stmt = $this->db->prepare($sql);
@@ -189,7 +189,7 @@ class PlatformService {
             FROM *PREFIX*custom_projects
             WHERE archived_at IS NULL
               AND (last_deck_move_at IS NULL
-                   OR last_deck_move_at < {$this->nowEpoch()} - ? * 86400)
+                   OR {$this->toEpoch('last_deck_move_at')} < {$this->nowEpoch()} - ? * 86400)
         ";
         try {
             $stmt = $this->db->prepare($sql);
