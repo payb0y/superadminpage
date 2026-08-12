@@ -10,6 +10,12 @@ class PlatformService {
 
     use SqlDialectTrait;
 
+    /** Tags shown per alert card before the remainder collapses to "+N more". */
+    private const OFFENDER_LIMIT = 5;
+
+    /** Idle days after which a project counts as stale. */
+    private const STALE_DAYS = 30;
+
     private IDBConnection $db;
 
     public function __construct(IDBConnection $db) {
@@ -135,10 +141,22 @@ class PlatformService {
 
     private function getAlerts(): array {
         return [
-            'failedBackups7d'  => $this->countFailedBackups7d(),
-            'stuckAhoJobs'     => $this->countStuckAhoJobs(),
-            'staleProjects30d' => $this->countStaleProjects(30),
-            'orgsNoSub'        => $this->countOrgsWithoutActiveSubscription(),
+            'failedBackups7d'  => array_merge(
+                $this->countFailedBackups7d(),
+                $this->failedBackupOffenders()
+            ),
+            'stuckAhoJobs'     => array_merge(
+                $this->countStuckAhoJobs(),
+                $this->stuckAhoOffenders()
+            ),
+            'staleProjects30d' => array_merge(
+                $this->countStaleProjects(self::STALE_DAYS),
+                $this->staleProjectOffenders(self::STALE_DAYS)
+            ),
+            'orgsNoSub'        => array_merge(
+                $this->countOrgsWithoutActiveSubscription(),
+                $this->orgsNoSubOffenders()
+            ),
         ];
     }
 
@@ -227,5 +245,101 @@ class PlatformService {
             'label' => 'Orgs without active plan',
             'tone'  => $cnt > 0 ? 'warning' : 'success',
         ];
+    }
+
+    /**
+     * Runs an offender roll-up and shapes it for the alert payload.
+     *
+     * The query must select lowercase `orgid`, `orgname` and `cnt` columns —
+     * Postgres folds unquoted identifiers to lower case while MySQL preserves
+     * them, so a camelCase alias would land under a different key per engine.
+     * One row per organization, already ordered biggest-contributor-first.
+     *
+     * Deliberately unbounded: the roll-up returns at most one row per org, so
+     * fetching all of them and slicing here yields an exact remainder from a
+     * single round-trip, where a SQL LIMIT would need a second COUNT(DISTINCT)
+     * just to learn how many rows were dropped.
+     *
+     * @param list<mixed> $params
+     * @return array{offenders: list<array{orgId:int,orgName:string,count:int}>, offendersRemaining: int}
+     */
+    private function rollUpOffenders(string $sql, array $params = []): array {
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $rows = $stmt->fetchAll();
+        } catch (\Throwable $e) {
+            // Same degradation as the count queries above: a missing table or a
+            // dialect surprise costs the tags, never the dashboard.
+            return ['offenders' => [], 'offendersRemaining' => 0];
+        }
+
+        $all = [];
+        foreach ($rows as $row) {
+            $all[] = [
+                'orgId'   => (int)$row['orgid'],
+                'orgName' => (string)$row['orgname'],
+                'count'   => (int)$row['cnt'],
+            ];
+        }
+
+        $offenders = array_slice($all, 0, self::OFFENDER_LIMIT);
+        return [
+            'offenders'          => $offenders,
+            'offendersRemaining' => max(0, count($all) - count($offenders)),
+        ];
+    }
+
+    private function failedBackupOffenders(): array {
+        return $this->rollUpOffenders("
+            SELECT j.organization_id AS orgid, o.name AS orgname, COUNT(*) AS cnt
+            FROM *PREFIX*org_backup_jobs j
+            JOIN *PREFIX*organizations o ON o.id = j.organization_id
+            WHERE j.status = 'failed'
+              AND {$this->toEpoch('j.created_at')} >= {$this->nowEpoch()} - 7 * 86400
+            GROUP BY j.organization_id, o.name
+            ORDER BY cnt DESC, o.name ASC
+        ");
+    }
+
+    private function stuckAhoOffenders(): array {
+        return $this->rollUpOffenders("
+            SELECT j.organization_id AS orgid, o.name AS orgname, COUNT(*) AS cnt
+            FROM *PREFIX*org_aho_jobs j
+            JOIN *PREFIX*organizations o ON o.id = j.organization_id
+            WHERE j.status IN ('pending', 'failed')
+            GROUP BY j.organization_id, o.name
+            ORDER BY cnt DESC, o.name ASC
+        ");
+    }
+
+    private function staleProjectOffenders(int $days): array {
+        return $this->rollUpOffenders("
+            SELECT p.organization_id AS orgid, o.name AS orgname, COUNT(*) AS cnt
+            FROM *PREFIX*custom_projects p
+            JOIN *PREFIX*organizations o ON o.id = p.organization_id
+            WHERE p.archived_at IS NULL
+              AND (p.last_deck_move_at IS NULL
+                   OR {$this->toEpoch('p.last_deck_move_at')} < {$this->nowEpoch()} - ? * 86400)
+            GROUP BY p.organization_id, o.name
+            ORDER BY cnt DESC, o.name ASC
+        ", [$days]);
+    }
+
+    /**
+     * The degenerate case: the organizations *are* the offenders, one each, so
+     * there is nothing to group and every count is 1.
+     */
+    private function orgsNoSubOffenders(): array {
+        return $this->rollUpOffenders("
+            SELECT o.id AS orgid, o.name AS orgname, 1 AS cnt
+            FROM *PREFIX*organizations o
+            LEFT JOIN *PREFIX*subscriptions s
+                   ON s.organization_id = o.id
+                  AND s.status = 'active'
+                  AND (s.ended_at IS NULL OR s.ended_at > NOW())
+            WHERE s.id IS NULL
+            ORDER BY o.name ASC
+        ");
     }
 }
