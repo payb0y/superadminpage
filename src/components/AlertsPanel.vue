@@ -58,7 +58,7 @@
             :key="offender.orgId"
             type="button"
             class="alerts-panel__tag"
-            :aria-label="tagLabel(key, offender) + ' — open this organization'"
+            :aria-label="tagAria(alert, key, offender)"
             @click="$emit('drill-down', { orgId: offender.orgId, tab: tabFor(key) })"
           >
             <span class="iz-badge" :class="badgeTone(alert.tone)">
@@ -134,6 +134,17 @@ export default {
       return key === "orgsNoSub"
         ? offender.orgName
         : offender.orgName + " ×" + offender.count;
+    },
+    // The same organization can appear on several cards at once, so the visible
+    // label alone ("Test ×3") is not a unique accessible name — two buttons
+    // would announce identically while going to different tabs. Leading with
+    // the alert says which one you are on, and the count is spelled out because
+    // "×" is read inconsistently across screen readers.
+    tagAria(alert, key, offender) {
+      const who = key === "orgsNoSub"
+        ? offender.orgName
+        : offender.orgName + ", " + offender.count;
+      return alert.label + ": " + who + " — open this organization";
     },
   },
 };
