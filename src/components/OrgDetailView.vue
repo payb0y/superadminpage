@@ -190,6 +190,23 @@ import ActivityFeed from "./ActivityFeed.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 import HandoverPanel from "./HandoverPanel.vue";
 
+// The seven keys the `tabs` computed renders. A tab key outside this set would
+// leave every v-else-if in the body false and render an empty panel, so unknown
+// values fall back to the overview.
+const TAB_KEYS = [
+  "overview",
+  "members",
+  "projects",
+  "subscription",
+  "handover",
+  "backups",
+  "activity",
+];
+
+function safeTab(key) {
+  return TAB_KEYS.indexOf(key) === -1 ? "overview" : key;
+}
+
 export default {
   name: "OrgDetailView",
   components: { KpiCard, MembersPanel, ProjectsPanel, BackupsPanel, ActivityFeed, SubscriptionPanel, HandoverPanel },
@@ -202,11 +219,23 @@ export default {
       type: Boolean,
       default: false,
     },
+    initialTab: {
+      type: String,
+      default: null,
+    },
   },
   data() {
     return {
-      activeTab: "overview",
+      activeTab: safeTab(this.initialTab),
     };
+  },
+  watch: {
+    // A second alert tag can target an org whose row is already expanded. That
+    // row deliberately stays mounted (see OrgListPanel.loadDetail), so data()
+    // does not run again — this watcher is what moves the tab.
+    initialTab(v) {
+      if (v) this.activeTab = safeTab(v);
+    },
   },
   computed: {
     tabs() {
