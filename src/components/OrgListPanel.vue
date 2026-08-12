@@ -596,8 +596,14 @@ export default {
         if (!org) return;
 
         // A specific org was asked for, so nothing may hide it: filteredOrgs
-        // narrows on the status chips AND the search box, and a row that
-        // survives neither can't be paged to or expanded.
+        // narrows on the status chips AND the search box, and a row excluded by
+        // either can't be paged to or expanded — revealOrgInTable's findIndex
+        // returns -1 and the call silently does nothing.
+        //
+        // Both are already at their defaults on the path the alert tags use,
+        // because Dashboard's v-if remounts this panel on every main-tab switch
+        // and the tags live on the other tab. Kept anyway: it is what makes the
+        // method correct for any caller reaching it while the panel is mounted.
         this.statusFilter = "all";
         this.searchQuery = "";
 

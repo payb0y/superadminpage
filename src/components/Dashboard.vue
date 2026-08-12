@@ -39,7 +39,11 @@
       </div>
 
       <template v-if="activeTab === 'health'">
-        <AlertsPanel v-if="platform" :alerts="platform.alerts" />
+        <AlertsPanel
+          v-if="platform"
+          :alerts="platform.alerts"
+          @drill-down="onDrillDown"
+        />
         <SystemHealthPanel />
       </template>
 

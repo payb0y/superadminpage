@@ -51,6 +51,25 @@
             <span class="alerts-panel__metric-label">{{ alert.tone === "success" ? "all clear" : "to review" }}</span>
           </div>
         </div>
+
+        <div v-if="offendersOf(alert).length" class="alerts-panel__tags">
+          <button
+            v-for="offender in offendersOf(alert)"
+            :key="offender.orgId"
+            type="button"
+            class="alerts-panel__tag"
+            :aria-label="tagLabel(key, offender) + ' — open this organization'"
+            @click="$emit('drill-down', { orgId: offender.orgId, tab: tabFor(key) })"
+          >
+            <span class="iz-badge" :class="badgeTone(alert.tone)">
+              {{ tagLabel(key, offender) }}
+            </span>
+          </button>
+          <span
+            v-if="remainingOf(alert)"
+            class="alerts-panel__more"
+          >+{{ remainingOf(alert) }} more</span>
+        </div>
       </KpiCard>
     </div>
   </section>
@@ -68,6 +87,22 @@ const TONE_COLORS = {
   danger: "var(--color-danger)",
 };
 
+// Badge variant per alert tone. Same reason as TONE_COLORS: a table keeps an
+// unexpected tone falling back to a real class instead of resolving to nothing.
+const TONE_BADGES = {
+  success: "iz-badge--success",
+  warning: "iz-badge--warning",
+  danger: "iz-badge--danger",
+};
+
+// Which org-detail sub-tab shows the failure each alert counts.
+const ALERT_TABS = {
+  failedBackups7d: "backups",
+  stuckAhoJobs: "handover",
+  staleProjects30d: "projects",
+  orgsNoSub: "subscription",
+};
+
 export default {
   name: "AlertsPanel",
   components: { KpiCard },
@@ -80,6 +115,25 @@ export default {
   methods: {
     toneColor(tone) {
       return TONE_COLORS[tone] || "var(--accent)";
+    },
+    badgeTone(tone) {
+      return TONE_BADGES[tone] || "iz-badge--muted";
+    },
+    tabFor(key) {
+      return ALERT_TABS[key] || "overview";
+    },
+    offendersOf(alert) {
+      return Array.isArray(alert.offenders) ? alert.offenders : [];
+    },
+    remainingOf(alert) {
+      return Number(alert.offendersRemaining) || 0;
+    },
+    // orgsNoSub counts organizations, so its offenders are always one each and
+    // a "×1" suffix would be noise.
+    tagLabel(key, offender) {
+      return key === "orgsNoSub"
+        ? offender.orgName
+        : offender.orgName + " ×" + offender.count;
     },
   },
 };
@@ -127,5 +181,70 @@ export default {
   font-size: var(--iz-fs-xs);
   color: var(--color-text-muted, var(--color-text-muted));
   line-height: 1.3;
+}
+
+/* Tag row: chrome (tint + text) comes from the theme's .iz-badge--* primitive.
+   The tag is a bare drill-down button that never changes on hover/focus/active
+   — the badge is the whole visual — so clicking one leaves it looking exactly
+   as it did. Only a keyboard focus ring remains, for a11y. Selectors are
+   qualified on `button` to beat NC core's bare-element button styling. Mirrors
+   the chip pattern in PlatformKpiStrip. */
+.alerts-panel__tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+button.alerts-panel__tag {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  border-radius: var(--iz-radius-pill);
+  cursor: pointer;
+  font: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+button.alerts-panel__tag:hover,
+button.alerts-panel__tag:focus,
+button.alerts-panel__tag:active {
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+button.alerts-panel__tag:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.alerts-panel__tag .iz-badge {
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.12s ease, filter 0.12s ease;
+  /* .iz-badge capitalizes, which is right for the status words it was built
+     for ("active", "paused") and wrong here: these badges carry an
+     organization's actual name, which has to read exactly as it was entered.
+     Without this, an org called "testorg" renders as "Testorg". */
+  text-transform: none;
+}
+
+/* Hover feedback lives on the badge and only while the pointer is over it, so
+   it clears the moment you leave — nothing persists after a click. */
+button.alerts-panel__tag:hover .iz-badge {
+  transform: translateY(-1px);
+  filter: brightness(0.96);
+}
+
+.alerts-panel__more {
+  font-size: var(--iz-fs-xs);
+  color: var(--color-text-muted);
+  padding: 3px 2px;
+  font-variant-numeric: tabular-nums;
 }
 </style>

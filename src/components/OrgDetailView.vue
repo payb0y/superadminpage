@@ -230,9 +230,13 @@ export default {
     };
   },
   watch: {
-    // A second alert tag can target an org whose row is already expanded. That
-    // row deliberately stays mounted (see OrgListPanel.loadDetail), so data()
-    // does not run again — this watcher is what moves the tab.
+    // Today every drill-down lands on a freshly mounted instance: Dashboard
+    // swaps its main tabs with v-if, so OrgListPanel and everything under it is
+    // torn down on the way to System Health and rebuilt on the way back, which
+    // means data() above does the work. This watcher covers re-pointing an
+    // instance that stays mounted — a second tag aimed at an already-expanded
+    // row — and would carry every drill-down if Dashboard ever moved to v-show
+    // or <keep-alive> to stop refetching on each tab switch.
     initialTab(v) {
       if (v) this.activeTab = safeTab(v);
     },
