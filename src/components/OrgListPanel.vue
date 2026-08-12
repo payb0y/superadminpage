@@ -274,6 +274,7 @@
             v-else-if="detailCache[org.id]"
             :org="detailCache[org.id]"
             :embedded="true"
+            :initial-tab="pendingTab[org.id] || null"
             @reload="reloadOrgDetail(org.id)"
           />
         </div>
@@ -445,6 +446,7 @@ export default {
       detailCache: {},
       detailLoading: {},
       detailError: {},
+      pendingTab: {},
       createOpen: false,
     };
   },
@@ -582,9 +584,31 @@ export default {
     },
   },
   methods: {
-    applyDrillDown({ statusFilter, sortBy } = {}) {
+    applyDrillDown({ statusFilter, sortBy, orgId, tab } = {}) {
       if (statusFilter !== undefined) this.statusFilter = statusFilter;
       if (sortBy !== undefined) this.sortBy = sortBy;
+
+      if (orgId !== undefined) {
+        const org = this.orgs.find((o) => o.id === orgId);
+        // The org can vanish between the payload being rendered and the tag
+        // being clicked (deleted in another tab). Bail rather than reveal
+        // nothing — revealOrgInTable would no-op anyway.
+        if (!org) return;
+
+        // A specific org was asked for, so nothing may hide it: filteredOrgs
+        // narrows on the status chips AND the search box, and a row that
+        // survives neither can't be paged to or expanded.
+        this.statusFilter = "all";
+        this.searchQuery = "";
+
+        if (tab) this.$set(this.pendingTab, orgId, tab);
+
+        // Sets the page itself, inside a $nextTick that runs after the filter
+        // watchers have reset it to 1 — so no currentPage assignment here.
+        this.revealOrgInTable(org);
+        return;
+      }
+
       this.currentPage = 1;
     },
     reloadOrgDetail(orgId) {
