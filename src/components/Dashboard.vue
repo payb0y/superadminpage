@@ -36,6 +36,16 @@
           :aria-selected="activeTab === 'orgs'"
           @click="setActiveTab('orgs')"
         >Organizations</button>
+        <button
+          type="button"
+          role="tab"
+          class="iz-tab"
+          :class="{
+            'iz-tab--active': activeTab === 'financials',
+          }"
+          :aria-selected="activeTab === 'financials'"
+          @click="setActiveTab('financials')"
+        >Financials</button>
       </div>
 
       <template v-if="activeTab === 'health'">
@@ -59,6 +69,10 @@
           @list-stale="refreshOrgs"
         />
       </template>
+
+      <template v-else-if="activeTab === 'financials'">
+        <FinancialsPanel @drill-down="onDrillDown" />
+      </template>
     </template>
   </div>
 </template>
@@ -70,6 +84,12 @@ import OrgListPanel from "./OrgListPanel.vue";
 import PlatformKpiStrip from "./PlatformKpiStrip.vue";
 import AlertsPanel from "./AlertsPanel.vue";
 import SystemHealthPanel from "./SystemHealthPanel.vue";
+import FinancialsPanel from "./FinancialsPanel.vue";
+
+// The tab bar's vocabulary, in one place. Both the click handler and the
+// localStorage rehydration validate against this, so adding a tab is one edit
+// rather than three that can drift apart.
+const TAB_KEYS = ["health", "orgs", "financials"];
 
 export default {
   name: "Dashboard",
@@ -78,6 +98,7 @@ export default {
     PlatformKpiStrip,
     AlertsPanel,
     SystemHealthPanel,
+    FinancialsPanel,
   },
   data() {
     return {
@@ -108,7 +129,7 @@ export default {
         const stored = window.localStorage.getItem(
           "superadminpage:activeTab",
         );
-        if (stored === "health" || stored === "orgs") {
+        if (TAB_KEYS.indexOf(stored) !== -1) {
           this.activeTab = stored;
         }
       } catch (e) {
@@ -116,13 +137,15 @@ export default {
       }
     },
     setActiveTab(tab) {
-      if (tab !== "health" && tab !== "orgs") return;
+      if (TAB_KEYS.indexOf(tab) === -1) return;
       this.activeTab = tab;
     },
     onDrillDown(payload) {
-      // Drill-down originates from the KPI strip which lives in the Orgs
-      // tab — but if a future trigger fires it while we're on Health,
-      // switch over first so the org list is mounted before we scroll.
+      // Fired from three places now: the KPI strip (already in this tab), the
+      // alert cards' offender tags on Health, and any mention of an
+      // organization on Financials. The first two only ever need the scroll;
+      // the others land here from a different tab, so switch first and let the
+      // org list mount before applying the payload.
       if (this.activeTab !== "orgs") {
         this.activeTab = "orgs";
       }

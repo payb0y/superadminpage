@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\SuperAdminPage\Controller;
 
 use OCA\SuperAdminPage\Service\ActivityService;
+use OCA\SuperAdminPage\Service\FinancialsService;
 use OCA\SuperAdminPage\Service\GeocodeService;
 use OCA\SuperAdminPage\Service\OrgOverviewService;
 use OCA\SuperAdminPage\Service\PlatformService;
@@ -28,6 +29,7 @@ class DashboardController extends Controller {
     private ActivityService $activity;
     private SystemHealthService $systemHealth;
     private GeocodeService $geocode;
+    private FinancialsService $financials;
     private LoggerInterface $logger;
 
     public function __construct(
@@ -41,6 +43,7 @@ class DashboardController extends Controller {
         ActivityService $activity,
         SystemHealthService $systemHealth,
         GeocodeService $geocode,
+        FinancialsService $financials,
         LoggerInterface $logger,
     ) {
         parent::__construct($appName, $request);
@@ -52,6 +55,7 @@ class DashboardController extends Controller {
         $this->activity = $activity;
         $this->systemHealth = $systemHealth;
         $this->geocode = $geocode;
+        $this->financials = $financials;
         $this->logger = $logger;
     }
 
@@ -142,10 +146,15 @@ class DashboardController extends Controller {
     }
 
     /**
+     * Backs the Financials tab. The route was already declared for
+     * "subscription roster + history", which is exactly this payload plus the
+     * month-by-month series derived from it, so it is implemented here rather
+     * than given a second URL of its own.
+     *
      * @NoCSRFRequired
      */
     public function listSubscriptions(): JSONResponse {
-        return $this->guard(fn () => new JSONResponse([]));
+        return $this->guard(fn () => new JSONResponse($this->financials->getFinancials()));
     }
 
     /**
