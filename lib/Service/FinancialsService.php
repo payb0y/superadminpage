@@ -36,6 +36,20 @@ class FinancialsService {
     /** Cap on audit-trail rows returned; the panel scrolls, it does not page. */
     private const MAX_EVENTS = 100;
 
+    /**
+     * Usage bands, as [key, inclusive lower bound] ordered low to high. Bands
+     * live here rather than in the component because two separate surfaces read
+     * them — the plan grid counts subscriptions into them and the roster filter
+     * selects on them — and a cell that says "4" must select exactly those four.
+     * Two copies of these thresholds would eventually disagree.
+     */
+    private const USAGE_BANDS = [
+        ['low',  0.0],
+        ['mid',  0.5],
+        ['high', 0.8],
+        ['cap',  1.0],
+    ];
+
     private IDBConnection $db;
 
     /** Plan ids referenced by history that no longer exist in oc_plans. */
@@ -96,6 +110,8 @@ class FinancialsService {
             'orgs'      => $orgs,
             'totals'    => $totals,
             'summary'   => $this->buildSummary($orgs, $mrr, $prev, $plans, $renewals),
+            'plans'     => $this->buildPlanBands($orgs, $plans),
+            'bands'     => array_column(self::USAGE_BANDS, 0),
             'renewals'  => $renewals,
             'events'    => $events,
             'dataQuality' => [
@@ -138,9 +154,9 @@ class FinancialsService {
 
     // ─── raw reads ───────────────────────────────────────────────────────
 
-    /** @return array<int, array{name: string, price: float, currency: string}> */
+    /** @return array<int, array{name: string, price: float, currency: string, maxMembers: int, maxProjects: int}> */
     private function fetchPlans(): array {
-        $sql = "SELECT id, name, price, currency FROM *PREFIX*plans";
+        $sql = "SELECT id, name, price, currency, max_members, max_projects FROM *PREFIX*plans";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
 
@@ -149,9 +165,11 @@ class FinancialsService {
             // price is NUMERIC(10,2): PDO hands it back as a *string*, and an
             // un-cast string silently poisons every sum downstream.
             $out[(int)$row['id']] = [
-                'name'     => (string)($row['name'] ?? ''),
-                'price'    => (float)($row['price'] ?? 0),
-                'currency' => (string)($row['currency'] ?? 'EUR'),
+                'name'        => (string)($row['name'] ?? ''),
+                'price'       => (float)($row['price'] ?? 0),
+                'currency'    => (string)($row['currency'] ?? 'EUR'),
+                'maxMembers'  => (int)($row['max_members'] ?? 0),
+                'maxProjects' => (int)($row['max_projects'] ?? 0),
             ];
         }
         return $out;
@@ -302,21 +320,86 @@ class FinancialsService {
             }
         }
 
+        $members  = ['used' => $sub['members'], 'cap' => $sub['maxMembers']];
+        $projects = ['used' => $sub['projects'], 'cap' => $sub['maxProjects']];
+        $usage    = $this->usageRatio($members, $projects);
+
         return [
             'id'          => $sub['orgId'],
             'name'        => $sub['orgName'],
-            'plan'        => $sub['subId'] === null ? 'No plan' : $sub['planName'],
+            'plan'        => $this->planLabelFor($sub, $plans),
+            'planId'      => $sub['subId'] === null ? null : $sub['planId'],
             'price'       => $sub['price'],
             'currency'    => $sub['currency'],
             'status'      => $sub['subId'] === null ? 'none' : $sub['status'],
             'startedAt'   => $sub['startedAt'],
             'endedAt'     => $sub['endedAt'],
             'renewIndex'  => $renewIdx,
-            'members'     => ['used' => $sub['members'], 'cap' => $sub['maxMembers']],
-            'projects'    => ['used' => $sub['projects'], 'cap' => $sub['maxProjects']],
+            'members'     => $members,
+            'projects'    => $projects,
+            'usage'       => $usage,
+            'usageBand'   => $this->usageBand($usage),
             'series'      => $series,
             'now'         => $series[$nowIdx] ?? 0.0,
+            // The recorded half of the window only. Committed months are a
+            // projection and have not been billed, so they are excluded — which
+            // also means this is bounded by the window, not lifetime value, and
+            // the column header has to say so.
+            'billed'      => round(array_sum(array_slice($series, 0, $nowIdx + 1)), 2),
         ];
+    }
+
+    /**
+     * What to call this organization's plan in the roster.
+     *
+     * There is no foreign key on `oc_subscriptions.plan_id`, so a subscription
+     * can outlive the plan row it points at. That joins to a NULL name, which
+     * printed as "No plan" — indistinguishable from an organization that never
+     * had a subscription at all, and untrue: it has one, on a plan that is gone.
+     * buildEvents() already draws this distinction for the audit trail, and the
+     * roster has to draw the same one.
+     */
+    private function planLabelFor(array $sub, array $plans): string {
+        if ($sub['subId'] === null || $sub['planId'] === null) {
+            return 'No plan';
+        }
+        if (!isset($plans[$sub['planId']])) {
+            $this->missingPlanIds[$sub['planId']] = true;
+            return 'Deleted plan';
+        }
+        return $plans[$sub['planId']]['name'];
+    }
+
+    /**
+     * How full this organization is, as a fraction of the tightest cap its plan
+     * sells — whichever limit it will hit first.
+     *
+     * A cap of zero is read as "this plan expresses no limit on that resource"
+     * and skipped, rather than as a limit of nothing that everyone is infinitely
+     * over. With neither resource capped there is no ratio to give, and null
+     * says so instead of a misleading 0.
+     */
+    private function usageRatio(array $members, array $projects): ?float {
+        $ratios = [];
+        foreach ([$members, $projects] as $usage) {
+            if (($usage['cap'] ?? 0) > 0) {
+                $ratios[] = $usage['used'] / $usage['cap'];
+            }
+        }
+        return $ratios === [] ? null : round(max($ratios), 4);
+    }
+
+    private function usageBand(?float $usage): string {
+        if ($usage === null) {
+            return 'none';
+        }
+        $band = self::USAGE_BANDS[0][0];
+        foreach (self::USAGE_BANDS as [$key, $floor]) {
+            if ($usage >= $floor) {
+                $band = $key;
+            }
+        }
+        return $band;
     }
 
     /**
@@ -461,6 +544,71 @@ class FinancialsService {
             'totalOrgs'     => count($orgs),
             'upForRenewal'  => round($upForRenewal, 2),
         ];
+    }
+
+    /**
+     * The plan catalogue with its active subscriptions counted into usage bands.
+     *
+     * Every plan appears, including ones nobody is on — a tier with no takers is
+     * itself worth seeing, and dropping it would make the grid depend on which
+     * organizations happen to exist. Only ACTIVE subscriptions are banded: a
+     * cancelled organization still has rows in the database, but its member
+     * count says nothing about whether the tier it used to be on is sized right.
+     *
+     * `measured` is how many of those active subscriptions could actually be
+     * placed in a band. It is lower than `active` when a plan caps neither
+     * members nor projects, and the panel says so rather than letting the
+     * columns quietly fail to add up to the row.
+     */
+    private function buildPlanBands(array $orgs, array $plans): array {
+        $bandKeys = array_column(self::USAGE_BANDS, 0);
+
+        $rows = [];
+        foreach ($plans as $planId => $plan) {
+            $rows[$planId] = [
+                'id'          => $planId,
+                'name'        => $plan['name'],
+                'price'       => $plan['price'],
+                'currency'    => $plan['currency'],
+                'maxMembers'  => $plan['maxMembers'],
+                'maxProjects' => $plan['maxProjects'],
+                'subs'        => 0,
+                'active'      => 0,
+                'measured'    => 0,
+                'mrr'         => 0.0,
+                'bands'       => array_fill_keys($bandKeys, 0),
+            ];
+        }
+
+        foreach ($orgs as $org) {
+            $planId = $org['planId'];
+            if ($planId === null || !isset($rows[$planId])) {
+                continue;   // no plan, or a plan deleted out from under it
+            }
+            $rows[$planId]['subs']++;
+            $rows[$planId]['mrr'] += $org['now'];
+            if ($org['status'] !== 'active') {
+                continue;
+            }
+            $rows[$planId]['active']++;
+            if (isset($rows[$planId]['bands'][$org['usageBand']])) {
+                $rows[$planId]['bands'][$org['usageBand']]++;
+                $rows[$planId]['measured']++;
+            }
+        }
+
+        $out = array_values($rows);
+        foreach ($out as &$row) {
+            $row['mrr'] = round($row['mrr'], 2);
+        }
+        unset($row);
+
+        usort($out, static function (array $a, array $b): int {
+            return ($b['mrr'] <=> $a['mrr'])
+                ?: ($b['active'] <=> $a['active'])
+                ?: strcasecmp($a['name'], $b['name']);
+        });
+        return $out;
     }
 
     private function buildRenewals(array $orgs): array {
