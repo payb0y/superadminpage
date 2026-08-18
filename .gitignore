@@ -3,5 +3,6 @@ vendor/
 *.log
 .DS_Store
 *.md
+!PLACEMENT_MODAL_IMPLEMENTATION.md
 docs/
 .superpowers/

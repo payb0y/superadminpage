@@ -99,6 +99,17 @@
       @submit="createSignatureRequest"
       @close="signatureContract = null"
     />
+
+    <ContractPlacementModal
+      v-if="placementContext"
+      :contract="placementContext.contract"
+      :request="placementContext.request"
+      :data-url="placementDataUrl(placementContext.contract, placementContext.request)"
+      :save-url="placementElementsUrl(placementContext.contract, placementContext.request)"
+      :headers="ocsHeaders"
+      @saved="placementSaved"
+      @close="placementContext = null"
+    />
   </section>
 </template>
 
@@ -107,6 +118,7 @@ import axios from "@nextcloud/axios";
 import { generateOcsUrl, generateUrl } from "@nextcloud/router";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import ContractModal from "./ContractModal.vue";
+import ContractPlacementModal from "./ContractPlacementModal.vue";
 import SignatureRequestModal from "./SignatureRequestModal.vue";
 
 const OCS_HEADERS = { "OCS-APIRequest": "true", Accept: "application/json" };
@@ -117,7 +129,7 @@ function unwrapOcs(response) {
 
 export default {
   name: "ContractsPanel",
-  components: { ConfirmDialog, ContractModal, SignatureRequestModal },
+  components: { ConfirmDialog, ContractModal, ContractPlacementModal, SignatureRequestModal },
   props: {
     orgId: { type: Number, required: true },
   },
@@ -141,6 +153,8 @@ export default {
       creatingSignature: false,
       signatureError: "",
       sendingRequestId: null,
+      placementContext: null,
+      ocsHeaders: OCS_HEADERS,
     };
   },
   mounted() {
@@ -182,19 +196,30 @@ export default {
       try {
         const response = await axios.post(this.endpoint("/" + this.signatureContract.id + "/signature-requests"), { signers: this.signatureSigners }, { params: { format: "json" }, headers: OCS_HEADERS });
         const data = unwrapOcs(response);
-        window.location.assign(data.placementUrl);
+        const contract = this.signatureContract;
+        this.signatureContract = null;
+        this.creatingSignature = false;
+        this.openPlacement(contract, data.request);
       } catch (error) {
         this.signatureError = this.apiError(error, "Could not create the signing draft.");
         this.creatingSignature = false;
       }
     },
     async resumePlacement(contract, request) {
-      try {
-        const response = await axios.get(this.endpoint("/" + contract.id + "/signature-requests/" + request.id + "/placement"), { params: { format: "json" }, headers: OCS_HEADERS });
-        window.location.assign(unwrapOcs(response).placementUrl);
-      } catch (error) {
-        this.loadError = this.apiError(error, "Could not open signature placement.");
-      }
+      this.openPlacement(contract, request);
+    },
+    openPlacement(contract, request) {
+      this.placementContext = { contract, request };
+    },
+    placementDataUrl(contract, request) {
+      return this.endpoint("/" + contract.id + "/signature-requests/" + request.id + "/placement-data");
+    },
+    placementElementsUrl(contract, request) {
+      return this.endpoint("/" + contract.id + "/signature-requests/" + request.id + "/elements");
+    },
+    async placementSaved() {
+      if (!this.placementContext) return;
+      await this.loadSignatureRequests(this.placementContext.contract.id);
     },
     async sendRequest(contract, request) {
       this.sendingRequestId = request.id;
