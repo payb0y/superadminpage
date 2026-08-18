@@ -120,11 +120,14 @@
 
 <script>
 import axios from "@nextcloud/axios";
+import { generateFilePath } from "@nextcloud/router";
 import * as pdfjs from "pdfjs-dist";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import { clamp, resizeField, serializeField } from "../lib/placementGeometry.mjs";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+const emittedWorkerUrl = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url);
+const workerFilename = emittedWorkerUrl.pathname.split("/").pop();
+pdfjs.GlobalWorkerOptions.workerSrc = generateFilePath("superadminpage", "js", workerFilename);
 
 const DEFAULT_WIDTH = 150;
 const DEFAULT_HEIGHT = 50;

@@ -61,3 +61,5 @@ top-left `left`, `top`, `width`, and `height` values in unscaled PDF units.
 - Configured a stable `superadminpage-pdf.worker.min.js` build asset so local
   build-and-push deployments do not lose a content-hashed PDF.js worker and
   production static-file rules can serve it as JavaScript.
+- Resolve the worker with Nextcloud's app webroot so installations mounted at
+  `/custom_apps` do not incorrectly request it from `/apps`.
