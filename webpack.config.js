@@ -8,7 +8,7 @@ webpackConfig.entry = {
 const defaultAssetFilename = webpackConfig.output.assetModuleFilename || "[contenthash][ext]";
 webpackConfig.output.assetModuleFilename = (pathData) => {
   if (pathData.filename && pathData.filename.endsWith("pdf.worker.min.mjs")) {
-    return "superadminpage-pdf.worker.min.mjs";
+    return "superadminpage-pdf.worker.min.js";
   }
   return typeof defaultAssetFilename === "function" ? defaultAssetFilename(pathData) : defaultAssetFilename;
 };
