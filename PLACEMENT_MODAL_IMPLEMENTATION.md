@@ -58,3 +58,5 @@ top-left `left`, `top`, `width`, and `height` values in unscaled PDF units.
   layer above Nextcloud chrome.
 - Switched PDF delivery to a same-origin relative URL and added distinct
   metadata, download, and rendering failure messages.
+- Configured a stable `superadminpage-pdf.worker.min.mjs` build asset so local
+  build-and-push deployments do not lose a content-hashed PDF.js worker.

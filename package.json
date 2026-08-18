@@ -4,7 +4,7 @@
     "description": "Cross-organization super-admin analytics dashboard for Nextcloud",
     "private": true,
     "scripts": {
-        "build": "webpack --mode production",
+        "build": "webpack --mode production && test -f js/superadminpage-pdf.worker.min.mjs",
         "dev": "webpack --mode development",
         "test": "node --test tests/*.test.mjs",
         "watch": "webpack --mode development --watch"
