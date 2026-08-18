@@ -158,6 +158,11 @@
         @reload="$emit('reload')"
       />
 
+      <ContractsPanel
+        v-else-if="activeTab === 'contracts'"
+        :org-id="org.profile.id"
+      />
+
       <HandoverPanel
         v-else-if="activeTab === 'handover'"
         :org="org"
@@ -189,8 +194,9 @@ import BackupsPanel from "./BackupsPanel.vue";
 import ActivityFeed from "./ActivityFeed.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 import HandoverPanel from "./HandoverPanel.vue";
+import ContractsPanel from "./ContractsPanel.vue";
 
-// The seven keys the `tabs` computed renders. A tab key outside this set would
+// The eight keys the `tabs` computed renders. A tab key outside this set would
 // leave every v-else-if in the body false and render an empty panel, so unknown
 // values fall back to the overview.
 const TAB_KEYS = [
@@ -198,6 +204,7 @@ const TAB_KEYS = [
   "members",
   "projects",
   "subscription",
+  "contracts",
   "handover",
   "backups",
   "activity",
@@ -209,7 +216,16 @@ function safeTab(key) {
 
 export default {
   name: "OrgDetailView",
-  components: { KpiCard, MembersPanel, ProjectsPanel, BackupsPanel, ActivityFeed, SubscriptionPanel, HandoverPanel },
+  components: {
+    KpiCard,
+    MembersPanel,
+    ProjectsPanel,
+    BackupsPanel,
+    ActivityFeed,
+    SubscriptionPanel,
+    HandoverPanel,
+    ContractsPanel,
+  },
   props: {
     org: {
       type: Object,
@@ -252,6 +268,7 @@ export default {
           count: this.org.projects.length,
         },
         { key: "subscription", label: "Subscription", count: null },
+        { key: "contracts", label: "Contracts", count: null },
         { key: "handover", label: "Handover", count: null },
         {
           key: "backups",
