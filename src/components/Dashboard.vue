@@ -171,7 +171,17 @@ export default {
         this.error = this.friendlyError(e);
       } finally {
         this.loading = false;
+        this.$nextTick(this.handleContractReturn);
       }
+    },
+    handleContractReturn() {
+      const params = new URLSearchParams(window.location.search);
+      const orgId = Number(params.get("contractsOrg"));
+      if (!orgId) return;
+      this.onDrillDown({ orgId, tab: "contracts" });
+      params.delete("contractsOrg");
+      const query = params.toString();
+      window.history.replaceState({}, "", window.location.pathname + (query ? "?" + query : ""));
     },
     retry() {
       this.error = null;
