@@ -1,5 +1,5 @@
 <template>
-  <div class="placement iz-app" role="dialog" aria-modal="true" aria-labelledby="placement-title">
+  <dialog ref="dialog" class="placement iz-app" aria-labelledby="placement-title" @cancel.prevent="requestClose">
     <header class="placement__header iz-panel">
       <div class="placement__heading">
         <button class="iz-btn iz-btn--icon" type="button" aria-label="Close signature placement" @click="requestClose">×</button>
@@ -115,7 +115,7 @@
       @confirm="$emit('close')"
       @cancel="confirmClose = false"
     />
-  </div>
+  </dialog>
 </template>
 
 <script>
@@ -174,6 +174,11 @@ export default {
     this.previousBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", this.onWindowKeydown);
+    if (typeof this.$refs.dialog.showModal === "function") {
+      this.$refs.dialog.showModal();
+    } else {
+      this.$refs.dialog.setAttribute("open", "");
+    }
     this.load();
   },
   beforeDestroy() {
@@ -187,6 +192,7 @@ export default {
         // The task may already have completed.
       }
     }
+    if (this.$refs.dialog && this.$refs.dialog.open) this.$refs.dialog.close();
     if (this.pdf) this.pdf.destroy();
   },
   methods: {
@@ -194,17 +200,40 @@ export default {
       this.loading = true;
       this.error = "";
       this.saveError = "";
+
+      let data;
       try {
         const response = await axios.get(this.dataUrl, { params: { format: "json" }, headers: this.headers });
-        const data = response.data && response.data.ocs ? response.data.ocs.data : response.data;
-        this.document = data.document;
-        this.signers = (data.signers || []).map((signer) => ({ ...signer, signRequestId: Number(signer.signRequestId) }));
-        this.fields = (data.elements || []).map((element) => this.normalizeField(element));
-        this.nextLocalId = this.fields.length + 1;
-        this.selectedSignerId = this.signers.length ? this.signers[0].signRequestId : null;
+        data = response.data && response.data.ocs ? response.data.ocs.data : response.data;
+        if (!data || !data.document || !data.document.contentUrl) throw new Error("The placement response did not include a PDF URL.");
+      } catch (error) {
+        this.failLoad("Could not load placement details.", error);
+        return;
+      }
+
+      this.document = data.document;
+      this.signers = (data.signers || []).map((signer) => ({ ...signer, signRequestId: Number(signer.signRequestId) }));
+      this.fields = (data.elements || []).map((element) => this.normalizeField(element));
+      this.nextLocalId = this.fields.length + 1;
+      this.selectedSignerId = this.signers.length ? this.signers[0].signRequestId : null;
+
+      let pdfBytes;
+      try {
         const pdfResponse = await axios.get(this.document.contentUrl, { responseType: "arraybuffer" });
+        const contentType = String(pdfResponse.headers && pdfResponse.headers["content-type"] || "").toLowerCase();
+        pdfBytes = new Uint8Array(pdfResponse.data);
+        const signature = new TextDecoder().decode(pdfBytes.slice(0, 5));
+        if (!contentType.includes("application/pdf") || signature !== "%PDF-") {
+          throw new Error("The document endpoint did not return a PDF file.");
+        }
+      } catch (error) {
+        this.failLoad("Could not download the contract PDF.", error);
+        return;
+      }
+
+      try {
         if (this.pdf) await this.pdf.destroy();
-        this.pdf = await pdfjs.getDocument({ data: new Uint8Array(pdfResponse.data) }).promise;
+        this.pdf = await pdfjs.getDocument({ data: pdfBytes }).promise;
         this.pages = [];
         for (let number = 1; number <= this.pdf.numPages; number += 1) {
           const pdfPage = await this.pdf.getPage(number);
@@ -222,9 +251,12 @@ export default {
         await this.$nextTick();
         await this.renderPages();
       } catch (error) {
-        this.loading = false;
-        this.error = this.apiError(error, "Could not load the placement editor.");
+        this.failLoad("The contract PDF could not be displayed.", error);
       }
+    },
+    failLoad(message, error) {
+      this.loading = false;
+      this.error = message + " " + this.apiError(error, error && error.message ? error.message : "Please try again.");
     },
     normalizeField(element) {
       const coordinates = element.coordinates || {};
@@ -456,10 +488,21 @@ export default {
   position: fixed;
   inset: 0;
   z-index: 10000;
+  width: 100vw;
+  max-width: none;
+  height: 100vh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
   display: flex;
   flex-direction: column;
   background: var(--image-background);
   color: var(--color-text-primary);
+}
+
+.placement::backdrop {
+  background: var(--image-background);
 }
 
 .placement__header {

@@ -54,3 +54,7 @@ top-left `left`, `top`, `width`, and `height` values in unscaled PDF units.
 - Added coordinate, bounds, resize, and serialization tests.
 - Live Nextcloud verification remains pending because the documented containers
   are not available on this machine.
+- Moved the editor into a native modal dialog so it renders in the browser top
+  layer above Nextcloud chrome.
+- Switched PDF delivery to a same-origin relative URL and added distinct
+  metadata, download, and rendering failure messages.
