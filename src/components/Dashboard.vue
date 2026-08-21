@@ -128,14 +128,17 @@ export default {
      */
     healthAlerts() {
       if (!this.platform) return {};
+      const src = this.platform.alerts || {};
       const out = {};
-      Object.keys(this.platform.alerts || {}).forEach((key) => {
-        if (key === "staleProjects30d") return;
-        out[key] = this.platform.alerts[key];
-        if (key === "stuckAhoJobs") out.servicesDegraded = this.servicesAlert;
-      });
-      // Defensive: if that key ever disappears, the card still gets in.
-      if (!out.servicesDegraded) out.servicesDegraded = this.servicesAlert;
+      // Cron leads: it is the precondition for the two cards after it, which
+      // both read zero when nothing is running rather than when nothing is
+      // wrong. staleProjects30d and orgsNoSub are deliberately absent — they
+      // measure adoption and commercial state, not whether the platform is up,
+      // and both now live on the Organizations strip where they can be acted on.
+      if (src.backgroundJobs) out.backgroundJobs = src.backgroundJobs;
+      if (src.failedBackups7d) out.failedBackups7d = src.failedBackups7d;
+      if (src.stuckAhoJobs) out.stuckAhoJobs = src.stuckAhoJobs;
+      out.servicesDegraded = this.servicesAlert;
       return out;
     },
     servicesAlert() {

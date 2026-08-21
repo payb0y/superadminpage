@@ -278,6 +278,7 @@ class PlatformService {
 
     private function getAlerts(): array {
         return [
+            'backgroundJobs'   => $this->checkBackgroundJobs(),
             'failedBackups7d'  => array_merge(
                 $this->countFailedBackups7d(),
                 $this->failedBackupOffenders()
@@ -336,6 +337,76 @@ class PlatformService {
             'label' => 'AHO jobs pending/failed',
             'tone'  => $cnt > 0 ? 'warning' : 'success',
         ];
+    }
+
+    /**
+     * How long since Nextcloud last executed any background job.
+     *
+     * This is the precondition for two of the cards beside it. Backups, account
+     * hand-offs, notifications and cleanup are all scheduled work: when cron
+     * stops they do not fail, they never start, so "failed backups" and "stuck
+     * AHO jobs" both sit at a reassuring zero while nothing is running at all.
+     *
+     * MAX(last_run) across every job is the signal, not per-job intervals: a
+     * healthy instance runs something every few minutes, and a job that is
+     * merely past its own interval is normal. last_run is an int epoch with a
+     * default of 0, so elapsed time is worked out in PHP rather than in two
+     * dialects' date arithmetic.
+     */
+    private function checkBackgroundJobs(): array {
+        $label = 'Cron last ran';
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT MAX(last_run) AS last_run, COUNT(*) AS total FROM *PREFIX*jobs"
+            );
+            $stmt->execute();
+            $row = $stmt->fetch();
+        } catch (\Throwable $e) {
+            return ['count' => '?', 'label' => $label, 'tone' => 'warning',
+                    'detail' => 'could not read the job table'];
+        }
+
+        $total = (int)($row['total'] ?? 0);
+        $lastRun = (int)($row['last_run'] ?? 0);
+
+        if ($total === 0) {
+            return ['count' => '—', 'label' => $label, 'tone' => 'success',
+                    'detail' => 'no background jobs registered'];
+        }
+        if ($lastRun <= 0) {
+            return ['count' => 'never', 'label' => $label, 'tone' => 'danger',
+                    'detail' => $total . ' jobs registered, none has ever run'];
+        }
+
+        $elapsed = max(0, time() - $lastRun);
+        if ($elapsed < 3600) {
+            $tone = 'success';
+        } elseif ($elapsed < 86400) {
+            $tone = 'warning';
+        } else {
+            $tone = 'danger';
+        }
+
+        return [
+            'count'  => $this->humaniseElapsed($elapsed),
+            'label'  => $label,
+            'tone'   => $tone,
+            'detail' => date('j M H:i', $lastRun) . ' · ' . $total . ' jobs scheduled',
+        ];
+    }
+
+    /** Compact elapsed time for a card that has room for about three glyphs. */
+    private function humaniseElapsed(int $seconds): string {
+        if ($seconds < 60) {
+            return 'now';
+        }
+        if ($seconds < 3600) {
+            return (int)floor($seconds / 60) . 'm';
+        }
+        if ($seconds < 86400) {
+            return (int)floor($seconds / 3600) . 'h';
+        }
+        return (int)floor($seconds / 86400) . 'd';
     }
 
     private function countStaleProjects(int $days): array {
