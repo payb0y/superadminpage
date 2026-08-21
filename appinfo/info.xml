@@ -5,7 +5,7 @@
     <name>Super Admin Page</name>
     <summary>Cross-organization super-admin analytics dashboard</summary>
     <description><![CDATA[A SaaS-style super-admin analytics dashboard that aggregates data across all organizations on the platform. Sibling of the adminpage app (single-org scoped).]]></description>
-    <version>0.3.12</version>
+    <version>0.3.13</version>
     <licence>agpl</licence>
     <author mail="admin@example.com">Super Admin Page Developer</author>
     <namespace>SuperAdminPage</namespace>
@@ -15,11 +15,5 @@
         <nextcloud min-version="28" max-version="34"/>
     </dependencies>
     <navigations>
-        <navigation>
-            <name>Super Admin</name>
-            <route>superadminpage.page.index</route>
-            <icon>app.svg</icon>
-            <order>11</order>
-        </navigation>
     </navigations>
 </info>
