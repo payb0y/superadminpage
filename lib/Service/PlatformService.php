@@ -9,6 +9,7 @@ use OCP\IDBConnection;
 class PlatformService {
 
     use SqlDialectTrait;
+    use OrgActivityTrait;
 
     /** Tags shown per alert card before the remainder collapses to "+N more". */
     private const OFFENDER_LIMIT = 5;
@@ -21,6 +22,13 @@ class PlatformService {
      * the threshold.
      */
     public const STALE_DAYS = 30;
+
+    /**
+     * Days without a login after which an organization counts as dormant.
+     *
+     * Public for the same reason as STALE_DAYS: the roster filters on it too.
+     */
+    public const DORMANT_DAYS = 30;
 
     private IDBConnection $db;
 
@@ -49,6 +57,7 @@ class PlatformService {
             'noAdmin'     => $this->countOrgsWithoutAdmin(),
             'noProjects'  => $this->countOrgsWithoutProjects(),
             'staleOrgs'   => $this->countOrgsWithStaleProjects(),
+            'retention'   => $this->countDormantOrgs(),
             'capacity'    => $this->countCapacityPressure(),
         ];
     }
@@ -114,6 +123,31 @@ class PlatformService {
         $stmt->execute();
         $row = $stmt->fetch();
         return (int)($row['cnt'] ?? 0);
+    }
+
+    /**
+     * Organizations nobody has signed into lately, split from those nobody has
+     * ever signed into.
+     *
+     * The two are mutually exclusive so the card's figures can be read as
+     * separate populations and each filters to exactly its own count — the same
+     * shape as Capacity's "at cap" and "80-99%". An organization that has never
+     * been used is reported as never, not silently folded into dormant.
+     *
+     * @return array{dormant: int, never: int}
+     */
+    private function countDormantOrgs(): array {
+        $cutoff = time() - (self::DORMANT_DAYS * 86400);
+        $dormant = 0;
+        $never = 0;
+        foreach ($this->lastActivityByOrg() as $lastLogin) {
+            if ($lastLogin === null) {
+                $never++;
+            } elseif ($lastLogin < $cutoff) {
+                $dormant++;
+            }
+        }
+        return ['dormant' => $dormant, 'never' => $never];
     }
 
     /**

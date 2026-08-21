@@ -433,6 +433,12 @@ const ATTENTION_TESTS = {
   nearCap: (o) => { const u = usageRatio(o); return u !== null && u >= 0.8 && u < 1; },
   overdueTasks: (o) => (o.overdueTasks || 0) > 0,
   staleProjects: (o) => (o.staleProjectCount || 0) > 0,
+  // Mutually exclusive, matching PlatformService::countDormantOrgs(): an
+  // organization nobody has ever signed into is "never", not "dormant".
+  dormant: (o) => o.lastActiveAt !== null && o.lastActiveAt !== undefined
+    && o.lastActiveAt < dormantCutoff(),
+  neverUsed: (o) => o.lastActiveAt === null || o.lastActiveAt === undefined,
+  storageHigh: (o) => (o.storage && o.storage.percentage) >= STORAGE_HIGH_PCT,
 };
 
 const ATTENTION_LABELS = {
@@ -443,7 +449,22 @@ const ATTENTION_LABELS = {
   nearCap: "near plan cap",
   overdueTasks: "overdue tasks",
   staleProjects: "a stale project",
+  dormant: "no login in 30 days",
+  neverUsed: "no login ever",
+  storageHigh: "storage over 80%",
 };
+
+// Mirrors PlatformService::DORMANT_DAYS. Evaluated per call rather than once at
+// module load, so a long-lived tab does not keep filtering against the cutoff
+// that applied when it was opened.
+const DORMANT_DAYS = 30;
+function dormantCutoff() {
+  return Math.floor(Date.now() / 1000) - DORMANT_DAYS * 86400;
+}
+
+// The point at which storage stops being headroom and starts being a problem;
+// the same 80% the capacity bands use for members and projects.
+const STORAGE_HIGH_PCT = 80;
 
 // Mirrors FinancialsService::usageRatio — the tighter of the two caps, with a
 // cap of 0 read as "this plan sets no limit", not a limit of nothing.

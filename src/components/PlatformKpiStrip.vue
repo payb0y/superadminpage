@@ -30,8 +30,8 @@
             <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
           </template>
           <template v-else>
-            <rect x="3" y="4" width="18" height="16" rx="2" />
-            <line x1="3" y1="10" x2="21" y2="10" />
+            <path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.36 2.64L3 8" />
+            <polyline points="3 3 3 8 8 8" />
           </template>
         </svg>
       </template>
@@ -85,10 +85,24 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    /**
+     * The roster rows. Storage is counted here rather than server-side so the
+     * figure is derived from exactly the rows the filter will select — the
+     * usage percentages come from StorageUsageService per row, and a second
+     * server-side count could drift from them.
+     */
+    orgs: {
+      type: Array,
+      default: () => [],
+    },
   },
   computed: {
     capacity() {
       return this.attention.capacity || { atCap: 0, nearCap: 0 };
+    },
+    capacityColor() {
+      if (this.capacity.atCap) return TONE.bad;
+      return this.capacity.nearCap || this.storageHigh ? TONE.warn : TONE.clear;
     },
     noPlan() {
       return (this.alerts.orgsNoSub && this.alerts.orgsNoSub.count) || 0;
@@ -100,11 +114,13 @@ export default {
     staleOrgs() {
       return this.attention.staleOrgs || 0;
     },
-    openTasks() {
-      const total = this.kpis.tasks.total || 0;
-      const done = this.kpis.tasks.done || 0;
-      const overdue = this.kpis.tasks.overdue || 0;
-      return Math.max(0, total - done - overdue);
+    retention() {
+      return this.attention.retention || { dormant: 0, never: 0 };
+    },
+    storageHigh() {
+      return this.orgs.filter(
+        (o) => o.storage && o.storage.percentage >= 80
+      ).length;
     },
     // Every figure here is a count of things to go and fix, and every one of
     // them filters the roster below — which is the whole reason the strip earns
@@ -158,8 +174,8 @@ export default {
         {
           key: "capacity",
           title: "Capacity",
-          color: this.capacity.atCap ? TONE.bad : this.capacity.nearCap ? TONE.warn : TONE.clear,
-          foot: "against their plan's caps",
+          color: this.capacityColor,
+          foot: "members, projects and storage",
           metrics: [
             {
               value: this.capacity.atCap,
@@ -173,29 +189,36 @@ export default {
               label: "80–99%",
               filter: "nearCap",
               tone: "warn",
-              hint: "Active organizations approaching a plan limit",
+              hint: "Active organizations approaching a member or project limit",
+            },
+            {
+              value: this.storageHigh,
+              label: "storage 80%+",
+              filter: "storageHigh",
+              tone: "warn",
+              hint: "Organizations using more than 80% of their storage entitlement",
             },
           ],
         },
         {
-          key: "work",
-          title: "Work",
-          color: this.kpis.tasks.overdue ? TONE.warn : TONE.clear,
-          foot: "across all organizations",
+          key: "retention",
+          title: "Retention",
+          color: this.retention.never ? TONE.bad : this.retention.dormant ? TONE.warn : TONE.clear,
+          foot: "last login by any member",
           metrics: [
             {
-              // No filter: this counts tasks, not organizations, so there is no
-              // roster selection that matches it. It reads as a figure only.
-              value: this.openTasks,
-              label: "open tasks",
-              hint: "Tasks neither done nor overdue, across all organizations",
+              value: this.retention.dormant,
+              label: "dormant >30d",
+              filter: "dormant",
+              tone: "warn",
+              hint: "Organizations whose most recent member login was over 30 days ago",
             },
             {
-              value: this.kpis.tasks.overdue || 0,
-              label: "overdue",
-              filter: "overdueTasks",
-              tone: "warn",
-              hint: "Organizations with at least one overdue task",
+              value: this.retention.never,
+              label: "never used",
+              filter: "neverUsed",
+              tone: "bad",
+              hint: "Organizations no member has ever signed into",
             },
           ],
         },

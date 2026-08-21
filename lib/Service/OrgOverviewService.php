@@ -9,6 +9,7 @@ use OCP\IDBConnection;
 class OrgOverviewService {
 
     use SqlDialectTrait;
+    use OrgActivityTrait;
 
     private IDBConnection $db;
 
@@ -90,6 +91,11 @@ class OrgOverviewService {
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
 
+        // One extra query for the whole set, not one per row: the Retention card
+        // filters on this, and it must select the same organizations the card
+        // counted — hence the shared OrgActivityTrait.
+        $lastActive = $this->lastActivityByOrg();
+
         $rows = [];
         foreach ($stmt->fetchAll() as $r) {
             $storage = $this->storageUsageService->getOrganizationUsage((int)$r['id']);
@@ -100,6 +106,9 @@ class OrgOverviewService {
                 'adminCount'         => (int)$r['admin_count'],
                 'projectCount'       => (int)$r['project_count'],
                 'staleProjectCount'  => (int)($r['stale_project_count'] ?? 0),
+                // Epoch of the newest login by any member, or null if nobody
+                // ever has. Null is not 0 — "never used" is its own state.
+                'lastActiveAt'       => $lastActive[(int)$r['id']] ?? null,
                 'totalTasks'         => (int)$r['total_tasks'],
                 'doneTasks'          => (int)$r['done_tasks'],
                 'overdueTasks'       => (int)$r['overdue_tasks'],

@@ -63,6 +63,7 @@
           :kpis="platform.kpis"
           :attention="platform.attention || {}"
           :alerts="platform.alerts"
+          :orgs="orgs"
           @drill-down="onDrillDown"
         />
         <OrgListPanel
