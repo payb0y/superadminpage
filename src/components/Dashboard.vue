@@ -51,16 +51,18 @@
       <template v-if="activeTab === 'health'">
         <AlertsPanel
           v-if="platform"
-          :alerts="platform.alerts"
+          :alerts="healthAlerts"
           @drill-down="onDrillDown"
         />
-        <SystemHealthPanel />
+        <SystemHealthPanel @services-summary="onServicesSummary" />
       </template>
 
       <template v-else-if="activeTab === 'orgs'">
         <PlatformKpiStrip
           v-if="platform"
           :kpis="platform.kpis"
+          :attention="platform.attention || {}"
+          :alerts="platform.alerts"
           @drill-down="onDrillDown"
         />
         <OrgListPanel
@@ -104,10 +106,54 @@ export default {
     return {
       orgs: [],
       platform: null,
+      // Filled by SystemHealthPanel once it has fetched; null until then.
+      servicesSummary: null,
       loading: true,
       error: null,
       activeTab: "health",
     };
+  },
+  computed: {
+    /**
+     * What the System Health strip shows.
+     *
+     * Stale projects moved to the Organizations strip: it measures whether
+     * people are tidy, not whether the platform is up, and it was the only card
+     * here a super-admin could not act on. Services degraded takes the slot, and
+     * it is spliced in from the health panel rather than the platform payload
+     * because it comes from a different endpoint — see summariseServices().
+     *
+     * Until that panel has fetched, the card still renders, saying so, rather
+     * than appearing a moment later and shifting the row.
+     */
+    healthAlerts() {
+      if (!this.platform) return {};
+      const out = {};
+      Object.keys(this.platform.alerts || {}).forEach((key) => {
+        if (key === "staleProjects30d") return;
+        out[key] = this.platform.alerts[key];
+        if (key === "stuckAhoJobs") out.servicesDegraded = this.servicesAlert;
+      });
+      // Defensive: if that key ever disappears, the card still gets in.
+      if (!out.servicesDegraded) out.servicesDegraded = this.servicesAlert;
+      return out;
+    },
+    servicesAlert() {
+      const s = this.servicesSummary;
+      if (!s) {
+        return { count: "…", label: "Services degraded", tone: "muted", detail: "checking dependencies" };
+      }
+      const detail = s.degraded === 0
+        ? s.checked + (s.checked === 1 ? " dependency answering" : " dependencies answering")
+        : s.worstName + " · " + s.worstStatus +
+          (s.worstLatency !== null ? " · " + s.worstLatency + "ms" : "");
+      return {
+        count: s.degraded,
+        label: "Services degraded",
+        tone: s.degraded > 0 ? "danger" : "success",
+        detail: detail,
+      };
+    },
   },
   mounted() {
     this.hydrateActiveTab();
@@ -124,6 +170,9 @@ export default {
     },
   },
   methods: {
+    onServicesSummary(summary) {
+      this.servicesSummary = summary;
+    },
     hydrateActiveTab() {
       try {
         const stored = window.localStorage.getItem(

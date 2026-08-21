@@ -13,8 +13,14 @@ class PlatformService {
     /** Tags shown per alert card before the remainder collapses to "+N more". */
     private const OFFENDER_LIMIT = 5;
 
-    /** Idle days after which a project counts as stale. */
-    private const STALE_DAYS = 30;
+    /**
+     * Idle days after which a project counts as stale.
+     *
+     * Public because OrgOverviewService flags the same projects per row, so the
+     * Adoption card's count and the roster filter it applies have to agree on
+     * the threshold.
+     */
+    public const STALE_DAYS = 30;
 
     private IDBConnection $db;
 
@@ -24,9 +30,140 @@ class PlatformService {
 
     public function getOverview(): array {
         return [
-            'kpis'   => $this->getKpis(),
-            'alerts' => $this->getAlerts(),
+            'kpis'      => $this->getKpis(),
+            'alerts'    => $this->getAlerts(),
+            'attention' => $this->getAttention(),
         ];
+    }
+
+    /**
+     * Counts for the Organizations strip: organizations in a state somebody has
+     * to resolve, rather than totals the roster underneath already lists.
+     *
+     * Each figure is a filter the strip can apply to that roster, so every one
+     * of them has to be answerable per organization as well as in aggregate —
+     * which is why they are counts of organizations, not of rows.
+     */
+    private function getAttention(): array {
+        return [
+            'noAdmin'     => $this->countOrgsWithoutAdmin(),
+            'noProjects'  => $this->countOrgsWithoutProjects(),
+            'staleOrgs'   => $this->countOrgsWithStaleProjects(),
+            'capacity'    => $this->countCapacityPressure(),
+        ];
+    }
+
+    /**
+     * Organizations with no member holding role = 'admin'.
+     *
+     * `oc_organizations.admin_uid` deliberately does not count here: it is a
+     * separate designation that nothing keeps in sync with the membership
+     * table, and it is the membership row that actually grants access.
+     */
+    private function countOrgsWithoutAdmin(): int {
+        $sql = "
+            SELECT COUNT(*) AS cnt
+            FROM *PREFIX*organizations o
+            WHERE NOT EXISTS (
+                SELECT 1 FROM *PREFIX*organization_members m
+                WHERE m.organization_id = o.id AND m.role = 'admin'
+            )
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $row = $stmt->fetch();
+        return (int)($row['cnt'] ?? 0);
+    }
+
+    /**
+     * Organizations owning at least one stale project.
+     *
+     * Counts ORGANIZATIONS, not projects, unlike the health alert this figure
+     * replaces: every other number on the Organizations strip is a count of
+     * organizations and filters the roster to exactly that many rows, and one
+     * that counted projects could never match the list it filtered.
+     */
+    private function countOrgsWithStaleProjects(): int {
+        $sql = "
+            SELECT COUNT(DISTINCT organization_id) AS cnt
+            FROM *PREFIX*custom_projects
+            WHERE archived_at IS NULL
+              AND (last_deck_move_at IS NULL
+                   OR {$this->toEpoch('last_deck_move_at')} < {$this->nowEpoch()} - ? * 86400)
+        ";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([self::STALE_DAYS]);
+            return (int)($stmt->fetch()['cnt'] ?? 0);
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+
+    /** Organizations that exist but have never had a project created. */
+    private function countOrgsWithoutProjects(): int {
+        $sql = "
+            SELECT COUNT(*) AS cnt
+            FROM *PREFIX*organizations o
+            WHERE NOT EXISTS (
+                SELECT 1 FROM *PREFIX*custom_projects p
+                WHERE p.organization_id = o.id
+            )
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $row = $stmt->fetch();
+        return (int)($row['cnt'] ?? 0);
+    }
+
+    /**
+     * Active organizations at or approaching their plan's caps.
+     *
+     * The thresholds come from FinancialsService::USAGE_BANDS so this strip and
+     * the plan grid on Financials can never disagree about what "at cap" means.
+     * Usage is the tighter of members and projects — the limit an organization
+     * hits first — and a cap of 0 is read as "no limit expressed", not as a
+     * limit of nothing that everyone is over.
+     *
+     * @return array{atCap: int, nearCap: int}
+     */
+    private function countCapacityPressure(): array {
+        $sql = "
+            SELECT
+                p.max_members  AS max_members,
+                p.max_projects AS max_projects,
+                (SELECT COUNT(*) FROM *PREFIX*organization_members m
+                  WHERE m.organization_id = o.id) AS member_count,
+                (SELECT COUNT(*) FROM *PREFIX*custom_projects cp
+                  WHERE cp.organization_id = o.id) AS project_count
+            FROM *PREFIX*organizations o
+            INNER JOIN *PREFIX*subscriptions s ON s.organization_id = o.id AND s.status = 'active'
+            INNER JOIN *PREFIX*plans p ON p.id = s.plan_id
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        $atCap = 0;
+        $nearCap = 0;
+        foreach ($stmt->fetchAll() as $row) {
+            $ratios = [];
+            if ((int)$row['max_members'] > 0) {
+                $ratios[] = (int)$row['member_count'] / (int)$row['max_members'];
+            }
+            if ((int)$row['max_projects'] > 0) {
+                $ratios[] = (int)$row['project_count'] / (int)$row['max_projects'];
+            }
+            if ($ratios === []) {
+                continue;   // this plan caps nothing; there is no ratio to band
+            }
+            $band = FinancialsService::bandFor(round(max($ratios), 4));
+            if ($band === 'cap') {
+                $atCap++;
+            } elseif ($band === 'high') {
+                $nearCap++;
+            }
+        }
+        return ['atCap' => $atCap, 'nearCap' => $nearCap];
     }
 
     private function getKpis(): array {

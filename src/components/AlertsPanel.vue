@@ -52,6 +52,11 @@
           </div>
         </div>
 
+        <!-- Some alerts name the thing that is wrong. A count on its own tells
+             an admin something is broken without saying what, which is one more
+             click before they can act. -->
+        <p v-if="alert.detail" class="alerts-panel__detail">{{ alert.detail }}</p>
+
         <div v-if="offendersOf(alert).length" class="alerts-panel__tags">
           <button
             v-for="offender in offendersOf(alert)"
@@ -200,6 +205,13 @@ export default {
    as it did. Only a keyboard focus ring remains, for a11y. Selectors are
    qualified on `button` to beat NC core's bare-element button styling. Mirrors
    the chip pattern in PlatformKpiStrip. */
+.alerts-panel__detail {
+  margin: 0;
+  font-size: var(--iz-fs-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .alerts-panel__tags {
   display: flex;
   flex-wrap: wrap;

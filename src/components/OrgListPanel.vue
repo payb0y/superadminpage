@@ -101,6 +101,13 @@
         data-lpignore="true"
         placeholder="Search organizations…"
       />
+      <button
+        v-if="attentionFilter"
+        type="button"
+        class="iz-chip iz-chip--active org-list__attention-chip"
+        :title="'Showing only organizations with ' + attentionLabel + ' — click to clear'"
+        @click="attentionFilter = null; currentPage = 1;"
+      >{{ attentionLabel }} ✕</button>
       <div class="org-list__filter-group">
         <span
           v-for="opt in statusOptions"
@@ -416,6 +423,37 @@ function planRank(planName) {
   return PLAN_TIER_RANK[bucket];
 }
 
+// Explicit predicate table: the attention strip sends a key, this decides what
+// it means. An unknown key filters nothing rather than throwing.
+const ATTENTION_TESTS = {
+  noAdmin: (o) => (o.adminCount || 0) === 0,
+  noProjects: (o) => (o.projectCount || 0) === 0,
+  noPlan: (o) => (o.subscriptionStatus || "none") !== "active",
+  atCap: (o) => { const u = usageRatio(o); return u !== null && u >= 1; },
+  nearCap: (o) => { const u = usageRatio(o); return u !== null && u >= 0.8 && u < 1; },
+  overdueTasks: (o) => (o.overdueTasks || 0) > 0,
+  staleProjects: (o) => (o.staleProjectCount || 0) > 0,
+};
+
+const ATTENTION_LABELS = {
+  noAdmin: "no admin",
+  noProjects: "no projects",
+  noPlan: "no active plan",
+  atCap: "at plan cap",
+  nearCap: "near plan cap",
+  overdueTasks: "overdue tasks",
+  staleProjects: "a stale project",
+};
+
+// Mirrors FinancialsService::usageRatio — the tighter of the two caps, with a
+// cap of 0 read as "this plan sets no limit", not a limit of nothing.
+function usageRatio(o) {
+  const ratios = [];
+  if ((o.maxMembers || 0) > 0) ratios.push((o.memberCount || 0) / o.maxMembers);
+  if ((o.maxProjects || 0) > 0) ratios.push((o.projectCount || 0) / o.maxProjects);
+  return ratios.length ? Math.max.apply(null, ratios) : null;
+}
+
 export default {
   name: "OrgListPanel",
   components: { OrgCard, OrgDetailView, CreateOrgModal },
@@ -431,6 +469,9 @@ export default {
     return {
       searchQuery: "",
       statusFilter: "all",
+      // Set by the attention strip above. Null means no attention filter;
+      // the strip owns the vocabulary, this panel only applies the predicate.
+      attentionFilter: null,
       currentPage: 1,
       pageSize: defaultPageSize(viewMode),
       statusOptions: [
@@ -463,15 +504,20 @@ export default {
     pageSizeOptions() {
       return PAGE_SIZE_OPTIONS[this.viewMode] || PAGE_SIZE_OPTIONS.grid;
     },
+    attentionLabel() {
+      return ATTENTION_LABELS[this.attentionFilter] || this.attentionFilter || "";
+    },
     filteredOrgs() {
       const q = (this.searchQuery || "").toLowerCase();
       const filter = this.statusFilter;
+      const attention = this.attentionFilter;
       return this.orgs.filter((o) => {
         if (filter !== "all") {
           const status = o.subscriptionStatus || "none";
           if (status !== filter) return false;
         }
         if (q && (o.name || "").toLowerCase().indexOf(q) === -1) return false;
+        if (attention && ATTENTION_TESTS[attention] && !ATTENTION_TESTS[attention](o)) return false;
         return true;
       });
     },
@@ -584,8 +630,11 @@ export default {
     },
   },
   methods: {
-    applyDrillDown({ statusFilter, sortBy, orgId, tab } = {}) {
+    applyDrillDown({ statusFilter, sortBy, orgId, tab, attentionFilter } = {}) {
       if (statusFilter !== undefined) this.statusFilter = statusFilter;
+      // Always assigned, never merged: a pick from the attention strip states
+      // the whole filter, so arriving without one clears whatever was set.
+      this.attentionFilter = attentionFilter || null;
       if (sortBy !== undefined) this.sortBy = sortBy;
 
       if (orgId !== undefined) {
@@ -606,6 +655,7 @@ export default {
         // method correct for any caller reaching it while the panel is mounted.
         this.statusFilter = "all";
         this.searchQuery = "";
+        this.attentionFilter = null;
 
         if (tab) this.$set(this.pendingTab, orgId, tab);
 
@@ -1168,5 +1218,12 @@ export default {
   .org-list__cell--plan {
     display: none;
   }
+}
+
+/* The attention chip carries a phrase ("no projects"), not the single status
+   word .iz-chip was built for, so the theme's capitalisation is switched off
+   here the same way the Financials badges do it. */
+.org-list__attention-chip {
+  text-transform: none;
 }
 </style>

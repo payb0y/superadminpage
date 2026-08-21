@@ -43,7 +43,7 @@ class FinancialsService {
      * selects on them — and a cell that says "4" must select exactly those four.
      * Two copies of these thresholds would eventually disagree.
      */
-    private const USAGE_BANDS = [
+    public const USAGE_BANDS = [
         ['low',  0.0],
         ['mid',  0.5],
         ['high', 0.8],
@@ -390,6 +390,16 @@ class FinancialsService {
     }
 
     private function usageBand(?float $usage): string {
+        return self::bandFor($usage);
+    }
+
+    /**
+     * The band a usage ratio falls in. Static so anything else that needs to
+     * agree with the plan grid — the Organizations attention strip counts the
+     * same at-cap organizations — reads the thresholds from here rather than
+     * keeping a second copy that can drift.
+     */
+    public static function bandFor(?float $usage): string {
         if ($usage === null) {
             return 'none';
         }

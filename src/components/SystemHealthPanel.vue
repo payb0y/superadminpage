@@ -494,6 +494,32 @@ export default {
         subtitle,
       };
     },
+    /**
+     * Roll the per-dependency statuses into one count for the alert strip above.
+     *
+     * Derived here rather than server-side on /api/super/data because both
+     * probes reach out over HTTP with 2-3s timeouts. They are cached for 15s,
+     * but a cold cache would put that wait on the main dashboard request - and
+     * this panel already fetches and polls the same payload, so the count comes
+     * free and stays in step with what is drawn below.
+     */
+    summariseServices(snapshot) {
+      if (!snapshot) return null;
+      const list = Array.isArray(snapshot.services) ? snapshot.services.slice() : [];
+      if (snapshot.hpbHost) {
+        list.push(Object.assign({ name: "HPB signalling" }, snapshot.hpbHost));
+      }
+      const bad = list.filter((x) => x && x.status !== "ok");
+      // "down" is worse than "degraded", and the card names the worst one.
+      const worst = bad.filter((x) => x.status === "down")[0] || bad[0] || null;
+      return {
+        checked: list.length,
+        degraded: bad.length,
+        worstName: worst ? worst.name : null,
+        worstStatus: worst ? worst.status : null,
+        worstLatency: worst && typeof worst.latencyMs === "number" ? worst.latencyMs : null,
+      };
+    },
     async fetch({ silent = false } = {}) {
       if (this._fetching) return;
       this._fetching = true;
@@ -506,6 +532,7 @@ export default {
           generateUrl("/apps/superadminpage/api/super/system")
         );
         this.snapshot = res.data || null;
+        this.$emit("services-summary", this.summariseServices(this.snapshot));
         if (this.snapshot && this.snapshot.network && !this.latched.network) {
           this.latched.network = true;
         }

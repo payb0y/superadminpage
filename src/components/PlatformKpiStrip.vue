@@ -1,121 +1,71 @@
 <template>
   <div class="platform-kpi-strip">
-    <KpiCard title="Organizations" icon-color="var(--accent)">
-      <div class="kpi-card__metrics">
-        <button
-          type="button"
-          class="kpi-link kpi-card__metric"
-          @click="$emit('drill-down', { statusFilter: 'all' })"
-        >
-          <span class="kpi-card__metric-value">{{ kpis.orgs.total }}</span>
-          <span class="kpi-card__metric-label">total</span>
-        </button>
-        <button
-          type="button"
-          class="kpi-link kpi-card__metric"
-          @click="$emit('drill-down', { statusFilter: 'active' })"
-        >
-          <span class="kpi-card__metric-value">{{ kpis.orgs.active }}</span>
-          <span class="kpi-card__metric-label">active</span>
-        </button>
-        <button
-          type="button"
-          class="kpi-link kpi-card__metric"
-          @click="$emit('drill-down', { statusFilter: 'paused' })"
-        >
-          <span class="kpi-card__metric-value">{{ kpis.orgs.paused }}</span>
-          <span class="kpi-card__metric-label">paused</span>
-        </button>
-      </div>
-    </KpiCard>
-    <KpiCard title="Human Resources" icon-color="var(--chart-5)">
-      <div class="kpi-card__metrics">
-        <button
-          type="button"
-          class="kpi-link kpi-card__metric"
-          @click="$emit('drill-down', { sortBy: 'membersDesc' })"
-        >
-          <span class="kpi-card__metric-value">{{ kpis.members.admins }}</span>
-          <span class="kpi-card__metric-label">admins</span>
-        </button>
-        <button
-          type="button"
-          class="kpi-link kpi-card__metric"
-          @click="$emit('drill-down', { sortBy: 'membersDesc' })"
-        >
-          <span class="kpi-card__metric-value">{{ kpis.members.members }}</span>
-          <span class="kpi-card__metric-label">members</span>
-        </button>
-        <button
-          type="button"
-          class="kpi-link kpi-card__metric"
-          @click="$emit('drill-down', { sortBy: 'projectsDesc' })"
-        >
-          <span class="kpi-card__metric-value">{{ kpis.projects.active }}</span>
-          <span class="kpi-card__metric-label">projects</span>
-        </button>
-      </div>
-    </KpiCard>
-    <KpiCard title="Projects" icon-color="var(--color-warning-text)">
-      <div class="projects-kpi">
-        <div class="projects-kpi__hero">
-          <button
-            type="button"
-            class="kpi-link"
-            @click="$emit('drill-down', { sortBy: 'projectsDesc' })"
-          >
-            <span class="projects-kpi__hero-value iz-figure">{{ kpis.projects.total }}</span>
-            <span class="projects-kpi__hero-label">projects</span>
-          </button>
-          <span class="projects-kpi__hero-sep">·</span>
-          <button
-            type="button"
-            class="kpi-link projects-kpi__hero-tasks"
-            @click="$emit('drill-down', { sortBy: 'tasksDesc' })"
-          >
-            <strong class="iz-figure">{{ kpis.tasks.total }}</strong> tasks
-          </button>
-        </div>
-
-        <div class="projects-kpi__chips">
-          <button
-            type="button"
-            class="projects-kpi__chip"
-            @click="$emit('drill-down', { sortBy: 'doneDesc' })"
-          >
-            <span class="iz-badge iz-badge--success"><strong>{{ kpis.tasks.done }}</strong> done</span>
-          </button>
-          <button
-            type="button"
-            class="projects-kpi__chip"
-            @click="$emit('drill-down', { sortBy: 'overdueDesc' })"
-          >
-            <span class="iz-badge iz-badge--danger"><strong>{{ kpis.tasks.overdue }}</strong> overdue</span>
-          </button>
-          <button
-            type="button"
-            class="projects-kpi__chip"
-            @click="$emit('drill-down', { sortBy: 'openDesc' })"
-          >
-            <span class="iz-badge iz-badge--accent"><strong>{{ openTasks }}</strong> open</span>
-          </button>
-        </div>
-      </div>
-    </KpiCard>
     <KpiCard
-      title="Financial"
-      icon-color="var(--color-success)"
-      :metrics="[
-        { value: mrrDisplay, label: 'MRR' },
-        { value: arrDisplay, label: 'ARR' },
-        { value: kpis.orgs.active, label: 'paying' },
-      ]"
-    />
+      v-for="card in cards"
+      :key="card.key"
+      :title="card.title"
+      :icon-color="card.color"
+    >
+      <template #icon>
+        <svg
+          class="platform-kpi-strip__icon"
+          :style="{ color: card.color }"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <template v-if="card.key === 'governance'">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </template>
+          <template v-else-if="card.key === 'adoption'">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </template>
+          <template v-else-if="card.key === 'capacity'">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </template>
+          <template v-else>
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </template>
+        </svg>
+      </template>
+
+      <div class="platform-kpi-strip__metrics">
+        <button
+          v-for="metric in card.metrics"
+          :key="metric.label"
+          type="button"
+          class="kpi-link platform-kpi-strip__metric"
+          :class="metricClass(metric)"
+          :disabled="!metric.value || !metric.filter"
+          :title="metric.hint"
+          @click="pick(metric)"
+        >
+          <span class="platform-kpi-strip__value">{{ metric.value }}</span>
+          <span class="platform-kpi-strip__label">{{ metric.label }}</span>
+        </button>
+      </div>
+
+      <span class="platform-kpi-strip__foot">{{ card.foot }}</span>
+    </KpiCard>
   </div>
 </template>
 
 <script>
 import KpiCard from "./KpiCard.vue";
+
+// Tone per card, as an explicit table rather than a class assembled from data.
+const TONE = {
+  clear: "var(--color-success)",
+  warn: "var(--color-warning-text)",
+  bad: "var(--color-danger)",
+};
 
 export default {
   name: "PlatformKpiStrip",
@@ -125,32 +75,146 @@ export default {
       type: Object,
       required: true,
     },
+    /** Counts of organizations in a state somebody has to resolve. */
+    attention: {
+      type: Object,
+      default: () => ({}),
+    },
+    /** The platform alert set, for the two figures that already live there. */
+    alerts: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   computed: {
+    capacity() {
+      return this.attention.capacity || { atCap: 0, nearCap: 0 };
+    },
+    noPlan() {
+      return (this.alerts.orgsNoSub && this.alerts.orgsNoSub.count) || 0;
+    },
+    // Organizations owning a stale project — NOT the count of stale projects
+    // the health alert reports. Every figure on this strip filters the roster
+    // to exactly that many rows, so it has to count the same things the roster
+    // lists.
+    staleOrgs() {
+      return this.attention.staleOrgs || 0;
+    },
     openTasks() {
       const total = this.kpis.tasks.total || 0;
       const done = this.kpis.tasks.done || 0;
       const overdue = this.kpis.tasks.overdue || 0;
       return Math.max(0, total - done - overdue);
     },
-    mrrDisplay() {
-      return this.formatMoney(this.kpis.mrr.value);
-    },
-    arrDisplay() {
-      return this.formatMoney((this.kpis.mrr.value || 0) * 12);
+    // Every figure here is a count of things to go and fix, and every one of
+    // them filters the roster below — which is the whole reason the strip earns
+    // its height. Totals that only restate the list live in the list.
+    cards() {
+      return [
+        {
+          key: "governance",
+          title: "Governance",
+          color: this.attention.noAdmin || this.noPlan ? TONE.bad : TONE.clear,
+          foot: "nobody can administer these",
+          metrics: [
+            {
+              value: this.attention.noAdmin || 0,
+              label: "no admin",
+              filter: "noAdmin",
+              tone: "bad",
+              hint: "Organizations with no member holding the admin role",
+            },
+            {
+              value: this.noPlan,
+              label: "no plan",
+              filter: "noPlan",
+              tone: "bad",
+              hint: "Organizations without an active subscription",
+            },
+          ],
+        },
+        {
+          key: "adoption",
+          title: "Adoption",
+          color: this.attention.noProjects || this.staleOrgs ? TONE.warn : TONE.clear,
+          foot: "onboarded but not started",
+          metrics: [
+            {
+              value: this.attention.noProjects || 0,
+              label: "no projects",
+              filter: "noProjects",
+              tone: "warn",
+              hint: "Organizations that have never created a project",
+            },
+            {
+              value: this.staleOrgs,
+              label: "stale >30d",
+              filter: "staleProjects",
+              tone: "warn",
+              hint: "Organizations with a project idle for more than 30 days",
+            },
+          ],
+        },
+        {
+          key: "capacity",
+          title: "Capacity",
+          color: this.capacity.atCap ? TONE.bad : this.capacity.nearCap ? TONE.warn : TONE.clear,
+          foot: "against their plan's caps",
+          metrics: [
+            {
+              value: this.capacity.atCap,
+              label: "at cap",
+              filter: "atCap",
+              tone: "bad",
+              hint: "Active organizations at or over a limit their plan sells",
+            },
+            {
+              value: this.capacity.nearCap,
+              label: "80–99%",
+              filter: "nearCap",
+              tone: "warn",
+              hint: "Active organizations approaching a plan limit",
+            },
+          ],
+        },
+        {
+          key: "work",
+          title: "Work",
+          color: this.kpis.tasks.overdue ? TONE.warn : TONE.clear,
+          foot: "across all organizations",
+          metrics: [
+            {
+              // No filter: this counts tasks, not organizations, so there is no
+              // roster selection that matches it. It reads as a figure only.
+              value: this.openTasks,
+              label: "open tasks",
+              hint: "Tasks neither done nor overdue, across all organizations",
+            },
+            {
+              value: this.kpis.tasks.overdue || 0,
+              label: "overdue",
+              filter: "overdueTasks",
+              tone: "warn",
+              hint: "Organizations with at least one overdue task",
+            },
+          ],
+        },
+      ];
     },
   },
   methods: {
-    formatMoney(amount) {
-      const v = Math.round(Number(amount) || 0);
-      const sym =
-        this.kpis.mrr.currency === "EUR"
-          ? "€"
-          : this.kpis.mrr.currency === "USD"
-            ? "$"
-            : this.kpis.mrr.currency + " ";
-      const prefix = this.kpis.mrr.multiCurrency ? "~" : "";
-      return prefix + sym + v.toLocaleString();
+    metricClass(metric) {
+      return {
+        "platform-kpi-strip__metric--bad": metric.value > 0 && metric.tone === "bad",
+        "platform-kpi-strip__metric--warn": metric.value > 0 && metric.tone === "warn",
+        "platform-kpi-strip__metric--inert": !metric.filter,
+      };
+    },
+    // A zero is not worth a click — there is nothing to show — and a metric with
+    // no filter (an aggregate the roster cannot select on) is a readout only.
+    pick(metric) {
+      if (!metric.value || !metric.filter) return;
+      this.$emit("drill-down", { statusFilter: "all", attentionFilter: metric.filter });
     },
   },
 };
@@ -162,149 +226,87 @@ export default {
   grid-template-columns: repeat(4, 1fr);
   gap: var(--spacing-md, 16px);
 }
-
-.projects-kpi {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.projects-kpi__hero {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.projects-kpi__hero-value {
-  font-size: var(--iz-fs-xl);
-  font-weight: 700;
-  color: var(--color-text-primary, var(--color-text-primary));
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-}
-
-.projects-kpi__hero-label {
-  font-size: var(--iz-fs-xs);
-  color: var(--color-text-muted, var(--color-text-muted));
-}
-
-.projects-kpi__hero-sep {
-  color: var(--color-border-strong);
-  font-size: var(--iz-fs-md);
-  user-select: none;
-}
-
-.projects-kpi__hero-tasks {
-  font-size: var(--iz-fs-sm);
-  color: var(--color-text-secondary, var(--color-text-secondary));
-  font-variant-numeric: tabular-nums;
-}
-
-.projects-kpi__hero-tasks strong {
-  color: var(--color-text-primary, var(--color-text-primary));
-  font-weight: 700;
-}
-
-/* Status chips: chrome (tint + text) comes from the theme's .iz-badge--*
-   primitive. The chip is a bare drill-down button that never changes on
-   hover/focus/active — the badge is the whole visual — so clicking one leaves
-   it looking exactly as it did. Only a keyboard focus ring remains, for a11y
-   (mouse clicks don't trigger :focus-visible). Selectors are qualified on
-   `button` to beat NC core's bare-element button styling. */
-.projects-kpi__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-button.projects-kpi__chip {
-  padding: 0;
-  margin: 0;
-  border: 0;
-  background: transparent;
-  border-radius: var(--iz-radius-pill);
-  cursor: pointer;
-  font: inherit;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-button.projects-kpi__chip:hover,
-button.projects-kpi__chip:focus,
-button.projects-kpi__chip:active {
-  background: transparent;
-  box-shadow: none;
-  outline: none;
-}
-
-button.projects-kpi__chip:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.projects-kpi__chip .iz-badge {
-  font-variant-numeric: tabular-nums;
-  transition: transform 0.12s ease, filter 0.12s ease;
-}
-
-/* Hover feedback lives on the badge and only while the pointer is over it, so
-   it clears the moment you leave — nothing persists after a click. */
-button.projects-kpi__chip:hover .iz-badge {
-  transform: translateY(-1px);
-  filter: brightness(0.96);
-}
-
-@media (max-width: 1200px) {
+@media (max-width: 1100px) {
   .platform-kpi-strip {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-
-@media (max-width: 768px) {
+@media (max-width: 620px) {
   .platform-kpi-strip {
     grid-template-columns: 1fr;
   }
 }
 
-.kpi-link {
-  background: transparent;
-  border: 0;
-  padding: 4px 8px;
-  margin: -4px -8px;
-  cursor: pointer;
-  border-radius: var(--radius-el);
+.platform-kpi-strip__icon {
+  width: 18px;
+  height: 18px;
+}
+
+.platform-kpi-strip__metrics {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+/* Qualified on `button` with min-height reset: Nextcloud core styles bare
+   buttons with padding and min-height: var(--default-clickable-area), which
+   would push these out of the card. */
+button.platform-kpi-strip__metric {
   font: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  margin: 0;
+  padding: 2px 4px;
+  min-height: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
   color: inherit;
+  cursor: pointer;
   text-align: left;
-  transition: background 0.15s ease;
 }
-
-.kpi-link:hover {
-  background: var(--iz-accent-bg);
+button.platform-kpi-strip__metric:hover:not(:disabled) {
+  background: var(--accent-bg);
 }
-
-.kpi-link:focus-visible {
+button.platform-kpi-strip__metric:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-
-.kpi-link.kpi-card__metric {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 14px;
-  margin: 0;
-  border-left: 1px solid var(--color-border, var(--color-border));
-  border-radius: 0;
+/* A zero has nothing to filter to, and an aggregate has nothing to filter on:
+   both stay readable but stop looking clickable. */
+button.platform-kpi-strip__metric:disabled,
+button.platform-kpi-strip__metric--inert {
+  cursor: default;
+  background: transparent;
 }
 
-.kpi-link.kpi-card__metric:hover {
-  background: var(--iz-accent-bg);
+.platform-kpi-strip__value {
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  font-size: var(--iz-fs-xl);
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+.platform-kpi-strip__metric--bad .platform-kpi-strip__value {
+  color: var(--color-danger-text);
+}
+.platform-kpi-strip__metric--warn .platform-kpi-strip__value {
+  color: var(--color-warning-text);
 }
 
-.kpi-card__metrics > .kpi-link.kpi-card__metric:first-child {
-  padding-left: 0;
-  border-left: none;
+.platform-kpi-strip__label {
+  font-size: var(--iz-fs-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.platform-kpi-strip__foot {
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: var(--iz-fs-xs);
+  color: var(--color-text-muted);
 }
 </style>

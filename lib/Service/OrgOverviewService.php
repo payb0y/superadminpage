@@ -26,16 +26,31 @@ class OrgOverviewService {
     public function listOrgs(): array {
         // Per-org task rollup. Mirrors the task-count definitions used by
         // getProjects() so the per-org numbers match the per-project drill-down.
+        //
+        // Staleness uses PlatformService::STALE_DAYS so the Adoption card's
+        // count and the roster rows it filters cannot disagree. Interpolated
+        // rather than bound because this query is built as one string and the
+        // constant is an int the app controls, never user input.
+        $staleDays = (int)PlatformService::STALE_DAYS;
         $sql = "
             SELECT
                 o.id,
                 o.name,
                 COUNT(DISTINCT m.user_uid) AS member_count,
+                COUNT(DISTINCT CASE WHEN m.role = 'admin' THEN m.user_uid END) AS admin_count,
                 COUNT(DISTINCT cp.id)      AS project_count,
+                COUNT(DISTINCT CASE
+                        WHEN cp.archived_at IS NULL
+                         AND (cp.last_deck_move_at IS NULL
+                              OR {$this->toEpoch('cp.last_deck_move_at')}
+                                 < {$this->nowEpoch()} - {$staleDays} * 86400)
+                        THEN cp.id END)    AS stale_project_count,
                 COALESCE(tt.total_tasks,   0) AS total_tasks,
                 COALESCE(tt.done_tasks,    0) AS done_tasks,
                 COALESCE(tt.overdue_tasks, 0) AS overdue_tasks,
                 p.name                     AS plan_name,
+                p.max_members              AS max_members,
+                p.max_projects             AS max_projects,
                 s.status                   AS subscription_status
             FROM *PREFIX*organizations o
             LEFT JOIN *PREFIX*organization_members m
@@ -69,7 +84,7 @@ class OrgOverviewService {
                   AND (s.ended_at IS NULL OR s.ended_at > NOW())
             LEFT JOIN *PREFIX*plans p
                    ON p.id = s.plan_id
-            GROUP BY o.id, o.name, tt.total_tasks, tt.done_tasks, tt.overdue_tasks, p.name, s.status
+            GROUP BY o.id, o.name, tt.total_tasks, tt.done_tasks, tt.overdue_tasks, p.name, p.max_members, p.max_projects, s.status
             ORDER BY o.name
         ";
         $stmt = $this->db->prepare($sql);
@@ -82,11 +97,18 @@ class OrgOverviewService {
                 'id'                 => (int)$r['id'],
                 'name'               => $r['name'],
                 'memberCount'        => (int)$r['member_count'],
+                'adminCount'         => (int)$r['admin_count'],
                 'projectCount'       => (int)$r['project_count'],
+                'staleProjectCount'  => (int)($r['stale_project_count'] ?? 0),
                 'totalTasks'         => (int)$r['total_tasks'],
                 'doneTasks'          => (int)$r['done_tasks'],
                 'overdueTasks'       => (int)$r['overdue_tasks'],
                 'planName'           => $r['plan_name'] ?? 'No plan',
+                // Caps ride along so the roster can answer "who is at their
+                // limit" without a second round trip; 0 means the plan sets no
+                // limit on that resource, not a limit of nothing.
+                'maxMembers'         => (int)($r['max_members'] ?? 0),
+                'maxProjects'        => (int)($r['max_projects'] ?? 0),
                 'subscriptionStatus' => $r['subscription_status'] ?? 'none',
                 'storage'            => [
                     'usedBytes' => $storage['usedBytes'],
