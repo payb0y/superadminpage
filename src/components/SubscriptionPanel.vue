@@ -491,7 +491,7 @@
           @submit.prevent="saveChanges"
         >
           <p class="iz-modal__confirm-text">
-            Nextcloud requires re-confirming your admin password before
+            In Zicht requires re-confirming your admin password before
             applying subscription changes.
           </p>
           <!--

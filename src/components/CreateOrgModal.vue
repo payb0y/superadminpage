@@ -565,7 +565,7 @@
           @submit.prevent="saveOrg"
         >
           <p class="iz-modal__confirm-text">
-            Nextcloud requires re-confirming your super-admin password
+            In Zicht requires re-confirming your super-admin password
             before creating an organization.
           </p>
           <input
