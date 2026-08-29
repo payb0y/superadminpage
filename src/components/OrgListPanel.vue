@@ -279,6 +279,7 @@
 
           <OrgDetailView
             v-else-if="detailCache[org.id]"
+            :key="'org-detail-' + org.id"
             :org="detailCache[org.id]"
             :embedded="true"
             :initial-tab="pendingTab[org.id] || null"

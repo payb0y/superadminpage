@@ -36,20 +36,28 @@
       </div>
     </header>
 
-    <nav class="iz-tabs org-detail__tabs">
+    <div class="org-detail__navigation">
+      <nav class="iz-tabs org-detail__tabs">
+        <button
+          v-for="tab in tabs"
+          :key="tab.key"
+          class="iz-tab"
+          :class="{ 'iz-tab--active': activeTab === tab.key }"
+          @click="activeTab = tab.key"
+        >
+          {{ tab.label }}
+          <span v-if="tab.count !== null" class="iz-tab__count">
+            {{ tab.count }}
+          </span>
+        </button>
+      </nav>
       <button
-        v-for="tab in tabs"
-        :key="tab.key"
-        class="iz-tab"
-        :class="{ 'iz-tab--active': activeTab === tab.key }"
-        @click="activeTab = tab.key"
-      >
-        {{ tab.label }}
-        <span v-if="tab.count !== null" class="iz-tab__count">
-          {{ tab.count }}
-        </span>
-      </button>
-    </nav>
+        v-if="organizationId"
+        type="button"
+        class="iz-btn iz-btn--sm org-detail__settings"
+        @click="showOrganizationSettings = true"
+      >Organization settings</button>
+    </div>
 
     <div class="org-detail__body">
       <div v-if="activeTab === 'overview'" class="org-detail__overview">
@@ -183,6 +191,12 @@
         :embedded="true"
       />
     </div>
+
+    <OrganizationSettingsModal
+      v-if="showOrganizationSettings && organizationId"
+      :organization-id="organizationId"
+      @close="showOrganizationSettings = false"
+    />
   </section>
 </template>
 
@@ -195,6 +209,7 @@ import ActivityFeed from "./ActivityFeed.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 import HandoverPanel from "./HandoverPanel.vue";
 import ContractsPanel from "./ContractsPanel.vue";
+import OrganizationSettingsModal from "./OrganizationSettingsModal.vue";
 
 // The eight keys the `tabs` computed renders. A tab key outside this set would
 // leave every v-else-if in the body false and render an empty panel, so unknown
@@ -225,6 +240,7 @@ export default {
     SubscriptionPanel,
     HandoverPanel,
     ContractsPanel,
+    OrganizationSettingsModal,
   },
   props: {
     org: {
@@ -243,6 +259,7 @@ export default {
   data() {
     return {
       activeTab: safeTab(this.initialTab),
+      showOrganizationSettings: false,
     };
   },
   watch: {
@@ -258,6 +275,10 @@ export default {
     },
   },
   computed: {
+    organizationId() {
+      const id = Number(this.org && this.org.profile && this.org.profile.id);
+      return Number.isFinite(id) && id > 0 ? id : null;
+    },
     tabs() {
       return [
         { key: "overview", label: "Overview", count: null },
@@ -431,6 +452,23 @@ export default {
   font-size: var(--iz-fs-sm);
   color: var(--color-text-muted, var(--color-text-muted));
 }
+
+.org-detail__navigation {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-md);
+}
+
+.org-detail__navigation .org-detail__tabs {
+  min-width: 0;
+  flex: 1;
+}
+
+.org-detail__settings {
+  flex: 0 0 auto;
+  margin-bottom: var(--spacing-xs);
+}
+
 /* Chrome from .iz-tabs; the inset padding is local. */
 .org-detail__tabs {
   padding: 0 4px;
@@ -511,6 +549,16 @@ export default {
 
 
 @media (max-width: 768px) {
+  .org-detail__navigation {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .org-detail__settings {
+    align-self: flex-end;
+    margin-bottom: 0;
+  }
+
   .org-detail__profile-grid {
     grid-template-columns: 1fr;
   }
