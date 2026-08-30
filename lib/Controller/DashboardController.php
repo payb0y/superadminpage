@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\SuperAdminPage\Controller;
 
 use OCA\SuperAdminPage\Service\ActivityService;
+use OCA\SuperAdminPage\Service\BackupAdminService;
 use OCA\SuperAdminPage\Service\FinancialsService;
 use OCA\SuperAdminPage\Service\GeocodeService;
 use OCA\SuperAdminPage\Service\OrgOverviewService;
@@ -27,6 +28,7 @@ class DashboardController extends Controller {
     private PlatformService $platform;
     private ProjectTasksService $projectTasks;
     private ActivityService $activity;
+    private BackupAdminService $backups;
     private SystemHealthService $systemHealth;
     private GeocodeService $geocode;
     private FinancialsService $financials;
@@ -41,6 +43,7 @@ class DashboardController extends Controller {
         PlatformService $platform,
         ProjectTasksService $projectTasks,
         ActivityService $activity,
+        BackupAdminService $backups,
         SystemHealthService $systemHealth,
         GeocodeService $geocode,
         FinancialsService $financials,
@@ -53,6 +56,7 @@ class DashboardController extends Controller {
         $this->platform = $platform;
         $this->projectTasks = $projectTasks;
         $this->activity = $activity;
+        $this->backups = $backups;
         $this->systemHealth = $systemHealth;
         $this->geocode = $geocode;
         $this->financials = $financials;
@@ -135,7 +139,18 @@ class DashboardController extends Controller {
      * @NoCSRFRequired
      */
     public function listBackups(): JSONResponse {
-        return $this->guard(fn () => new JSONResponse([]));
+        return $this->guard(function () {
+            $orgId = (int)$this->request->getParam('organizationId', 0);
+            return new JSONResponse($this->backups->listJobs(
+                $orgId > 0 ? $orgId : null,
+                $this->stringParam('status'),
+                $this->stringParam('backupType'),
+                $this->stringParam('triggerSource'),
+                $this->stringParam('q'),
+                (int)$this->request->getParam('limit', 20),
+                (int)$this->request->getParam('offset', 0),
+            ));
+        });
     }
 
     /**
@@ -225,6 +240,11 @@ class DashboardController extends Controller {
             return new JSONResponse(['error' => 'forbidden'], Http::STATUS_FORBIDDEN);
         }
         return null;
+    }
+
+    private function stringParam(string $name): ?string {
+        $value = trim((string)$this->request->getParam($name, ''));
+        return $value === '' ? null : $value;
     }
 
     /**
