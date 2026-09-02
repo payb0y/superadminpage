@@ -2,7 +2,7 @@
   <section class="iz-panel iz-panel--flush contracts-panel">
     <header class="contracts-panel__header">
       <div>
-        <h3 class="contracts-panel__title">Contract files</h3>
+        <h3 class="iz-panel__title">Contract files</h3>
         <p class="contracts-panel__subtitle">Private PDF contracts for this organization.</p>
       </div>
       <button class="iz-btn iz-btn--primary" type="button" @click="openUpload">Upload contract</button>
@@ -353,15 +353,10 @@ export default {
   gap: var(--spacing-md);
 }
 
-.contracts-panel__title,
 .contracts-panel__subtitle,
 .contracts-panel__empty-title,
 .contracts-panel__message {
   margin: 0;
-}
-
-.contracts-panel__title {
-  font-size: var(--iz-fs-lg);
 }
 
 .contracts-panel__subtitle,

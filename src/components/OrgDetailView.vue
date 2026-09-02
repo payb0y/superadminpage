@@ -36,28 +36,20 @@
       </div>
     </header>
 
-    <div class="org-detail__navigation">
-      <nav class="iz-tabs org-detail__tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          class="iz-tab"
-          :class="{ 'iz-tab--active': activeTab === tab.key }"
-          @click="activeTab = tab.key"
-        >
-          {{ tab.label }}
-          <span v-if="tab.count !== null" class="iz-tab__count">
-            {{ tab.count }}
-          </span>
-        </button>
-      </nav>
+    <nav class="iz-tabs org-detail__tabs">
       <button
-        v-if="organizationId"
-        type="button"
-        class="iz-btn iz-btn--sm org-detail__settings"
-        @click="showOrganizationSettings = true"
-      >Organization settings</button>
-    </div>
+        v-for="tab in tabs"
+        :key="tab.key"
+        class="iz-tab"
+        :class="{ 'iz-tab--active': activeTab === tab.key }"
+        @click="activeTab = tab.key"
+      >
+        {{ tab.label }}
+        <span v-if="tab.count !== null" class="iz-tab__count">
+          {{ tab.count }}
+        </span>
+      </button>
+    </nav>
 
     <div class="org-detail__body">
       <div v-if="activeTab === 'overview'" class="org-detail__overview">
@@ -159,11 +151,6 @@
         @reload="$emit('reload')"
       />
 
-      <ContractsPanel
-        v-else-if="activeTab === 'contracts'"
-        :org-id="org.profile.id"
-      />
-
       <HandoverPanel
         v-else-if="activeTab === 'handover'"
         :org="org"
@@ -183,13 +170,12 @@
         :projects="org.projects || []"
         :embedded="true"
       />
-    </div>
 
-    <OrganizationSettingsModal
-      v-if="showOrganizationSettings && organizationId"
-      :organization-id="organizationId"
-      @close="showOrganizationSettings = false"
-    />
+      <OrganizationSettingsPanel
+        v-else-if="activeTab === 'settings' && organizationId"
+        :organization-id="organizationId"
+      />
+    </div>
   </section>
 </template>
 
@@ -201,10 +187,9 @@ import BackupsPanel from "./BackupsPanel.vue";
 import ActivityFeed from "./ActivityFeed.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 import HandoverPanel from "./HandoverPanel.vue";
-import ContractsPanel from "./ContractsPanel.vue";
-import OrganizationSettingsModal from "./OrganizationSettingsModal.vue";
+import OrganizationSettingsPanel from "./OrganizationSettingsPanel.vue";
 
-// The eight keys the `tabs` computed renders. A tab key outside this set would
+// The keys the `tabs` computed renders. A tab key outside this set would
 // leave every v-else-if in the body false and render an empty panel, so unknown
 // values fall back to the overview.
 const TAB_KEYS = [
@@ -212,14 +197,20 @@ const TAB_KEYS = [
   "members",
   "projects",
   "subscription",
-  "contracts",
   "handover",
   "backups",
   "activity",
+  "settings",
 ];
 
+// "contracts" was a tab of its own until Settings absorbed it. The signing
+// round-trip (?contractsOrg=...) and any bookmark from that era still name it,
+// so it resolves to Settings — whose first section is the contract list.
+const TAB_ALIASES = { contracts: "settings" };
+
 function safeTab(key) {
-  return TAB_KEYS.indexOf(key) === -1 ? "overview" : key;
+  const resolved = TAB_ALIASES[key] || key;
+  return TAB_KEYS.indexOf(resolved) === -1 ? "overview" : resolved;
 }
 
 export default {
@@ -232,8 +223,7 @@ export default {
     ActivityFeed,
     SubscriptionPanel,
     HandoverPanel,
-    ContractsPanel,
-    OrganizationSettingsModal,
+    OrganizationSettingsPanel,
   },
   props: {
     org: {
@@ -252,7 +242,6 @@ export default {
   data() {
     return {
       activeTab: safeTab(this.initialTab),
-      showOrganizationSettings: false,
     };
   },
   watch: {
@@ -273,7 +262,7 @@ export default {
       return Number.isFinite(id) && id > 0 ? id : null;
     },
     tabs() {
-      return [
+      const tabs = [
         { key: "overview", label: "Overview", count: null },
         { key: "members", label: "Members", count: this.org.members.length },
         {
@@ -282,7 +271,6 @@ export default {
           count: this.org.projects.length,
         },
         { key: "subscription", label: "Subscription", count: null },
-        { key: "contracts", label: "Contracts", count: null },
         { key: "handover", label: "Handover", count: null },
         {
           key: "backups",
@@ -291,6 +279,12 @@ export default {
         },
         { key: "activity", label: "Activity", count: null },
       ];
+      // Settings is per-organization work (contracts, PDF template, OCR types),
+      // so it is only offered once the org resolves to a real id.
+      if (this.organizationId) {
+        tabs.push({ key: "settings", label: "Settings", count: null });
+      }
+      return tabs;
     },
     initial() {
       return (this.org.profile.name || "?").charAt(0).toUpperCase();
@@ -429,22 +423,6 @@ export default {
   color: var(--color-text-muted, var(--color-text-muted));
 }
 
-.org-detail__navigation {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--spacing-md);
-}
-
-.org-detail__navigation .org-detail__tabs {
-  min-width: 0;
-  flex: 1;
-}
-
-.org-detail__settings {
-  flex: 0 0 auto;
-  margin-bottom: var(--spacing-xs);
-}
-
 /* Chrome from .iz-tabs; the inset padding is local. */
 .org-detail__tabs {
   padding: 0 4px;
@@ -525,16 +503,6 @@ export default {
 
 
 @media (max-width: 768px) {
-  .org-detail__navigation {
-    align-items: stretch;
-    flex-direction: column-reverse;
-  }
-
-  .org-detail__settings {
-    align-self: flex-end;
-    margin-bottom: 0;
-  }
-
   .org-detail__profile-grid {
     grid-template-columns: 1fr;
   }

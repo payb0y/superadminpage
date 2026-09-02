@@ -245,7 +245,8 @@ export default {
       const params = new URLSearchParams(window.location.search);
       const orgId = Number(params.get("contractsOrg"));
       if (!orgId) return;
-      this.onDrillDown({ orgId, tab: "contracts" });
+      // Contracts live in the Settings tab now, as its first section.
+      this.onDrillDown({ orgId, tab: "settings" });
       params.delete("contractsOrg");
       const query = params.toString();
       window.history.replaceState({}, "", window.location.pathname + (query ? "?" + query : ""));
