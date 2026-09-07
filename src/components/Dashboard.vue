@@ -46,14 +46,6 @@
           :aria-selected="activeTab === 'financials'"
           @click="setActiveTab('financials')"
         >Financials</button>
-        <button
-          type="button"
-          role="tab"
-          class="iz-tab"
-          :class="{ 'iz-tab--active': activeTab === 'backups' }"
-          :aria-selected="activeTab === 'backups'"
-          @click="setActiveTab('backups')"
-        >Backups</button>
       </div>
 
       <template v-if="activeTab === 'health'">
@@ -84,10 +76,6 @@
       <template v-else-if="activeTab === 'financials'">
         <FinancialsPanel @drill-down="onDrillDown" />
       </template>
-
-      <template v-else-if="activeTab === 'backups'">
-        <GlobalBackupsPanel :orgs="orgs" />
-      </template>
     </template>
   </div>
 </template>
@@ -100,12 +88,11 @@ import PlatformKpiStrip from "./PlatformKpiStrip.vue";
 import AlertsPanel from "./AlertsPanel.vue";
 import SystemHealthPanel from "./SystemHealthPanel.vue";
 import FinancialsPanel from "./FinancialsPanel.vue";
-import GlobalBackupsPanel from "./GlobalBackupsPanel.vue";
 
 // The tab bar's vocabulary, in one place. Both the click handler and the
 // localStorage rehydration validate against this, so adding a tab is one edit
 // rather than three that can drift apart.
-const TAB_KEYS = ["health", "orgs", "financials", "backups"];
+const TAB_KEYS = ["health", "orgs", "financials"];
 
 export default {
   name: "Dashboard",
@@ -115,7 +102,6 @@ export default {
     AlertsPanel,
     SystemHealthPanel,
     FinancialsPanel,
-    GlobalBackupsPanel,
   },
   data() {
     return {

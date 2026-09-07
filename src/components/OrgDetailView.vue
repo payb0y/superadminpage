@@ -158,9 +158,10 @@
       />
 
       <BackupsPanel
-        v-else-if="activeTab === 'backups'"
-        :jobs="org.backups || []"
+        v-else-if="activeTab === 'backups' && organizationId"
+        :org-id="organizationId"
         :embedded="true"
+        @reload="$emit('reload')"
       />
 
       <ActivityFeed
