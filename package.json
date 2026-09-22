@@ -12,10 +12,12 @@
     "dependencies": {
         "@nextcloud/axios": "^2.5.2",
         "@nextcloud/router": "^3.1.0",
+        "@nextcloud/vue": "^8.41.0",
         "chart.js": "^4.4.0",
         "leaflet": "^1.9.4",
         "pdfjs-dist": "^5.7.284",
-        "vue": "^2.7.16"
+        "vue": "^2.7.16",
+        "vue-material-design-icons": "^5.3.1"
     },
     "devDependencies": {
         "@nextcloud/browserslist-config": "^3.1.2",
