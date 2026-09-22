@@ -6,3 +6,4 @@ vendor/
 !PLACEMENT_MODAL_IMPLEMENTATION.md
 docs/
 .superpowers/
+.env
