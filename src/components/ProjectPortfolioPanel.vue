@@ -58,6 +58,7 @@
         v-if="viewMode === 'detail'"
         :project="selectedDetailProject"
         :organization-id="effectiveOrgId"
+        :is-admin="true"
         @back="viewMode = 'table'"
       />
 

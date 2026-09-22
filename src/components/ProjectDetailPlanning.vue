@@ -79,7 +79,14 @@
           <small class="detail-planning__kpi-sub">{{ project.desiredCountdown || '—' }}</small>
         </div>
 
-        <!-- 6. Planning Gap -->
+        <!-- 6. Actual Start Week -->
+        <div class="detail-planning__kpi-tile">
+          <span class="detail-planning__kpi-label">Actual Start</span>
+          <strong class="detail-planning__kpi-val">{{ formatWeekShort(project.actualStartWeek) || '—' }}</strong>
+          <small class="detail-planning__kpi-sub">{{ formatActualDateSub(project.actualStartDate) }}</small>
+        </div>
+
+        <!-- 7. Planning Gap -->
         <div class="detail-planning__kpi-tile detail-planning__kpi-tile--gap" :class="{ 'detail-planning__kpi-tile--has-gap': hasGap }">
           <span class="detail-planning__kpi-label">Planning Gap</span>
           <strong class="detail-planning__kpi-val detail-planning__kpi-val--gap">
@@ -115,7 +122,7 @@
     <section class="detail-planning__timeline-wrapper">
       <GanttChart
         :project-id="Number(project.id)"
-        :is-admin="false"
+        :is-admin="isAdmin"
       />
     </section>
   </div>
@@ -138,6 +145,10 @@ export default {
     organizationId: {
       type: Number,
       default: null,
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
@@ -206,6 +217,16 @@ export default {
       if (!weekStr || weekStr === "—") return "";
       var match = String(weekStr).match(/W(\d+)/i);
       return match ? "W" + match[1] : weekStr;
+    },
+    formatActualDateSub(dateStr) {
+      if (!dateStr || dateStr === "—") return "Not set";
+      try {
+        var d = new Date(dateStr);
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+        }
+      } catch (e) {}
+      return String(dateStr);
     },
     openDeckBoard() {
       if (!this.project.boardId) return;
