@@ -212,16 +212,6 @@
           />
         </div>
 
-        <button
-          type="button"
-          class="iz-btn iz-btn--secondary portfolio-table-view__btn"
-          title="Export table as CSV"
-          @click="exportCsv"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-          Export
-        </button>
-
         <div class="portfolio-table-view__col-toggle">
           <button
             type="button"
@@ -895,53 +885,6 @@ export default {
       if (!project.boardId) return;
       var url = generateUrl("/apps/deck/#/board/" + project.boardId);
       window.open(url, "_blank");
-    },
-    exportCsv: function () {
-      var rows = this.sortedProjects;
-      if (!rows.length) return;
-
-      var headers = [
-        "Project",
-        "Process status",
-        "% done",
-        "Expected / reached 100%",
-        "Start Work Preparation",
-        "Countdown to start Work Preparation",
-        "Min. execution start",
-        "Desired week",
-        "Countdown to Desired Week",
-        "Actual start week",
-        "Open cards",
-        "Planning gap",
-      ];
-
-      var lines = [headers.join(";")];
-      rows.forEach(function (r) {
-        var gap = (r.planningGap && r.planningGap.display) || "None";
-        var line = [
-          '"' + (r.name || "").replace(/"/g, '""') + '"',
-          '"' + (r.bucketLabel || "") + '"',
-          r.completionPct + "%",
-          '"' + (r.expectedOrAchievedLabel || "") + '"',
-          '"' + (r.startPrepWeek || "") + '"',
-          '"' + (r.startPrepCountdown || "") + '"',
-          '"' + (r.minExecutionStartWeek || "") + '"',
-          '"' + (r.desiredStartWeek || "") + '"',
-          '"' + (r.desiredCountdown || "") + '"',
-          '"' + (r.actualStartWeek || "") + '"',
-          r.openCards,
-          '"' + gap + '"',
-        ];
-        lines.push(line.join(";"));
-      });
-
-      var csvContent = "data:text/csv;charset=utf-8,\uFEFF" + encodeURIComponent(lines.join("\n"));
-      var link = document.createElement("a");
-      link.setAttribute("href", csvContent);
-      link.setAttribute("download", "planning-overview-initiation-phase.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
     },
   },
 };
