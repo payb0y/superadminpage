@@ -77,6 +77,7 @@
         @update:teamId="selectedTeamId = $event"
         @move-period="movePeriod"
         @reset-period="resetPeriod"
+        @select-date="selectDate"
         @select-project="onOpenDetailPlanning"
         @edit-teams="$emit('edit-teams')"
       />
@@ -99,19 +100,35 @@
             <button type="button" class="portfolio__segment" :class="{ 'portfolio__segment--active': viewScope === 'all' }" :aria-pressed="String(viewScope === 'all')" @click="setViewScope('all')">All projects</button>
           </div>
 
-          <div class="portfolio__period-stepper" title="Period controls the weekly workload strip below; the project list itself is not filtered by period">
+          <div class="portfolio__period-stepper" title="Period controls the weekly workload strip below; click the date to jump to a specific week">
             <button type="button" class="portfolio__segment portfolio__segment--icon" aria-label="Previous 6 weeks" title="Previous 6 weeks" @click="movePeriod(-42)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
-            <span class="portfolio__period-display">
+            <button
+              type="button"
+              class="portfolio__period-display portfolio__period-display--clickable"
+              title="Click to jump to a specific date"
+              :aria-label="'Current period: ' + periodLabel + '. Click to pick a specific date.'"
+              @click="openDatePicker"
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <rect x="3" y="4" width="18" height="17" rx="2" />
                 <path d="M8 2v4M16 2v4M3 9h18" />
               </svg>
-              {{ periodLabel }}
-            </span>
+              <span>{{ periodLabel }}</span>
+              <input
+                ref="periodDatePicker"
+                type="date"
+                class="portfolio__date-input-hidden"
+                :value="displayedWeekStart"
+                aria-hidden="true"
+                tabindex="-1"
+                @change="onDatePicked"
+                @click.stop
+              />
+            </button>
             <button type="button" class="portfolio__segment portfolio__segment--icon" aria-label="Next 6 weeks" title="Next 6 weeks" @click="movePeriod(42)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polyline points="9 18 15 12 9 6" />
@@ -180,7 +197,7 @@
         <div class="portfolio__overview-grid">
           <section class="iz-card portfolio__status-card">
             <header class="iz-panel__header">
-              <h4 class="iz-panel__title">Process status - Initiation phase</h4>
+              <h4 class="iz-panel__title">Process status - Initiation phase of active projects</h4>
             </header>
             <div class="portfolio__status-content">
               <div v-if="portfolioLoading" class="portfolio__status-state iz-empty">Loading project progress...</div>
@@ -618,6 +635,34 @@ export default {
       monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
       return monday;
     },
+    openDatePicker: function () {
+      var input = this.$refs.periodDatePicker;
+      if (!input) return;
+      if (typeof input.showPicker === "function") {
+        try {
+          input.showPicker();
+          return;
+        } catch (e) {
+          // fallback to focus and click
+        }
+      }
+      input.focus();
+      input.click();
+    },
+    onDatePicked: function (event) {
+      var val = event && event.target && event.target.value ? event.target.value.trim() : null;
+      if (val) {
+        this.selectDate(val);
+      }
+    },
+    selectDate: function (dateStr) {
+      if (!dateStr) return;
+      var date = this.parseDate(dateStr);
+      date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7));
+      var weekStart = this.dateOnly(date);
+      this.displayedWeekStart = weekStart;
+      this.fetchCapacity(weekStart);
+    },
     movePeriod: function (days) {
       var start = this.displayedWeekStart
         ? this.parseDate(this.displayedWeekStart)
@@ -740,8 +785,12 @@ button.portfolio__toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 
 .portfolio__segment--icon { display: flex; align-items: center; justify-content: center; padding: 7px 9px; }
 .portfolio__segment--icon svg { width: 14px; height: 14px; }
 .portfolio__period-stepper { display: flex; align-items: center; overflow: hidden; border: 1px solid var(--iz-border); border-radius: var(--iz-radius); background: var(--iz-surface); }
-.portfolio__period-display { display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-right: 1px solid var(--iz-border); color: var(--iz-text); font-size: var(--iz-fs-sm); font-weight: 600; white-space: nowrap; }
+.portfolio__period-display { display: flex; align-items: center; gap: 6px; padding: 7px 10px; border: 0; border-right: 1px solid var(--iz-border); background: transparent; color: var(--iz-text); font-size: var(--iz-fs-sm); font-weight: 600; white-space: nowrap; font-family: inherit; }
 .portfolio__period-display svg { width: 15px; height: 15px; color: var(--iz-accent); }
+.portfolio__period-display--clickable { cursor: pointer; transition: background 0.15s ease, color 0.15s ease; position: relative; }
+.portfolio__period-display--clickable:hover { background: var(--iz-surface-hover, rgba(0, 0, 0, 0.04)); color: var(--iz-accent); }
+.portfolio__period-display--clickable:focus-visible { outline: 2px solid var(--iz-accent); outline-offset: -2px; }
+.portfolio__date-input-hidden { position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none; border: 0; padding: 0; margin: 0; }
 .portfolio__capacity { display: flex; align-items: center; gap: var(--iz-gap-tight); margin-left: auto; padding-left: var(--iz-gap); border-left: 1px solid var(--iz-border); color: var(--iz-text); }
 .portfolio__capacity > svg { width: 22px; height: 22px; flex: 0 0 22px; color: var(--iz-accent); }
 .portfolio__capacity-controls { display: flex; align-items: center; gap: var(--iz-gap-tight); }
