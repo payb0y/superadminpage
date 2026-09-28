@@ -258,22 +258,27 @@
               <div
                 v-else
                 v-for="gap in planningGaps"
-                :key="gap.id || gap.name"
+                :key="gap.id"
                 class="iz-row iz-row--card portfolio__gap-row portfolio__gap-row--clickable"
-                title="View planning gaps in table"
+                title="View gap details"
                 tabindex="0"
                 role="button"
-                :aria-label="'View planning gaps in table: ' + gap.name"
-                @click="openTableView('gaps')"
-                @keydown="onDrilldownKeydown($event, 'gaps')"
+                :aria-label="'View gap details: ' + gap.name"
+                @click="selectedGap = gap"
+                @keydown="onGapKeydown($event, gap)"
               >
                 <svg class="portfolio__pin" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" /></svg>
                 <span class="portfolio__gap-copy"><strong>{{ gap.name }}</strong><small>{{ gap.note }}</small></span>
                 <strong>{{ gap.duration }}</strong>
-                <span class="iz-badge iz-badge--danger">{{ gap.weeks }}</span>
+                <span class="iz-badge iz-badge--danger">{{ gap.type === 'internal' ? 'Inside project' : 'Between projects' }}</span>
                 <svg class="portfolio__row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
               </div>
             </div>
+            <PlanningGapDetails v-if="selectedGap" :gap="selectedGap" @close="selectedGap = null" @open-project="openGapProject" />
+            <details v-if="scheduleIssues.length" class="portfolio__schedule-issues">
+              <summary>Schedule issues ({{ scheduleIssues.length }})</summary>
+              <p v-for="issue in scheduleIssues" :key="issue.id">{{ issue.projectName }}: {{ issue.note }}</p>
+            </details>
           </section>
         </div>
 
@@ -315,12 +320,14 @@ import { generateUrl } from "@nextcloud/router";
 import { listOrganizationTeams } from "../services/organizationApi";
 import ProjectPortfolioTableView from "./ProjectPortfolioTableView.vue";
 import ProjectDetailPlanning from "./ProjectDetailPlanning.vue";
+import PlanningGapDetails from "./PlanningGapDetails.vue";
 
 export default {
   name: "ProjectPortfolioPanel",
   components: {
     ProjectPortfolioTableView,
     ProjectDetailPlanning,
+    PlanningGapDetails,
   },
   props: {
     organizationId: { type: Number, default: null },
@@ -335,6 +342,7 @@ export default {
       viewMode: "summary",
       tableInitialFilter: "all",
       selectedDetailProject: null,
+      selectedGap: null,
       portfolio: null,
       portfolioLoading: false,
       portfolioError: null,
@@ -426,6 +434,7 @@ export default {
       });
     },
     planningGaps: function () { return (this.capacity && this.capacity.planningGaps) || []; },
+    scheduleIssues: function () { return (this.capacity && this.capacity.scheduleIssues) || []; },
     teamWarnings: function () { return (this.capacity && this.capacity.teamWarnings) || []; },
     capacityNote: function () {
       if (!this.capacity || !this.capacity.team) return "";
@@ -535,6 +544,31 @@ export default {
     onOpenDetailPlanning: function (project) {
       this.selectedDetailProject = project;
       this.viewMode = "detail";
+    },
+    openGapProject: async function (project) {
+      // Gap anchors carry only id and name; the timeline needs the full table
+      // row. Completed projects are not in the table and open with what we have.
+      var row = null;
+      try {
+        var params = { scope: this.viewScope, weekStart: this.displayedWeekStart };
+        if (this.effectiveOrgId) {
+          params.organizationId = this.effectiveOrgId;
+        }
+        if (this.viewScope === "team" && this.hasPositiveTeamId) {
+          params.teamId = Number(this.selectedTeamId);
+        }
+        var response = await axios.get(generateUrl("/apps/projectcreatoraio/api/v1/portfolio/table"), { params: params });
+        row = (response.data.projects || []).find(function (p) { return Number(p.id) === Number(project.id); }) || null;
+      } catch (e) {
+        row = null;
+      }
+      this.onOpenDetailPlanning(row || project);
+    },
+    onGapKeydown: function (event, gap) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        this.selectedGap = gap;
+      }
     },
     openTableView: function (filter) {
       this.tableInitialFilter = filter || "all";
@@ -728,6 +762,7 @@ export default {
       var requestId = ++this.capacityRequestId;
       this.capacityLoading = true;
       this.capacityError = null;
+      this.selectedGap = null;
       try {
         var start = weekStart || this.displayedWeekStart || this.dateOnly(this.currentMonday());
         var params = { organizationId: this.effectiveOrgId, scope: this.viewScope, weekStart: start };
@@ -740,6 +775,7 @@ export default {
         );
         if (requestId !== this.capacityRequestId) return;
         this.capacity = response.data;
+        this.selectedGap = null;
         this.displayedWeekStart = response.data.period.weekStart;
       } catch (e) {
         if (requestId !== this.capacityRequestId) return;

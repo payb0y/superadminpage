@@ -47,7 +47,7 @@
         <!-- 1. Readiness -->
         <div class="detail-planning__kpi-tile">
           <span class="detail-planning__kpi-label">Readiness</span>
-          <strong class="detail-planning__kpi-val">{{ project.completionPct || 0 }}%</strong>
+          <strong class="detail-planning__kpi-val">{{ project.completionPct == null ? '—' : project.completionPct + '%' }}</strong>
           <span class="iz-badge iz-badge--sm" :class="bucketBadgeClass">{{ bucketBadgeLabel }}</span>
         </div>
 
@@ -197,19 +197,10 @@ export default {
       return this.project.bucketLabel || "In progress";
     },
     hasGap() {
-      return !!(this.project.planningGap && this.project.planningGap.hasGap)
-        || (this.project.gapWeeks && this.project.gapWeeks > 0);
+      return !!(this.project.planningGap && this.project.planningGap.hasGap);
     },
     gapSummaryText() {
-      if (this.project.planningGapDisplay && this.project.planningGapDisplay !== "None") {
-        return this.project.planningGapDisplay;
-      }
-      if (this.hasGap) {
-        var w = this.project.gapWeeks || 2;
-        var s = this.project.gapSpan || "W32-W33";
-        return w + (w === 1 ? " week · " : " weeks · ") + s;
-      }
-      return "No planning gap";
+      return this.hasGap ? this.project.planningGap.display : "No planning gap";
     },
   },
   methods: {
