@@ -176,7 +176,7 @@
 
     <!-- ── Filter Chips Bar & Search/Export/Columns ── -->
     <div class="portfolio-table-view__filters-row">
-      <div class="portfolio-table-view__chips" role="group" aria-label="Status filters">
+      <div class="portfolio-table-view__chips" role="group" aria-label="Progression filters">
         <button
           v-for="chip in filterChips"
           :key="chip.key"
@@ -622,8 +622,8 @@ export default {
       return this.gapFocusProject ? "Planning gaps · " + this.gapFocusProject.name : "Open planning gaps";
     },
     filterChips: function () {
-      var buckets = (this.tableData && this.tableData.buckets) ? this.tableData.buckets.slice() : [
-        { key: "all", label: "All statuses", count: 0 },
+      var rawBuckets = (this.tableData && this.tableData.buckets) ? this.tableData.buckets.slice() : [
+        { key: "all", label: "All progression", count: 0 },
         { key: "0-24", label: "0–24%", count: 0 },
         { key: "25-49", label: "25–49%", count: 0 },
         { key: "50-74", label: "50–74%", count: 0 },
@@ -631,6 +631,12 @@ export default {
         { key: "100", label: "100% ready for Handover 1", count: 0 },
         { key: "gaps", label: "Projects with gaps", count: 0 },
       ];
+      var buckets = rawBuckets.map(function (b) {
+        if (b.key === "all" && (b.label === "All statuses" || !b.label)) {
+          return Object.assign({}, b, { label: "All progression" });
+        }
+        return b;
+      });
       buckets.push({
         key: "in-period",
         label: "In selected period",
