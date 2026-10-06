@@ -44,15 +44,6 @@
         <button
           type="button"
           class="portfolio__segment"
-          :class="{ 'portfolio__segment--active': scope === 'mine' }"
-          :aria-pressed="String(scope === 'mine')"
-          @click="setScope('mine')"
-        >
-          My projects
-        </button>
-        <button
-          type="button"
-          class="portfolio__segment"
           :class="{ 'portfolio__segment--active': scope === 'team' }"
           :aria-pressed="String(scope === 'team')"
           @click="setScope('team')"

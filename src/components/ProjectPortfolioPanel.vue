@@ -95,7 +95,6 @@
           </div>
 
           <div class="portfolio__segmented" role="group" aria-label="Portfolio scope">
-            <button type="button" class="portfolio__segment" :class="{ 'portfolio__segment--active': viewScope === 'mine' }" :aria-pressed="String(viewScope === 'mine')" @click="setViewScope('mine')">My projects</button>
             <button type="button" class="portfolio__segment" :class="{ 'portfolio__segment--active': viewScope === 'team' }" :aria-pressed="String(viewScope === 'team')" @click="setViewScope('team')">Team</button>
             <button type="button" class="portfolio__segment" :class="{ 'portfolio__segment--active': viewScope === 'all' }" :aria-pressed="String(viewScope === 'all')" @click="setViewScope('all')">All projects</button>
           </div>
