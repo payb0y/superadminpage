@@ -25,6 +25,12 @@ function projectTeamsUrl(organizationId, projectId) {
   );
 }
 
+function externalsUrl(organizationId, suffix) {
+  return generateUrl(
+    `/ocs/v2.php/apps/organization/organizations/${organizationId}/externals${suffix || ""}`,
+  );
+}
+
 function requestConfig() {
   return { headers: OCS_HEADERS, params: { format: "json" } };
 }
@@ -145,4 +151,20 @@ export async function assignProjectTeam(organizationId, projectId, teamId) {
     throw new Error("The server did not persist the requested project assignment.");
   }
   return assignments;
+}
+
+// External collaborators are invited, moved and revoked per project in the
+// project app; the organization only lists them and what happened to them.
+export async function listExternalCollaborators(organizationId) {
+  const data = await request("get", externalsUrl(organizationId));
+  if (!Array.isArray(data.externals)) {
+    throw new Error("The server returned an invalid external collaborator list.");
+  }
+  return { externals: data.externals, seats: data.seats || null };
+}
+
+export async function listExternalActivity(organizationId, limit) {
+  const query = limit == null ? "" : `?limit=${Number(limit)}`;
+  const data = await request("get", externalsUrl(organizationId, "/activity" + query));
+  return Array.isArray(data.entries) ? data.entries : [];
 }

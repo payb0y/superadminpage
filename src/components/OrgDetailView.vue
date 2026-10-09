@@ -145,6 +145,12 @@
         @reload="$emit('reload')"
       />
 
+      <ExternalCollaboratorsPanel
+        v-else-if="activeTab === 'externals' && organizationId"
+        :org-id="organizationId"
+        @counted="externalCount = $event"
+      />
+
       <SubscriptionPanel
         v-else-if="activeTab === 'subscription'"
         :org="org"
@@ -189,6 +195,7 @@ import ActivityFeed from "./ActivityFeed.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 import HandoverPanel from "./HandoverPanel.vue";
 import OrganizationSettingsPanel from "./OrganizationSettingsPanel.vue";
+import ExternalCollaboratorsPanel from "./ExternalCollaboratorsPanel.vue";
 
 // The keys the `tabs` computed renders. A tab key outside this set would
 // leave every v-else-if in the body false and render an empty panel, so unknown
@@ -197,6 +204,7 @@ const TAB_KEYS = [
   "overview",
   "members",
   "projects",
+  "externals",
   "subscription",
   "handover",
   "backups",
@@ -225,6 +233,7 @@ export default {
     SubscriptionPanel,
     HandoverPanel,
     OrganizationSettingsPanel,
+    ExternalCollaboratorsPanel,
   },
   props: {
     org: {
@@ -243,6 +252,8 @@ export default {
   data() {
     return {
       activeTab: safeTab(this.initialTab),
+      // Unknown until the External tab has loaded once.
+      externalCount: null,
     };
   },
   watch: {
@@ -255,6 +266,9 @@ export default {
     // or <keep-alive> to stop refetching on each tab switch.
     initialTab(v) {
       if (v) this.activeTab = safeTab(v);
+    },
+    organizationId() {
+      this.externalCount = null;
     },
   },
   computed: {
@@ -271,6 +285,13 @@ export default {
           label: "Projects",
           count: this.org.projects.length,
         },
+      ];
+      // External collaborators are listed from the organization app's API,
+      // which needs a real organization id.
+      if (this.organizationId) {
+        tabs.push({ key: "externals", label: "External", count: this.externalCount });
+      }
+      tabs.push(
         { key: "subscription", label: "Subscription", count: null },
         { key: "handover", label: "Handover", count: null },
         {
@@ -279,7 +300,7 @@ export default {
           count: (this.org.backups || []).length,
         },
         { key: "activity", label: "Activity", count: null },
-      ];
+      );
       // Settings is per-organization work (contracts, PDF template, OCR types),
       // so it is only offered once the org resolves to a real id.
       if (this.organizationId) {

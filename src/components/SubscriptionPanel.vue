@@ -316,6 +316,31 @@
           <div class="sub-panel__custom-grid">
             <div class="sub-panel__custom-field">
               <label class="sub-panel__custom-label">
+                Private/external <span class="sub-panel__field-optional">(optional, default 1 GB)</span>
+              </label>
+              <div class="sub-panel__unit-row">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  placeholder="1"
+                  v-model="customPlan.externalStorageGb"
+                  class="iz-input"
+                  :disabled="saving"
+                  @blur="markCustomBlurred('externalStorageGb')"
+                />
+                <span class="sub-panel__unit-suffix">GB</span>
+              </div>
+              <div
+                v-if="customPlanBlurred.externalStorageGb && customPlanFieldErrors.externalStorageGb"
+                class="sub-panel__field-error sub-panel__custom-field-error"
+              >{{ customPlanFieldErrors.externalStorageGb }}</div>
+            </div>
+          </div>
+
+          <div class="sub-panel__custom-grid">
+            <div class="sub-panel__custom-field">
+              <label class="sub-panel__custom-label">
                 Price <span class="sub-panel__field-optional">(optional)</span>
               </label>
               <input
@@ -412,6 +437,7 @@
           <span>maxProjects</span><span>{{ customPlan.maxProjects }}</span>
           <span>sharedStoragePerProject</span><span>{{ Math.round(customPlan.sharedStorageGb * 1073741824) }}</span>
           <span>privateStoragePerUser</span><span>{{ Math.round(customPlan.privateStorageGb * 1073741824) }}</span>
+          <span>externalStorageQuota</span><span>{{ hasValue(customPlan.externalStorageGb) ? Math.round(customPlan.externalStorageGb * 1073741824) : "default" }}</span>
           <span v-if="customPlan.price !== '' && customPlan.price !== null">price</span>
           <span v-if="customPlan.price !== '' && customPlan.price !== null">{{ customPlan.price }}</span>
           <span>currency</span><span>{{ customPlan.currency }}</span>
@@ -436,6 +462,7 @@
           <span>maxProjects</span><span>{{ selectedPlan.maxProjects }}</span>
           <span>sharedStoragePerProject</span><span>{{ selectedPlan.sharedStoragePerProject }}</span>
           <span>privateStoragePerUser</span><span>{{ selectedPlan.privateStoragePerUser }}</span>
+          <span>externalStorageQuota</span><span>{{ selectedPlan.externalStorageQuota != null ? selectedPlan.externalStorageQuota : "default" }}</span>
           <span>price</span><span>{{ selectedPlan.price != null ? selectedPlan.price : 0 }}</span>
           <span>currency</span><span>{{ selectedPlan.currency || "EUR" }}</span>
           <span v-if="form.extendDuration">extendDuration</span><span v-if="form.extendDuration">{{ form.extendDuration }}</span>
@@ -620,6 +647,8 @@ export default {
         maxProjects: 1,
         sharedStorageGb: 0,
         privateStorageGb: 0,
+        // Empty means the organization app's default for externals (1 GB).
+        externalStorageGb: "",
         price: "",
         currency: "EUR",
         // Always public — private plans hit a server-side bug
@@ -763,6 +792,9 @@ export default {
       if (!Number.isFinite(+cp.maxProjects) || +cp.maxProjects < 1) return false;
       if (!Number.isFinite(+cp.sharedStorageGb) || +cp.sharedStorageGb <= 0) return false;
       if (!Number.isFinite(+cp.privateStorageGb) || +cp.privateStorageGb <= 0) return false;
+      if (this.hasValue(cp.externalStorageGb)) {
+        if (!Number.isFinite(+cp.externalStorageGb) || +cp.externalStorageGb < 0) return false;
+      }
       if (cp.price !== "" && cp.price !== null) {
         if (!Number.isFinite(+cp.price) || +cp.price < 0) return false;
       }
@@ -787,6 +819,10 @@ export default {
     },
   },
   methods: {
+    // An optional numeric input left empty (v-model keeps it as "").
+    hasValue(value) {
+      return value !== "" && value !== null && value !== undefined;
+    },
     formatDate(input) {
       if (!input) return "";
       const d = new Date(input);
@@ -932,6 +968,9 @@ export default {
         maxProjects: sp ? sp.maxProjects : 1,
         sharedStorageGb: Math.round(sharedGb * 100) / 100,
         privateStorageGb: Math.round(privateGb * 100) / 100,
+        externalStorageGb: sp && sp.externalStorageQuota != null
+          ? Math.round((sp.externalStorageQuota / 1073741824) * 100) / 100
+          : "",
         price: sp && sp.price != null ? sp.price : "",
         currency: (sp && sp.currency) || "EUR",
         isPublic: true,
@@ -965,6 +1004,11 @@ export default {
       if (!Number.isFinite(+cp.privateStorageGb) || +cp.privateStorageGb <= 0) {
         errs.privateStorageGb = "Must be greater than 0";
       }
+      if (this.hasValue(cp.externalStorageGb)) {
+        if (!Number.isFinite(+cp.externalStorageGb) || +cp.externalStorageGb < 0) {
+          errs.externalStorageGb = "Must be a non-negative number";
+        }
+      }
       if (cp.price !== "" && cp.price !== null) {
         if (!Number.isFinite(+cp.price) || +cp.price < 0) {
           errs.price = "Must be a non-negative number";
@@ -983,6 +1027,9 @@ export default {
         privateStoragePerUser: Math.round(+cp.privateStorageGb * 1073741824),
         isPublic: !!cp.isPublic,
       };
+      if (this.hasValue(cp.externalStorageGb)) {
+        body.externalStorageQuota = Math.round(+cp.externalStorageGb * 1073741824);
+      }
       if (cp.price !== "" && cp.price !== null) {
         body.price = +cp.price;
       }
