@@ -143,7 +143,7 @@
                 <option value="all">All teams</option>
                 <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
               </select>
-              <small v-if="selectedTeam && viewScope !== 'mine'" class="portfolio__capacity-meta">{{ formatNumber(selectedTeam.fte) }} FTE · {{ formatNumber(selectedTeam.projectsPerFte) }}/FTE</small>
+              <small v-if="selectedTeam && viewScope !== 'mine'" class="portfolio__capacity-meta">{{ peopleCount(selectedTeam.memberCount) }} · max {{ maxPerPerson }} projects each</small>
               <small v-if="teamsLoading">Loading teams...</small>
               <small v-else-if="teamError" class="portfolio__team-error">
                 {{ teamError }}
@@ -286,9 +286,6 @@
             <h4 class="iz-panel__title">Weekly work preparation load</h4>
             <span v-if="capacity" class="portfolio__capacity-note">{{ capacityNote }}</span>
           </header>
-          <div v-if="teamWarnings.length" class="portfolio__warnings" role="status">
-            <span v-for="warning in teamWarnings" :key="warning.id" class="iz-badge iz-badge--warning">{{ warning.name }} over capacity in {{ warning.overWeeks.join(", ") }}</span>
-          </div>
           <div v-if="capacityLoading" class="portfolio__status-state iz-empty">Loading capacity...</div>
           <div v-else-if="capacityError" class="portfolio__status-state iz-error">{{ capacityError }}</div>
           <div v-else-if="!weeks.length" class="portfolio__status-state iz-empty">No capacity data available.</div>
@@ -302,11 +299,20 @@
               </div>
               <div class="portfolio-week__total"><span class="portfolio__legend-dot tone-neutral" /><strong>Total active</strong><strong>{{ week.totalActive }}</strong></div>
               <div class="portfolio-week__capacity" :class="capacityClass(week)">
-                <strong>{{ week.totalActive }} / {{ week.capacity }}</strong>
-                <span>{{ capacityStatus(week) }}</span>
+                <strong>{{ capacityStatus(week) }}</strong>
+                <span>{{ capacityDetail(week) }}</span>
               </div>
             </article>
           </div>
+          <PeopleLoadGrid
+            v-if="capacity && !capacityLoading && !capacityError"
+            :people="capacity.people || []"
+            :weeks="capacity.weeks || []"
+            :projects="capacity.projects || []"
+            :overload-warnings="capacity.overloadWarnings || []"
+            :max-per-person="maxPerPerson"
+            :show-teams="viewScope !== 'mine'"
+          />
         </section>
       </div>
     </div>
@@ -320,6 +326,7 @@ import { listOrganizationTeams } from "../services/organizationApi";
 import ProjectPortfolioTableView from "./ProjectPortfolioTableView.vue";
 import ProjectDetailPlanning from "./ProjectDetailPlanning.vue";
 import PlanningGapDetails from "./PlanningGapDetails.vue";
+import PeopleLoadGrid from "./PeopleLoadGrid.vue";
 
 export default {
   name: "ProjectPortfolioPanel",
@@ -327,6 +334,7 @@ export default {
     ProjectPortfolioTableView,
     ProjectDetailPlanning,
     PlanningGapDetails,
+    PeopleLoadGrid,
   },
   props: {
     organizationId: { type: Number, default: null },
@@ -434,18 +442,18 @@ export default {
     },
     planningGaps: function () { return (this.capacity && this.capacity.planningGaps) || []; },
     scheduleIssues: function () { return (this.capacity && this.capacity.scheduleIssues) || []; },
-    teamWarnings: function () { return (this.capacity && this.capacity.teamWarnings) || []; },
+    maxPerPerson: function () { return (this.capacity && this.capacity.maxProjectsPerMember) || 2; },
     capacityNote: function () {
-      if (!this.capacity || !this.capacity.team) return "";
-      var team = this.capacity.team;
-      var note = this.formatNumber(team.capacity) + " concurrent projects";
-      if (team.id === 0 && Array.isArray(this.capacity.teams)) {
-        if (team.name === "My teams") {
-          return "My teams (" + this.capacity.teams.length + " teams): " + note;
-        }
-        return "All " + this.capacity.teams.length + " teams: " + note;
+      if (!this.capacity || !this.capacity.scope) return "";
+      var scope = this.capacity.scope;
+      var limit = "max " + this.maxPerPerson + " projects per person";
+      if (scope.type === "team" && scope.team) {
+        return scope.team.name + ": " + this.peopleCount(scope.team.memberCount) + ", " + limit;
       }
-      return team.name + ": " + note;
+      if (scope.type === "mine") {
+        return "My load across " + this.teamCount((this.capacity.teams || []).length) + ", " + limit;
+      }
+      return this.peopleCount((this.capacity.people || []).length) + " in " + this.teamCount((this.capacity.teams || []).length) + ", " + limit;
     },
     periodLabel: function () {
       if (!this.capacity || !this.capacity.period) return "Capacity";
@@ -710,15 +718,28 @@ export default {
       this.displayedWeekStart = weekStart;
       this.fetchCapacity(weekStart);
     },
-    capacityClass: function (week) {
-      return week.overCapacity
-        ? "portfolio-week__capacity--over"
-        : "portfolio-week__capacity--ok";
+    peopleCount: function (count) {
+      return count === 1 ? "1 person" : Number(count || 0) + " people";
     },
+    teamCount: function (count) {
+      return count === 1 ? "1 team" : count + " teams";
+    },
+    capacityClass: function (week) {
+      if (week.overCapacity) return "portfolio-week__capacity--over";
+      if (week.freeSlots === 0) return "portfolio-week__capacity--full";
+      return "portfolio-week__capacity--ok";
+    },
+    // Free slots only exist for one team or one person; across all teams
+    // the week reads as fine unless someone is overloaded.
     capacityStatus: function (week) {
-      if (week.overCapacity) return "Over capacity";
+      if (week.overCapacity) return week.overloadedPeople === 1 ? "1 person overloaded" : week.overloadedPeople + " people overloaded";
+      if (week.freeSlots === 0) return "No room left";
+      if (week.freeSlots !== null && week.freeSlots !== undefined) return week.freeSlots === 1 ? "1 free slot" : week.freeSlots + " free slots";
       if (week.totalActive === 0) return "No active projects";
-      return "Remaining: " + this.formatNumber(week.remaining);
+      return "Within capacity";
+    },
+    capacityDetail: function (week) {
+      return week.fullPeople ? this.peopleCount(week.fullPeople) + " full" : "";
     },
     fetchTeams: async function () {
       if (!this.effectiveOrgId) {
@@ -881,7 +902,6 @@ button.portfolio__toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 
 .portfolio__pin { width: 18px; height: 18px; color: var(--iz-accent); }
 .portfolio__gap-copy { display: grid; min-width: 0; }
 .portfolio__workload-header { align-items: center; }
-.portfolio__warnings { display: flex; flex-wrap: wrap; gap: var(--iz-gap-tight); }
 .portfolio__capacity-note { padding: 8px 12px; border-radius: var(--iz-radius); background: var(--iz-accent-bg); color: var(--iz-accent-bg-text); font-size: var(--iz-fs-sm); }
 .portfolio__team-select { display: grid; gap: 2px; min-width: 150px; }
 .portfolio__team-select .iz-select { width: auto; min-width: 150px; }
@@ -894,6 +914,7 @@ button.portfolio__toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 
 .portfolio-week__total { padding-top: var(--iz-gap-tight); border-top: 1px solid var(--iz-border); color: var(--iz-text); }
 .portfolio-week__capacity { display: flex; justify-content: space-between; gap: 5px; margin-top: auto; padding: 8px 10px; border-radius: var(--iz-radius); font-size: var(--iz-fs-xs); }
 .portfolio-week__capacity--ok { background: var(--iz-success-bg); color: var(--iz-success-text); }
+.portfolio-week__capacity--full { background: var(--iz-warning-bg); color: var(--iz-warning-text); }
 .portfolio-week__capacity--over { background: var(--iz-danger-bg); color: var(--iz-danger-text); }
 @media (max-width: 1200px) { .portfolio__overview-grid { grid-template-columns: 1fr; } }
 @media (max-width: 920px) { .portfolio__capacity { width: 100%; margin-left: 0; padding: var(--iz-gap-tight) 0 0; border-left: 0; border-top: 1px solid var(--iz-border); } }
