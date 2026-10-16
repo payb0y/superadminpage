@@ -7,7 +7,7 @@
           <span class="detail-planning__brand">In Zicht</span>
           <h2 class="detail-planning__title">Project Timeline – {{ project.name }}</h2>
         </div>
-        <p class="detail-planning__subtitle">Initiation Phase · From intake to Handover 1</p>
+        <p class="detail-planning__subtitle">Initiation Phase · From intake to handover</p>
       </div>
 
       <div class="detail-planning__header-actions">

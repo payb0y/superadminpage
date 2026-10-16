@@ -624,7 +624,7 @@ export default {
         { key: "25-49", label: "25–49%", count: 0 },
         { key: "50-74", label: "50–74%", count: 0 },
         { key: "75-99", label: "75–99% / Upcoming", count: 0 },
-        { key: "100", label: "100% ready for Handover 1", count: 0 },
+        { key: "100", label: "100% ready for handover", count: 0 },
         { key: "gaps", label: "Projects with gaps", count: 0 },
       ];
       var buckets = rawBuckets.map(function (b) {
