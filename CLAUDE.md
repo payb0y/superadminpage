@@ -16,6 +16,18 @@ Visual reference app: `../adminpage` (copy components, strip org-scoping, add a 
 npm run build          # Production build (required after any src/ change)
 npm run dev            # Development build
 npm run watch          # Development build with file watching
+npm test               # node --test tests/*.test.mjs
+```
+
+Node is not installed inside WSL; build in the `node:22` image. This
+checkout's `node_modules` came from a Windows npm, so `.bin/webpack` is a
+non-executable shim and `npm run build` fails with "Permission denied". Call
+webpack-cli directly, passing the package name the Nextcloud config reads:
+
+```bash
+docker run --rm -v "$PWD":/app -w /app node:22 sh -c \
+  'export npm_package_name=superadminpage npm_package_version=0.1.0;
+   node node_modules/webpack-cli/bin/cli.js --mode production'
 ```
 
 Hard-refresh the browser with `Ctrl+Shift+R` after each build.
@@ -57,7 +69,7 @@ Mirror `adminpage`'s `appinfo/routes.php` style. All routes require admin.
 
 ## Styling — the In Zicht theme owns it
 
-**Read `/home/payboy/src/inzicht-nextcloud-theme/USING-THE-THEME.md` before
+**Read `/home/payboy/src/inzicht-stack/inzicht-nextcloud-theme/USING-THE-THEME.md` before
 touching any style.** It is the canonical guide, shared with `adminpage` and
 `employee_dashboard`, and it is the file to edit when a rule changes. In short:
 this app defines no look of its own — chrome comes from the theme's `.iz-*`
@@ -77,8 +89,15 @@ tokens. That is long gone.
   currently emit is styled, so they are latent rather than broken — convert them
   to an explicit map with a neutral fallback when you touch them, as
   `badgeTone()` / `statusToneClass()` do, and don't add more.
-- This app draws **no canvas charts** (`TimelineChart` is DOM and CSS), so
+- This app draws **no canvas charts** (the Project Timeline is DOM and CSS), so
   `src/lib/izChart.js` is deliberately not vendored here.
+- **Project Timeline is vendored from adminpage:** `src/components/ProjectTimeline.vue`,
+  `src/lib/projectTimeline.mjs` and `tests/projectTimeline.test.mjs` are
+  identical in adminpage, superadminpage and employee_dashboard. It draws
+  projectcreatoraio's timeline summary (`/apps/projectcreatoraio/api/v1/projects/{id}/timeline/summary`,
+  which checks access itself) as the Overview's timeline figures over the
+  Planning tab's Gantt. Change adminpage's copy, then copy all three files here.
+  See adminpage's CLAUDE.md, "Project Timeline".
 
 ## Components to Copy From `../adminpage/src/components/`
 
@@ -105,19 +124,19 @@ See `SUPER_ADMIN_HANDOFF.md` §4 for the complete list of org-linked tables.
 
 ## Database Access (Dev Environment)
 
-**The app runs on PostgreSQL, in the `nc_pg` container.** Confirm before
-trusting any of this: `docker exec master-nextcloud-1 grep -E "'dbtype'|'dbhost'" /var/www/html/config/config.php`.
+**The app runs on PostgreSQL, in the `nextcloud-db` container.** Confirm before
+trusting any of this: `docker exec nextcloud-app grep -E "'dbtype'|'dbhost'" /var/www/html/config/config.php`.
 
 ```bash
-docker start nc_pg master-nextcloud-1                                 # containers may be stopped
-docker exec -it nc_pg psql -U nextcloud -d nextcloud                  # interactive
-docker exec -i nc_pg psql -U nextcloud -d nextcloud -c "..."          # one-shot
+docker start nextcloud-db nextcloud-app                                 # containers may be stopped
+docker exec -it nextcloud-db psql -U nextcloud -d nextcloud                  # interactive
+docker exec -i nextcloud-db psql -U nextcloud -d nextcloud -c "..."          # one-shot
 ```
 
 A MariaDB container `nc_db` also exists and holds a **different, larger, stale
 dataset** (11 orgs vs 2, 77 backup jobs vs 14). It is not what the app reads.
 Querying it and believing the numbers has already produced one wrong spec —
-if you want to know what the dashboard will show, query `nc_pg`.
+if you want to know what the dashboard will show, query `nextcloud-db`.
 
 Because prod and this dev instance are both Postgres, dialect bugs are not
 theoretical: Postgres refuses comparisons MySQL silently coerces. Route
@@ -134,8 +153,8 @@ it is not, use the container directly — add its current IP to
 `trusted_domains` first, or Nextcloud answers 400:
 
 ```bash
-docker inspect master-nextcloud-1 --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
-docker exec -u www-data master-nextcloud-1 php occ config:system:set trusted_domains 5 --value=<ip>
+docker inspect nextcloud-app --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
+docker exec -u www-data nextcloud-app php occ config:system:set trusted_domains 5 --value=<ip>
 ```
 
 This instance has **no pretty-URL rewrite**: API paths need `index.php`, e.g.
@@ -149,7 +168,7 @@ the "Installing container" holding page while `occ` keeps working. Finish the
 bootstrap by hand:
 
 ```bash
-docker exec master-nextcloud-1 sh -c \
+docker exec nextcloud-app sh -c \
   'rm -f /etc/apache2/conf-enabled/install.conf /var/www/html/installing.html && pkill -USR1 apache2'
 ```
 

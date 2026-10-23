@@ -404,7 +404,13 @@
         <section class="projects-panel__section">
           <h4 class="projects-panel__section-title">Timeline</h4>
           <div class="projects-panel__section-body">
-            <TimelineChart :timeline="project.timeline || []" />
+            <!-- projectcreatoraio's plan: the Overview's timeline figures over
+                 the Planning tab's Gantt (vendored from adminpage). -->
+            <ProjectTimeline
+              :src="timelineSrc(project)"
+              :items-src="timelineItemsSrc(project)"
+              :planning-url="planningUrl(project)"
+            />
           </div>
         </section>
 
@@ -436,7 +442,7 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
-import TimelineChart from "./TimelineChart.vue";
+import ProjectTimeline from "./ProjectTimeline.vue";
 import ProjectTaskBrowser from "./ProjectTaskBrowser.vue";
 import ProjectMap from "./ProjectMap.vue";
 
@@ -445,7 +451,7 @@ import ConfirmDialog from "./ConfirmDialog.vue";
 export default {
   name: "ProjectsPanel",
   components: { ConfirmDialog },
-  components: { TimelineChart, ProjectTaskBrowser, ProjectMap },
+  components: { ProjectTimeline, ProjectTaskBrowser, ProjectMap },
   emits: ["reload"],
   props: {
     projects: {
@@ -538,6 +544,15 @@ export default {
           done: "iz-pill--accent",
         }[label] || "iz-pill--muted"
       );
+    },
+    timelineSrc(p) {
+      return generateUrl("/apps/projectcreatoraio/api/v1/projects/{id}/timeline/summary", { id: p.id });
+    },
+    timelineItemsSrc(p) {
+      return generateUrl("/apps/projectcreatoraio/api/v1/projects/{id}/timeline", { id: p.id });
+    },
+    planningUrl(p) {
+      return generateUrl("/apps/projectcreatoraio/new/projects/{id}?tab=planning", { id: p.id });
     },
     findTimelineItem(p, systemKey) {
       const tl = (p && p.timeline) || [];
