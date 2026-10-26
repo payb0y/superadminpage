@@ -10,6 +10,7 @@ import {
   fullDate,
   timelineOf,
   ganttOf,
+  portfolioGanttOf,
   stackFlags,
   dependencyPaths,
   relativeDays,
@@ -530,6 +531,58 @@ test("nothing to draw without a plan", () => {
   assert.equal(empty.hasContent, true);
   assert.equal(empty.start, "2026-10-01", "no dates: this month and the five after");
   assert.equal(empty.totalDays, 181);
+});
+
+test("several projects share one range, each placed as its own chart would place it", () => {
+  // The second project's dates run a year later than onSite's.
+  const later = structuredClone(onSite);
+  const shiftYear = (v) =>
+    typeof v === "string" && /^2026-/.test(v)
+      ? v.replace(/^2026-/, "2027-")
+      : typeof v === "string" && /^2027-/.test(v)
+      ? v.replace(/^2027-/, "2028-")
+      : v;
+  const walk = (o) => {
+    for (const k of Object.keys(o)) {
+      if (o[k] && typeof o[k] === "object") walk(o[k]);
+      else if (k !== "today") o[k] = shiftYear(o[k]);
+    }
+  };
+  walk(later.systemPlanning);
+  later.phases.forEach(walk);
+  const p = portfolioGanttOf(
+    [
+      { id: 1, name: "Now", summary: onSite },
+      { id: 2, name: "Later", summary: later },
+      { id: 3, name: "Empty", summary: { phases: [] } },
+    ],
+    Date.UTC(2026, 9, 23)
+  );
+  assert.equal(p.hasContent, true);
+  assert.deepEqual(
+    p.projects.map((x) => x.name),
+    ["Now", "Later"],
+    "a project with nothing to draw is left out"
+  );
+  // onSite's own chart starts 1 Feb 2026; the later one's range takes in
+  // today (Oct 2026) too, so it starts on 1 Sep 2026.
+  assert.equal(p.start, "2026-02-01");
+  const own = ganttOf(onSite);
+  const ownLater = ganttOf(later);
+  const shift = dayOf(ownLater.start) - dayOf(own.start);
+  assert.equal(ownLater.start, "2026-09-01");
+  assert.equal(shift, 212);
+  assert.equal(p.totalDays, shift + ownLater.totalDays);
+  assert.equal(p.projects[0].system.bars[0].offset, own.system.bars[0].offset);
+  assert.equal(p.projects[1].system.bars[0].offset, ownLater.system.bars[0].offset + shift);
+  assert.equal(p.projects[1].rows[0].bar.offset, ownLater.rows[0].bar.offset + shift);
+  assert.equal(p.projects[1].rows[0].milestone.offset, ownLater.rows[0].milestone.offset + shift);
+  assert.equal(p.projects[1].system.legendOffset, ownLater.system.legendOffset + shift);
+  assert.deepEqual(p.projects[0].rows[0].tasks, [], "no card rows in the overview");
+  assert.deepEqual(p.projects[0].status, { label: "On track", tone: "on-track" });
+  assert.deepEqual(p.today, { offset: at("2026-10-23"), iso: "2026-10-23" });
+  assert.equal(p.months[0].label, "Feb");
+  assert.deepEqual(portfolioGanttOf([]), { hasContent: false, projects: [] });
 });
 
 function at(date) {

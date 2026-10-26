@@ -1458,7 +1458,9 @@ export default {
   height: 76px;
   box-sizing: border-box;
   border-bottom: 1px solid var(--color-border);
-  background: rgba(241, 245, 249, 0.4);
+  /* Planning's rgba(241, 245, 249, 0.4) is a light-only band; the theme's
+     subtle surface is the same step in both schemes. */
+  background: var(--bg-subtle);
 }
 .ptl__sp-bar {
   position: absolute;

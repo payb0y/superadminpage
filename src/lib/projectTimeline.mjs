@@ -242,6 +242,62 @@ const LEGACY_SYSTEM_KEYS = ["request_date", "process_completed", "prep_time", "d
 // Row heights, px — the Planning tab's, which the dependency arrows rely on.
 export const ROW_HEIGHT = { system: 76, phase: 56, task: 44, item: 52 };
 
+// The date header — years (only across years), months, ISO weeks — for a
+// range of UTC day numbers, as the Planning tab heads its chart.
+function headerOf(start, end) {
+  const off = (day) => day - start;
+  const first = partsOf(start);
+  const last = partsOf(end);
+  const multiYear = first.y !== last.y;
+  const months = [];
+  for (let y = first.y, m = first.m; ; m++) {
+    const from = Date.UTC(y, m, 1) / DAY_MS;
+    if (from > end) break;
+    const to = Math.min(end, Date.UTC(y, m + 1, 0) / DAY_MS);
+    const p = partsOf(from);
+    months.push({
+      key: `${p.y}-${p.m}`,
+      label: multiYear ? MONTHS[p.m] : `${MONTHS[p.m]} ${p.y}`,
+      offset: off(from),
+      days: to - from + 1,
+    });
+  }
+  const years = [];
+  if (multiYear) {
+    for (let y = first.y; y <= last.y; y++) {
+      const from = Math.max(start, Date.UTC(y, 0, 1) / DAY_MS);
+      const to = Math.min(end, Date.UTC(y, 11, 31) / DAY_MS);
+      years.push({ key: `year-${y}`, label: String(y), offset: off(from), days: to - from + 1 });
+    }
+  }
+  const weeks = [];
+  for (let cursor = start; cursor <= end; ) {
+    const { isoWeek, isoYear } = isoWeekOf(cursor);
+    const span = Math.min(7 - sinceMonday(cursor), end - cursor + 1);
+    const monday = cursor - sinceMonday(cursor);
+    const sunday = monday + 6;
+    const pm = partsOf(monday);
+    const ps = partsOf(sunday);
+    weeks.push({
+      key: `${isoYear}-W${isoWeek}`,
+      label: `W${isoWeek}`,
+      tooltip: `Week ${isoWeek} · ${pm.d} ${MONTHS[pm.m]} – ${ps.d} ${MONTHS[ps.m]} ${ps.y}`,
+      offset: off(cursor),
+      days: span,
+    });
+    cursor += span;
+  }
+  return {
+    start: isoOf(start),
+    totalDays: end - start,
+    // Monday-aligned week lines start this many days into the range.
+    firstMondayOffset: (7 - sinceMonday(start)) % 7,
+    years,
+    months,
+    weeks,
+  };
+}
+
 export function ganttOf(summary, items = [], now = Date.now()) {
   const s = summary || {};
   const sp = s.systemPlanning || null;
@@ -338,48 +394,7 @@ export function ganttOf(summary, items = [], now = Date.now()) {
   // A bar through its end day, at least one day — the phase, card and item bars.
   const through = (a, b) => ({ offset: off(a), days: Math.max(1, b - a + 1) });
 
-  // Header: years (only across years), months, ISO weeks.
-  const first = partsOf(start);
-  const last = partsOf(end);
-  const multiYear = first.y !== last.y;
-  const months = [];
-  for (let y = first.y, m = first.m; ; m++) {
-    const from = Date.UTC(y, m, 1) / DAY_MS;
-    if (from > end) break;
-    const to = Math.min(end, Date.UTC(y, m + 1, 0) / DAY_MS);
-    const p = partsOf(from);
-    months.push({
-      key: `${p.y}-${p.m}`,
-      label: multiYear ? MONTHS[p.m] : `${MONTHS[p.m]} ${p.y}`,
-      offset: off(from),
-      days: to - from + 1,
-    });
-  }
-  const years = [];
-  if (multiYear) {
-    for (let y = first.y; y <= last.y; y++) {
-      const from = Math.max(start, Date.UTC(y, 0, 1) / DAY_MS);
-      const to = Math.min(end, Date.UTC(y, 11, 31) / DAY_MS);
-      years.push({ key: `year-${y}`, label: String(y), offset: off(from), days: to - from + 1 });
-    }
-  }
-  const weeks = [];
-  for (let cursor = start; cursor <= end; ) {
-    const { isoWeek, isoYear } = isoWeekOf(cursor);
-    const span = Math.min(7 - sinceMonday(cursor), end - cursor + 1);
-    const monday = cursor - sinceMonday(cursor);
-    const sunday = monday + 6;
-    const pm = partsOf(monday);
-    const ps = partsOf(sunday);
-    weeks.push({
-      key: `${isoYear}-W${isoWeek}`,
-      label: `W${isoWeek}`,
-      tooltip: `Week ${isoWeek} · ${pm.d} ${MONTHS[pm.m]} – ${ps.d} ${MONTHS[ps.m]} ${ps.y}`,
-      offset: off(cursor),
-      days: span,
-    });
-    cursor += span;
-  }
+  const header = headerOf(start, end);
 
   // 1. System Planning — SystemPlanningRow.
   let system = null;
@@ -579,19 +594,68 @@ export function ganttOf(summary, items = [], now = Date.now()) {
 
   return {
     hasContent: true,
-    start: isoOf(start),
-    totalDays,
-    // Monday-aligned week lines start this many days into the range.
-    firstMondayOffset: (7 - sinceMonday(start)) % 7,
-    years,
-    months,
-    weeks,
+    ...header,
     system,
     rows,
     items: itemRows,
     guides,
     hasActiveDelays: !!s.delayAnalysis?.hasActiveDelays,
     today: { offset: off(today), iso: isoOf(today) },
+  };
+}
+
+// ── Several projects on one chart ─────────────────────────────────────────
+
+/**
+ * Projects side by side on one date range — the Planning tab's System Planning
+ * row and phase rows for each, the way its Gantt draws one project. Each
+ * project's chart is built by ganttOf and then moved onto the shared range, so
+ * every rule above holds per project. `entries` is [{ id, name, summary }].
+ */
+export function portfolioGanttOf(entries, now = Date.now()) {
+  const built = (entries || [])
+    .map((entry) => ({ entry, g: ganttOf(entry.summary, [], now) }))
+    .filter(({ g }) => g.hasContent);
+  if (!built.length) return { hasContent: false, projects: [] };
+  const today = todayOf((built[0].entry || {}).summary, now);
+  let start = null;
+  let end = null;
+  built.forEach(({ g }) => {
+    const from = dayOf(g.start);
+    if (start === null || from < start) start = from;
+    if (end === null || from + g.totalDays > end) end = from + g.totalDays;
+  });
+  const header = headerOf(start, end);
+  const projects = built.map(({ entry, g }) => {
+    const shift = dayOf(g.start) - start;
+    const move = (thing) => (thing ? { ...thing, offset: thing.offset + shift } : thing);
+    return {
+      id: entry.id,
+      name: String(entry.name || ""),
+      status: g.system ? g.system.status : statusOf(entry.summary && entry.summary.planningStatus),
+      system: g.system
+        ? {
+            ...g.system,
+            bars: g.system.bars.map(move),
+            markers: g.system.markers.map(move),
+            legendOffset: g.system.legendOffset + shift,
+          }
+        : null,
+      rows: g.rows.map((row) => ({
+        ...row,
+        bar: move(row.bar),
+        milestone: move(row.milestone),
+        tasks: [],
+      })),
+      guides: g.guides.map(move),
+      hasActiveDelays: g.hasActiveDelays,
+    };
+  });
+  return {
+    hasContent: true,
+    ...header,
+    projects,
+    today: { offset: today - start, iso: isoOf(today) },
   };
 }
 
