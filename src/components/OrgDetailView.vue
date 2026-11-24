@@ -8,7 +8,7 @@
       class="org-detail__back"
       @click="$emit('back')"
     >
-      × Close
+      {{ t("× Close") }}
     </button>
 
     <header v-if="!embedded" class="org-detail__header">
@@ -55,54 +55,57 @@
       <div v-if="activeTab === 'overview'" class="org-detail__overview">
         <div class="iz-stat-grid">
           <KpiCard
-            title="Projects"
+            :title="t('Projects')"
+            icon="projects"
             :metrics="[
-              { value: org.usageSummary.projectCount, label: 'total' },
+              { value: org.usageSummary.projectCount, label: t('total') },
             ]"
           />
           <KpiCard
-            title="Tasks"
+            :title="t('Tasks')"
+            icon="tasks"
             :metrics="[
-              { value: org.usageSummary.totalTasks, label: 'total' },
-              { value: org.usageSummary.doneTasks, label: 'done' },
+              { value: org.usageSummary.totalTasks, label: t('total') },
+              { value: org.usageSummary.doneTasks, label: t('done') },
             ]"
           />
           <KpiCard
-            title="Resources"
+            :title="t('Resources')"
+            icon="resources"
             :metrics="[
-              { value: org.usageSummary.memberCount, label: 'members' },
+              { value: org.usageSummary.memberCount, label: t('members') },
               {
                 value: org.subscription.maxMembers || '∞',
-                label: 'plan cap',
+                label: t('plan cap'),
               },
             ]"
           />
           <KpiCard
-            title="Storage"
+            :title="t('Storage')"
             :metrics="[
-              { value: storageUsedDisplay, label: 'used' },
-              { value: storageCapacityDisplay, label: 'allocated' },
+              { value: storageUsedDisplay, label: t('used') },
+              { value: storageCapacityDisplay, label: t('allocated') },
             ]"
           />
         </div>
 
         <div class="iz-card org-detail__profile-card">
-          <h3 class="org-detail__section-title">Organization profile</h3>
+          <h3 class="org-detail__section-title">{{ t("Organization profile") }}</h3>
           <div class="org-detail__profile-grid">
             <div class="org-detail__profile-item">
-              <span class="org-detail__profile-label">Owner UID</span>
+              <span class="org-detail__profile-label">{{ t("Owner UID") }}</span>
               <span class="org-detail__profile-value">
                 {{ org.profile.adminUid }}
               </span>
             </div>
             <div class="org-detail__profile-item">
-              <span class="org-detail__profile-label">Contact</span>
+              <span class="org-detail__profile-label">{{ t("Contact") }}</span>
               <span class="org-detail__profile-value">
                 {{ contactName }}
               </span>
             </div>
             <div class="org-detail__profile-item">
-              <span class="org-detail__profile-label">Email</span>
+              <span class="org-detail__profile-label">{{ t("Email") }}</span>
               <span class="org-detail__profile-value">
                 {{ org.profile.contactEmail }}
               </span>
@@ -111,17 +114,17 @@
               v-if="org.profile.contactPhone"
               class="org-detail__profile-item"
             >
-              <span class="org-detail__profile-label">Phone</span>
+              <span class="org-detail__profile-label">{{ t("Phone") }}</span>
               <span class="org-detail__profile-value">
                 {{ org.profile.contactPhone }}
               </span>
             </div>
             <div class="org-detail__profile-item">
-              <span class="org-detail__profile-label">Subscription</span>
+              <span class="org-detail__profile-label">{{ t("Subscription") }}</span>
               <span class="org-detail__profile-value">
-                {{ org.subscription.status }}
+                {{ statusLabel }}
                 <template v-if="org.subscription.startedAt">
-                  (since {{ formatDate(org.subscription.startedAt) }})
+                  {{ t("(since {date})", { date: formatDate(org.subscription.startedAt) }) }}
                 </template>
               </span>
             </div>
@@ -196,6 +199,15 @@ import SubscriptionPanel from "./SubscriptionPanel.vue";
 import HandoverPanel from "./HandoverPanel.vue";
 import OrganizationSettingsPanel from "./OrganizationSettingsPanel.vue";
 import ExternalCollaboratorsPanel from "./ExternalCollaboratorsPanel.vue";
+import { t, formatNumber, locale } from "../lib/l10n.mjs";
+
+// Subscription status code → label, made at display time.
+const STATUS_LABELS = {
+  active: () => t("Active"),
+  paused: () => t("Paused"),
+  cancelled: () => t("Cancelled"),
+  expired: () => t("Expired"),
+};
 
 // The keys the `tabs` computed renders. A tab key outside this set would
 // leave every v-else-if in the body false and render an empty panel, so unknown
@@ -278,33 +290,33 @@ export default {
     },
     tabs() {
       const tabs = [
-        { key: "overview", label: "Overview", count: null },
-        { key: "members", label: "Members", count: this.org.members.length },
+        { key: "overview", label: t("Overview"), count: null },
+        { key: "members", label: t("Members"), count: this.org.members.length },
         {
           key: "projects",
-          label: "Projects",
+          label: t("Projects"),
           count: this.org.projects.length,
         },
       ];
       // External collaborators are listed from the organization app's API,
       // which needs a real organization id.
       if (this.organizationId) {
-        tabs.push({ key: "externals", label: "External", count: this.externalCount });
+        tabs.push({ key: "externals", label: t("External"), count: this.externalCount });
       }
       tabs.push(
-        { key: "subscription", label: "Subscription", count: null },
-        { key: "handover", label: "Handover", count: null },
+        { key: "subscription", label: t("Subscription"), count: null },
+        { key: "handover", label: t("Handover"), count: null },
         {
           key: "backups",
-          label: "Backups",
+          label: t("Backups"),
           count: (this.org.backups || []).length,
         },
-        { key: "activity", label: "Activity", count: null },
+        { key: "activity", label: t("Activity"), count: null },
       );
       // Settings is per-organization work (contracts, PDF template, OCR types),
       // so it is only offered once the org resolves to a real id.
       if (this.organizationId) {
-        tabs.push({ key: "settings", label: "Settings", count: null });
+        tabs.push({ key: "settings", label: t("Settings"), count: null });
       }
       return tabs;
     },
@@ -326,8 +338,8 @@ export default {
     },
     statusLabel() {
       const s = this.org.subscription.status;
-      if (!s || s === "none") return "No subscription";
-      return s.charAt(0).toUpperCase() + s.slice(1);
+      if (!s || s === "none") return t("No subscription");
+      return STATUS_LABELS[s] ? STATUS_LABELS[s]() : s;
     },
     contactName() {
       const f = this.org.profile.contactFirstName || "";
@@ -350,7 +362,7 @@ export default {
       if (!d) return "—";
       const dt = new Date(d);
       if (isNaN(dt.getTime())) return d;
-      return dt.toLocaleDateString("en-GB", {
+      return dt.toLocaleDateString(locale(), {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -360,10 +372,10 @@ export default {
       if (value == null) return "—";
       const bytes = Number(value) || 0;
       if (bytes <= 0) return "0 B";
-      const units = ["B", "KB", "MB", "GB", "TB"];
+      const units = t("B / KB / MB / GB / TB").split(" / ");
       const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
       const scaled = bytes / Math.pow(1024, index);
-      return scaled.toFixed(index >= 3 && scaled < 10 ? 1 : 0) + " " + units[index];
+      return formatNumber(scaled, index >= 3 && scaled < 10 ? 1 : 0) + " " + units[index];
     },
   },
 };

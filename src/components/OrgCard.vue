@@ -17,7 +17,7 @@
             {{ statusLabel }}
           </span>
           <span class="iz-pill iz-pill--accent">
-            {{ org.planName || "No plan" }}
+            {{ org.planName || t("No plan") }}
           </span>
         </div>
       </div>
@@ -29,18 +29,18 @@
           class="org-card__metric-value"
           :class="{ 'iz-mark': metricHighlight === 'members' }"
         >{{ org.memberCount }}</span>
-        <span class="org-card__metric-label">members</span>
+        <span class="org-card__metric-label">{{ t("members") }}</span>
       </div>
       <div class="org-card__metric">
         <span
           class="org-card__metric-value"
           :class="{ 'iz-mark': metricHighlight === 'projects' }"
         >{{ org.projectCount }}</span>
-        <span class="org-card__metric-label">projects</span>
+        <span class="org-card__metric-label">{{ t("projects") }}</span>
       </div>
       <div class="org-card__metric">
         <span class="org-card__metric-value">{{ storageDisplay }}</span>
-        <span class="org-card__metric-label">storage</span>
+        <span class="org-card__metric-label">{{ t("storage") }}</span>
       </div>
     </div>
 
@@ -59,34 +59,52 @@
         class="org-card__task"
         :class="{ 'iz-mark': metricHighlight === 'tasks' }"
       >
-        <strong>{{ org.totalTasks || 0 }}</strong> tasks
+        {{ taskText.tasks[0] }}<strong>{{ org.totalTasks || 0 }}</strong>{{ taskText.tasks[1] }}
       </span>
       <span class="org-card__task-sep">·</span>
       <span
         class="org-card__task"
         :class="{ 'iz-mark': metricHighlight === 'done' }"
       >
-        <strong>{{ org.doneTasks || 0 }}</strong> done
+        {{ taskText.done[0] }}<strong>{{ org.doneTasks || 0 }}</strong>{{ taskText.done[1] }}
       </span>
       <span class="org-card__task-sep">·</span>
       <span
         class="org-card__task"
         :class="{ 'iz-mark': metricHighlight === 'overdue' }"
       >
-        <strong>{{ org.overdueTasks || 0 }}</strong> overdue
+        {{ taskText.overdue[0] }}<strong>{{ org.overdueTasks || 0 }}</strong>{{ taskText.overdue[1] }}
       </span>
       <span class="org-card__task-sep">·</span>
       <span
         class="org-card__task"
         :class="{ 'iz-mark': metricHighlight === 'open' }"
       >
-        <strong>{{ openTasks }}</strong> open
+        {{ taskText.open[0] }}<strong>{{ openTasks }}</strong>{{ taskText.open[1] }}
       </span>
     </div>
   </div>
 </template>
 
 <script>
+import { t, formatNumber } from "../lib/l10n.mjs";
+
+// Subscription status code → label, made at display time.
+const STATUS_LABELS = {
+  active: () => t("Active"),
+  paused: () => t("Paused"),
+  cancelled: () => t("Cancelled"),
+  expired: () => t("Expired"),
+};
+
+// A translated sentence split around its count, so the count can stay bold
+// without v-html: "Aantal taken: {n}" → ["Aantal taken: ", ""].
+const COUNT_MARK = "\u0001";
+function aroundCount(text) {
+  const i = text.indexOf(COUNT_MARK);
+  return i === -1 ? [text + " ", ""] : [text.slice(0, i), text.slice(i + COUNT_MARK.length)];
+}
+
 export default {
   name: "OrgCard",
   props: {
@@ -109,6 +127,14 @@ export default {
       const done = Number(this.org.doneTasks) || 0;
       return Math.max(0, total - done);
     },
+    taskText() {
+      return {
+        tasks: aroundCount(t("{n} tasks", { n: COUNT_MARK })),
+        done: aroundCount(t("{n} done", { n: COUNT_MARK })),
+        overdue: aroundCount(t("{n} overdue", { n: COUNT_MARK })),
+        open: aroundCount(t("{n} open", { n: COUNT_MARK })),
+      };
+    },
     initial() {
       return (this.org.name || "?").charAt(0).toUpperCase();
     },
@@ -127,8 +153,8 @@ export default {
     },
     statusLabel() {
       const s = this.org.subscriptionStatus;
-      if (!s || s === "none") return "No subscription";
-      return s.charAt(0).toUpperCase() + s.slice(1);
+      if (!s || s === "none") return t("No subscription");
+      return STATUS_LABELS[s] ? STATUS_LABELS[s]() : s;
     },
     storageDisplay() {
       return this.formatBytes(this.storage.usedBytes);
@@ -137,26 +163,35 @@ export default {
       return this.org.storage || {};
     },
     storageCapacityDisplay() {
-      if (this.storage.capacityBytes == null) return "No plan capacity";
-      return this.formatBytes(this.storage.usedBytes) + " of " + this.formatBytes(this.storage.capacityBytes);
+      if (this.storage.capacityBytes == null) return t("No plan capacity");
+      return t("{used} of {capacity}", {
+        used: this.formatBytes(this.storage.usedBytes),
+        capacity: this.formatBytes(this.storage.capacityBytes),
+      });
     },
     storageMeterWidth() {
       return Math.min(100, Math.max(0, Number(this.storage.percentage) || 0));
     },
     storagePercentageDisplay() {
-      const suffix = this.storage.complete === false ? " · incomplete" : "";
-      if (this.storage.percentage == null) return "—" + suffix;
-      return this.storage.percentage + "%" + suffix;
+      const incomplete = this.storage.complete === false;
+      if (this.storage.percentage == null) {
+        return incomplete ? t("{percentage}% · incomplete", { percentage: "—" }).replace("—%", "—") : "—";
+      }
+      const percentage = formatNumber(this.storage.percentage);
+      return incomplete
+        ? t("{percentage}% · incomplete", { percentage })
+        : percentage + "%";
     },
   },
   methods: {
     formatBytes(value) {
+      const [B, KB, MB, GB] = t("B / KB / MB / GB").split(" / ");
       const bytes = Number(value) || 0;
-      if (bytes <= 0) return "0 B";
-      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + " KB";
+      if (bytes <= 0) return "0 " + B;
+      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + " " + KB;
       if (bytes < 1024 * 1024 * 1024)
-        return Math.round(bytes / (1024 * 1024)) + " MB";
-      return (bytes / (1024 * 1024 * 1024)).toFixed(1) + " GB";
+        return Math.round(bytes / (1024 * 1024)) + " " + MB;
+      return formatNumber(bytes / (1024 * 1024 * 1024)) + " " + GB;
     },
   },
 };

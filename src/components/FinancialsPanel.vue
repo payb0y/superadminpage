@@ -2,48 +2,47 @@
   <section class="financials">
     <div v-if="loading" class="financials__state">
       <div class="iz-spinner iz-spinner--lg"></div>
-      <p>Loading financials…</p>
+      <p>{{ t("Loading financials…") }}</p>
     </div>
 
     <div v-else-if="error" class="financials__state financials__state--error">
       <p class="financials__error-msg">{{ error }}</p>
-      <button type="button" class="iz-btn iz-btn--accent" @click="reload">Try again</button>
+      <button type="button" class="iz-btn iz-btn--accent" @click="reload">{{ t("Try again") }}</button>
     </div>
 
     <template v-else-if="data">
       <div class="financials__strip">
         <div class="financials__stat">
-          <span class="financials__stat-label">MRR</span>
+          <span class="financials__stat-label">{{ t("MRR") }}</span>
           <span class="financials__stat-value">
             {{ money(summary.mrr) }}
             <span class="iz-badge" :class="deltaTone(summary.mrrDelta)">{{ deltaText(summary.mrrDelta) }}</span>
           </span>
         </div>
         <div class="financials__stat">
-          <span class="financials__stat-label">ARR</span>
+          <span class="financials__stat-label">{{ t("ARR") }}</span>
           <span class="financials__stat-value">{{ money(summary.arr) }}</span>
         </div>
         <div class="financials__stat">
-          <span class="financials__stat-label">Active</span>
+          <span class="financials__stat-label">{{ t("Active") }}</span>
           <span class="financials__stat-value">{{ summary.activeSubs }} / {{ summary.totalOrgs }}</span>
         </div>
         <div class="financials__stat">
-          <span class="financials__stat-label">Up for renewal</span>
+          <span class="financials__stat-label">{{ t("Up for renewal") }}</span>
           <span class="financials__stat-value">{{ money(summary.upForRenewal) }}</span>
         </div>
-        <span class="financials__source">contracted revenue · list prices, not payments</span>
+        <span class="financials__source">{{ t("contracted revenue · list prices, not payments") }}</span>
       </div>
 
       <p v-if="summary.mixedCurrency" class="financials__warn">
-        Plans on this platform are priced in more than one currency. Totals here add the
-        raw numbers without converting them, so treat them as indicative.
+        {{ t("Plans on this platform are priced in more than one currency. Totals here add the raw numbers without converting them, so treat them as indicative.") }}
       </p>
 
       <div class="iz-card financials__panel">
         <div class="financials__panel-head">
-          <h3 class="financials__panel-title">Revenue by organization and month</h3>
+          <h3 class="financials__panel-title">{{ t("Revenue by organization and month") }}</h3>
           <span class="financials__panel-meta">
-            {{ orgs.length }} {{ orgs.length === 1 ? "organization" : "organizations" }}
+            {{ n("%n organization", "%n organizations", orgs.length) }}
             · {{ windowLabel }}
           </span>
         </div>
@@ -51,9 +50,7 @@
         <p v-if="noRevenue" class="financials__empty">{{ emptyGridMessage }}</p>
 
         <p v-if="deletedPlans" class="financials__warn">
-          {{ deletedPlans }} {{ deletedPlans === 1 ? "plan referenced here has" : "plans referenced here have" }}
-          since been deleted. Their prices are gone from the database, so revenue billed on
-          {{ deletedPlans === 1 ? "it" : "them" }} reads as {{ money(0) }} rather than what was actually charged.
+          {{ n("%n plan referenced here has since been deleted. Its prices are gone from the database, so revenue billed on it reads as {zero} rather than what was actually charged.", "%n plans referenced here have since been deleted. Their prices are gone from the database, so revenue billed on them reads as {zero} rather than what was actually charged.", deletedPlans, { zero: money(0) }) }}
         </p>
 
         <RevenueGrid
@@ -69,9 +66,9 @@
       <div class="financials__band">
         <div class="iz-card financials__panel">
           <div class="financials__panel-head">
-            <h3 class="financials__panel-title">What happened</h3>
+            <h3 class="financials__panel-title">{{ t("What happened") }}</h3>
             <span class="financials__panel-meta">
-              {{ data.events.length }} {{ data.events.length === 1 ? "change" : "changes" }}
+              {{ n("%n change", "%n changes", data.events.length) }}
             </span>
           </div>
           <div v-if="data.events.length" class="financials__scroller">
@@ -85,15 +82,15 @@
                 <button
                   type="button"
                   class="financials__org-btn"
-                  :aria-label="'Open ' + event.orgName + ' in Organizations'"
+                  :aria-label="t('Open {organization} in Organizations', { organization: event.orgName })"
                   @click="openOrg(event.orgId)"
                 >{{ event.orgName }}</button>
-                <span>{{ event.from }} → {{ event.to }}</span>
+                <span>{{ t("{from} → {to}", { from: event.from, to: event.to }) }}</span>
                 <span
                   v-if="event.unreflected"
                   class="iz-badge iz-badge--warning"
-                  title="Recorded in the subscription audit trail, but this organization's current subscription does not match it — so the amount on this line never took effect. Only the most recent logged change can be checked this way."
-                >logged, never applied</span>
+                  :title="t('Recorded in the subscription audit trail, but this organization\'s current subscription does not match it — so the amount on this line never took effect. Only the most recent logged change can be checked this way.')"
+                >{{ t("logged, never applied") }}</span>
                 <span v-if="event.notes" class="financials__event-note">“{{ event.notes }}”</span>
               </span>
               <span class="financials__event-amount" :class="amountTone(event.amount)">
@@ -101,14 +98,14 @@
               </span>
             </div>
           </div>
-          <p v-else class="financials__empty">No subscription changes recorded yet.</p>
+          <p v-else class="financials__empty">{{ t("No subscription changes recorded yet.") }}</p>
         </div>
 
         <div class="iz-card financials__panel">
           <div class="financials__panel-head">
-            <h3 class="financials__panel-title">What lands next</h3>
+            <h3 class="financials__panel-title">{{ t("What lands next") }}</h3>
             <span class="financials__panel-meta">
-              {{ data.renewals.length }} {{ data.renewals.length === 1 ? "renewal" : "renewals" }}
+              {{ n("%n renewal", "%n renewals", data.renewals.length) }}
             </span>
           </div>
           <div v-if="data.renewals.length" class="financials__scroller">
@@ -122,24 +119,24 @@
                 <button
                   type="button"
                   class="financials__org-btn"
-                  :aria-label="'Open ' + renewal.orgName + ' in Organizations'"
+                  :aria-label="t('Open {organization} in Organizations', { organization: renewal.orgName })"
                   @click="openOrg(renewal.orgId)"
                 >{{ renewal.orgName }}</button>
-                <span>{{ renewal.plan }} renews</span>
+                <span>{{ t("{plan} renews", { plan: renewal.plan }) }}</span>
               </span>
               <span class="financials__event-amount">{{ moneyIn(renewal.price, renewal.currency) }}</span>
             </div>
           </div>
-          <p v-else class="financials__empty">No renewals scheduled.</p>
+          <p v-else class="financials__empty">{{ t("No renewals scheduled.") }}</p>
         </div>
       </div>
 
       <div class="iz-card financials__panel">
         <div class="financials__panel-head">
-          <h3 class="financials__panel-title">Plans against usage bands</h3>
+          <h3 class="financials__panel-title">{{ t("Plans against usage bands") }}</h3>
           <span class="financials__panel-meta">
-            {{ plans.length }} {{ plans.length === 1 ? "plan" : "plans" }}
-            · active subscriptions only
+            {{ n("%n plan", "%n plans", plans.length) }}
+            {{ t("· active subscriptions only") }}
           </span>
         </div>
 
@@ -155,7 +152,7 @@
 
       <div ref="roster" class="iz-card financials__panel">
         <div class="financials__panel-head">
-          <h3 class="financials__panel-title">Organizations</h3>
+          <h3 class="financials__panel-title">{{ t("Organizations") }}</h3>
           <span class="financials__panel-meta">{{ rosterMeta }}</span>
         </div>
 
@@ -170,11 +167,11 @@
               data-1p-ignore
               data-bwignore
               data-lpignore="true"
-              aria-label="Search organizations"
-              placeholder="Search organizations…"
+:aria-label="t('Search organizations')"
+              :placeholder="t('Search organizations…')"
             />
 
-            <div class="financials__chips" role="group" aria-label="Subscription status">
+            <div class="financials__chips" role="group" :aria-label="t('Subscription status')">
               <button
                 v-for="opt in statusOptions"
                 :key="opt.value"
@@ -184,7 +181,7 @@
                 :aria-pressed="String(statusFilter === opt.value)"
                 @click="statusFilter = opt.value"
               >
-                {{ opt.label }}
+                {{ opt.label() }}
                 <span class="financials__chip-count">{{ statusCount(opt.value) }}</span>
               </button>
             </div>
@@ -192,49 +189,49 @@
 
           <div class="financials__toolbar-row">
             <div class="financials__field">
-              <label :for="fieldId('plan')">Plan</label>
+              <label :for="fieldId('plan')">{{ t("Plan") }}</label>
               <select :id="fieldId('plan')" v-model="planFilter" class="iz-select iz-select--sm">
-                <option :value="null">All plans</option>
+                <option :value="null">{{ t("All plans") }}</option>
                 <option v-for="plan in plans" :key="plan.id" :value="plan.id">{{ plan.name }}</option>
-                <option v-if="hasUnplanned" value="none">No plan</option>
+                <option v-if="hasUnplanned" value="none">{{ t("No plan") }}</option>
               </select>
             </div>
 
             <div class="financials__field">
-              <label :for="fieldId('usage')">Of cap</label>
+              <label :for="fieldId('usage')">{{ t("Of cap") }}</label>
               <select :id="fieldId('usage')" v-model="usageFilter" class="iz-select iz-select--sm">
-                <option :value="null">Any usage</option>
+                <option :value="null">{{ t("Any usage") }}</option>
                 <option v-for="band in bandKeys" :key="band" :value="band">{{ bandLabel(band) }}</option>
               </select>
             </div>
 
             <div class="financials__field">
-              <label :for="fieldId('revenue')">Revenue</label>
+              <label :for="fieldId('revenue')">{{ t("Revenue") }}</label>
               <select :id="fieldId('revenue')" v-model="revenueFilter" class="iz-select iz-select--sm">
-                <option value="all">Any</option>
-                <option value="paying">Paying</option>
-                <option value="free">Free</option>
+                <option value="all">{{ t("Any") }}</option>
+                <option value="paying">{{ t("Paying") }}</option>
+                <option value="free">{{ t("Free") }}</option>
               </select>
             </div>
 
             <div class="financials__field">
-              <label :for="fieldId('renew')">Renews</label>
+              <label :for="fieldId('renew')">{{ t("Renews") }}</label>
               <select :id="fieldId('renew')" v-model.number="renewFilter" class="iz-select iz-select--sm">
-                <option :value="0">Any time</option>
-                <option :value="30">≤ 30 days</option>
-                <option :value="90">≤ 90 days</option>
-                <option :value="180">≤ 180 days</option>
+                <option :value="0">{{ t("Any time") }}</option>
+                <option :value="30">{{ t("≤ 30 days") }}</option>
+                <option :value="90">{{ t("≤ 90 days") }}</option>
+                <option :value="180">{{ t("≤ 180 days") }}</option>
               </select>
             </div>
 
             <div class="financials__field">
-              <label :for="fieldId('sort')">Sort</label>
+              <label :for="fieldId('sort')">{{ t("Sort") }}</label>
               <select :id="fieldId('sort')" v-model="sortBy" class="iz-select iz-select--sm">
-                <option value="revenue">Revenue</option>
-                <option value="billed">Billed</option>
-                <option value="usage">Of cap</option>
-                <option value="renews">Renewal date</option>
-                <option value="name">Name</option>
+                <option value="revenue">{{ t("Revenue") }}</option>
+                <option value="billed">{{ t("Billed") }}</option>
+                <option value="usage">{{ t("Of cap") }}</option>
+                <option value="renews">{{ t("Renewal date") }}</option>
+                <option value="name">{{ t("Name") }}</option>
               </select>
             </div>
 
@@ -243,29 +240,29 @@
               class="iz-btn iz-btn--sm"
               :disabled="!anyFilter"
               @click="clearFilters"
-            >Clear</button>
+            >{{ t("Clear") }}</button>
           </div>
         </div>
 
         <div v-if="!filteredOrgs.length" class="iz-empty">
-          No organizations match these filters.
+          {{ t("No organizations match these filters.") }}
         </div>
 
         <div v-else class="iz-table-wrap">
           <table class="iz-table financials__table">
             <thead>
               <tr>
-                <th scope="col">Organization</th>
-                <th scope="col">Plan</th>
-                <th scope="col" class="financials__num">Price / mo</th>
+                <th scope="col">{{ t("Organization") }}</th>
+                <th scope="col">{{ t("Plan") }}</th>
+                <th scope="col" class="financials__num">{{ t("Price / mo") }}</th>
                 <th scope="col" class="financials__num">
-                  <span :title="billedTitle">Billed, {{ recordedMonths }} mo</span>
+                  <span :title="billedTitle">{{ t("Billed, {n} mo", { n: recordedMonths }) }}</span>
                 </th>
-                <th scope="col">Status</th>
-                <th scope="col">Renews</th>
-                <th scope="col" class="financials__num">Members</th>
-                <th scope="col" class="financials__num">Projects</th>
-                <th scope="col" class="financials__num">Of cap</th>
+                <th scope="col">{{ t("Status") }}</th>
+                <th scope="col">{{ t("Renews") }}</th>
+                <th scope="col" class="financials__num">{{ t("Members") }}</th>
+                <th scope="col" class="financials__num">{{ t("Projects") }}</th>
+                <th scope="col" class="financials__num">{{ t("Of cap") }}</th>
               </tr>
             </thead>
             <tbody>
@@ -276,7 +273,7 @@
                     <button
                       type="button"
                       class="financials__org-btn"
-                      :aria-label="'Open ' + org.name + ' in Organizations'"
+                      :aria-label="t('Open {organization} in Organizations', { organization: org.name })"
                       @click="openOrg(org.id)"
                     >{{ org.name }}</button>
                   </span>
@@ -313,10 +310,9 @@
 
         <div v-if="filteredOrgs.length" class="financials__pagination-bar">
           <div class="financials__page-summary">
-            Showing <strong>{{ rangeStart }}</strong>–<strong>{{ rangeEnd }}</strong>
-            of <strong>{{ filteredOrgs.length }}</strong>
+            {{ t("Showing {start}–{end} of {total}", { start: rangeStart, end: rangeEnd, total: filteredOrgs.length }) }}
             <span v-if="filteredOrgs.length !== orgs.length">
-              filtered from {{ orgs.length }}
+              {{ t("filtered from {n}", { n: orgs.length }) }}
             </span>
           </div>
 
@@ -325,14 +321,14 @@
               type="button"
               class="iz-btn iz-btn--sm financials__page-btn"
               :disabled="currentPage === 1"
-              aria-label="First page"
+              :aria-label="t('First page')"
               @click="currentPage = 1"
             >«</button>
             <button
               type="button"
               class="iz-btn iz-btn--sm financials__page-btn"
               :disabled="currentPage <= 1"
-              aria-label="Previous page"
+              :aria-label="t('Previous page')"
               @click="currentPage--"
             >‹</button>
             <template v-for="(p, i) in visiblePages">
@@ -355,26 +351,26 @@
               type="button"
               class="iz-btn iz-btn--sm financials__page-btn"
               :disabled="currentPage >= totalPages"
-              aria-label="Next page"
+              :aria-label="t('Next page')"
               @click="currentPage++"
             >›</button>
             <button
               type="button"
               class="iz-btn iz-btn--sm financials__page-btn"
               :disabled="currentPage === totalPages"
-              aria-label="Last page"
+              :aria-label="t('Last page')"
               @click="currentPage = totalPages"
             >»</button>
           </div>
 
           <div class="financials__page-size">
-            <label :for="pageSizeId">Per page</label>
+            <label :for="pageSizeId">{{ t("Per page") }}</label>
             <select
               :id="pageSizeId"
               v-model.number="pageSize"
               class="iz-select iz-select--sm"
             >
-              <option v-for="n in pageSizeOptions" :key="n" :value="n">{{ n }}</option>
+              <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
             </select>
           </div>
         </div>
@@ -388,26 +384,28 @@ import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import RevenueGrid from "./RevenueGrid.vue";
 import PlanBandsPanel from "./PlanBandsPanel.vue";
+import { t, n, locale } from "../lib/l10n.mjs";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
+// Filters work on the status code (value); label() is only what is shown.
 const STATUS_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "paused", label: "Paused" },
-  { value: "cancelled", label: "Cancelled" },
-  { value: "expired", label: "Expired" },
-  { value: "none", label: "No plan" },
+  { value: "all", label: () => t("All") },
+  { value: "active", label: () => t("Active") },
+  { value: "paused", label: () => t("Paused") },
+  { value: "cancelled", label: () => t("Cancelled") },
+  { value: "expired", label: () => t("Expired") },
+  { value: "none", label: () => t("No plan") },
 ];
 
 // Band keys come from the payload so the service owns the thresholds; only the
 // wording lives here, as an explicit table with a fallback to the raw key.
 const BAND_LABELS = {
-  low: "under 50%",
-  mid: "50–79%",
-  high: "80–99%",
-  cap: "at or over cap",
-  none: "not measured",
+  low: () => t("under 50%"),
+  mid: () => t("50–79%"),
+  high: () => t("80–99%"),
+  cap: () => t("at or over cap"),
+  none: () => t("not measured"),
 };
 
 const BAND_CLASSES = {
@@ -428,14 +426,12 @@ const STATUS_BADGES = {
 };
 
 const STATUS_LABELS = {
-  active: "Active",
-  paused: "Paused",
-  cancelled: "Cancelled",
-  expired: "Expired",
-  none: "No plan",
+  active: () => t("Active"),
+  paused: () => t("Paused"),
+  cancelled: () => t("Cancelled"),
+  expired: () => t("Expired"),
+  none: () => t("No plan"),
 };
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export default {
   name: "FinancialsPanel",
@@ -478,10 +474,9 @@ export default {
       return (this.data ? this.data.nowIndex : 0) + 1;
     },
     billedTitle() {
-      return (
-        "List price summed over the " + this.recordedMonths + " recorded months of this " +
-        "window (" + this.windowLabel + " runs longer, but committed months are not " +
-        "billed). Anything before the window is not counted, so this is not lifetime value."
+      return t(
+        "List price summed over the {n} recorded months of this window ({window} runs longer, but committed months are not billed). Anything before the window is not counted, so this is not lifetime value.",
+        { n: this.recordedMonths, window: this.windowLabel },
       );
     },
     // A cell counts ACTIVE subscriptions, on one plan, in one band. So it may
@@ -549,18 +544,18 @@ export default {
     rosterMeta() {
       const parts = [];
       if (this.filteredOrgs.length === this.orgs.length) {
-        parts.push(this.orgs.length + (this.orgs.length === 1 ? " organization" : " organizations"));
+        parts.push(n("%n organization", "%n organizations", this.orgs.length));
       } else {
-        parts.push(this.filteredOrgs.length + " of " + this.orgs.length);
+        parts.push(t("{filtered} of {total}", { filtered: this.filteredOrgs.length, total: this.orgs.length }));
       }
       if (this.planFilter !== null) {
-        parts.push(this.planFilter === "none" ? "no plan" : this.planName(this.planFilter));
+        parts.push(this.planFilter === "none" ? t("no plan") : this.planName(this.planFilter));
       }
       if (this.usageFilter !== null) parts.push(this.bandLabel(this.usageFilter));
       return parts.join(" · ");
     },
     noRevenue() {
-      return this.data !== null && this.data.totals.every((t) => t === 0);
+      return this.data !== null && this.data.totals.every((total) => total === 0);
     },
     dataQuality() {
       return (this.data && this.data.dataQuality) || {};
@@ -576,28 +571,29 @@ export default {
     emptyGridMessage() {
       const zero = this.money(0);
       if (!this.orgs.length) {
-        return "No organizations on this platform yet, so there is nothing to bill.";
+        return t("No organizations on this platform yet, so there is nothing to bill.");
       }
       if (this.dataQuality.planCount === 0) {
-        return "No plans have been created yet, so no organization can be billed.";
+        return t("No plans have been created yet, so no organization can be billed.");
       }
       if (this.dataQuality.allPlansFree) {
-        return (
-          "No revenue recorded. Every plan on this platform is currently priced " +
-          zero + ", so the grid below has nothing to shade."
+        return t(
+          "No revenue recorded. Every plan on this platform is currently priced {zero}, so the grid below has nothing to shade.",
+          { zero },
         );
       }
-      return (
-        "No revenue recorded in this window. Priced plans exist, but no subscription " +
-        "was billing during these months."
-      );
+      return t("No revenue recorded in this window. Priced plans exist, but no subscription was billing during these months.");
     },
     windowLabel() {
       const months = (this.data && this.data.months) || [];
       if (!months.length) return "";
       const first = months[0];
       const last = months[months.length - 1];
-      return first.label + " " + first.year + " – " + last.label + " " + last.year;
+      // Month labels arrive localised from the backend.
+      return t("{from} – {to}", {
+        from: first.label + " " + first.year,
+        to: last.label + " " + last.year,
+      });
     },
     pageSizeId() {
       return "financials-page-size-" + this._uid;
@@ -680,16 +676,16 @@ export default {
       const status = e && e.response && e.response.status;
       const serverMsg = e && e.response && e.response.data && e.response.data.message;
       if (status === 403) {
-        return "You don't have permission to view this data — super-admin access is required.";
+        return t("You don't have permission to view this data — super-admin access is required.");
       }
       if (serverMsg) return serverMsg;
       if (status && status >= 500) {
-        return "The server ran into a problem loading financials. Please try again in a moment.";
+        return t("The server ran into a problem loading financials. Please try again in a moment.");
       }
       if (e && e.request && !e.response) {
-        return "Couldn't reach the server. Check your connection and try again.";
+        return t("Couldn't reach the server. Check your connection and try again.");
       }
-      return "Something went wrong loading financials. Please try again.";
+      return t("Something went wrong loading financials. Please try again.");
     },
     // Platform-level totals: one currency, the dominant one, with the
     // mixedCurrency banner covering the case where that is a simplification.
@@ -701,7 +697,7 @@ export default {
     // would overstate that organization's price by roughly thirty times.
     moneyIn(value, currency) {
       try {
-        return new Intl.NumberFormat(undefined, {
+        return new Intl.NumberFormat(locale(), {
           style: "currency",
           currency: currency || this.summary.currency || "EUR",
         }).format(value || 0);
@@ -713,11 +709,13 @@ export default {
     },
     signedMoney(value) {
       if (!value) return "—";
-      return (value > 0 ? "+" : "−") + this.money(Math.abs(value));
+      const amount = this.money(Math.abs(value));
+      return value > 0 ? t("+{amount}", { amount }) : t("−{amount}", { amount });
     },
     deltaText(value) {
-      if (!value) return "±" + this.money(0);
-      return (value > 0 ? "▲ " : "▼ ") + this.money(Math.abs(value));
+      if (!value) return t("±{amount}", { amount: this.money(0) });
+      const amount = this.money(Math.abs(value));
+      return value > 0 ? t("▲ {amount}", { amount }) : t("▼ {amount}", { amount });
     },
     deltaTone(value) {
       if (!value) return "iz-badge--muted";
@@ -733,7 +731,8 @@ export default {
       return STATUS_BADGES[status] || "iz-badge--muted";
     },
     statusLabel(status) {
-      return STATUS_LABELS[status] || status;
+      const label = STATUS_LABELS[status];
+      return label ? label() : status;
     },
     atCap(usage) {
       return usage && usage.cap > 0 && usage.used >= usage.cap;
@@ -742,14 +741,15 @@ export default {
       return "financials-" + name + "-" + this._uid;
     },
     bandLabel(band) {
-      return BAND_LABELS[band] || band;
+      const label = BAND_LABELS[band];
+      return label ? label() : band;
     },
     bandClass(band) {
       return BAND_CLASSES[band] || "financials__band-dot--none";
     },
     planName(planId) {
       const plan = this.plans.filter((p) => p.id === planId)[0];
-      return plan ? plan.name : "Unknown plan";
+      return plan ? plan.name : t("Unknown plan");
     },
     statusCount(value) {
       if (value === "all") return this.baseFiltered.length;
@@ -766,7 +766,7 @@ export default {
     },
     usageTitle(org) {
       if (org.usage === null || org.usage === undefined) {
-        return org.name + " · this plan caps neither members nor projects";
+        return t("{organization} · this plan caps neither members nor projects", { organization: org.name });
       }
       const tighter =
         org.projects.cap > 0 && org.members.cap > 0
@@ -776,10 +776,14 @@ export default {
           : org.members.cap > 0
             ? "members"
             : "projects";
-      return (
-        org.name + " · " + this.usageText(org) + " of its plan cap (" +
-        this.bandLabel(org.usageBand) + "), set by " + tighter
-      );
+      const vars = {
+        organization: org.name,
+        percentage: this.usageText(org),
+        band: this.bandLabel(org.usageBand),
+      };
+      return tighter === "members"
+        ? t("{organization} · {percentage} of its plan cap ({band}), set by members", vars)
+        : t("{organization} · {percentage} of its plan cap ({band}), set by projects", vars);
     },
     // Sorts are stable on name so that equal values — every free plan at zero,
     // for instance — do not shuffle between renders.
@@ -877,7 +881,12 @@ export default {
       if (!value) return "—";
       const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
       if (!m) return String(value);
-      return Number(m[3]) + " " + MONTHS[Number(m[2]) - 1] + " " + m[1];
+      const date = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+      try {
+        return date.toLocaleDateString(locale(), { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+      } catch (e) {
+        return m[3] + "-" + m[2] + "-" + m[1];
+      }
     },
   },
 };

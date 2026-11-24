@@ -2,17 +2,17 @@
   <div class="people-load">
     <div v-if="warnings.length" class="people-load__warnings" role="status">
       <p v-for="warning in warnings" :key="warning.uid" class="people-load__warning">
-        <strong>{{ warning.displayName }}</strong> is overloaded in {{ warning.period }} with {{ warning.peakLoad }} projects: {{ warning.projects }}
+        {{ warning.before }}<strong>{{ warning.displayName }}</strong>{{ warning.after }}
       </p>
     </div>
 
     <div v-if="!people.length" class="people-load__empty iz-empty">{{ emptyText }}</div>
     <div v-else class="people-load__scroll">
       <table class="people-load__table">
-        <caption class="people-load__caption">Running projects per person and week, at most {{ maxPerPerson }} at a time</caption>
+        <caption class="people-load__caption">{{ t('Running projects per person and week, at most {max} at a time', { max: maxPerPerson }) }}</caption>
         <thead>
           <tr>
-            <th scope="col" class="people-load__person-col">Person</th>
+            <th scope="col" class="people-load__person-col">{{ t('Person') }}</th>
             <th v-for="week in weeks" :key="week.label" scope="col">{{ shortLabel(week.label) }}</th>
           </tr>
         </thead>
@@ -42,7 +42,7 @@
 
     <div v-if="selectedCell" class="people-load__detail">
       <strong>{{ selectedCell.title }}</strong>
-      <p v-if="!selectedCell.projects.length">No running projects.</p>
+      <p v-if="!selectedCell.projects.length">{{ t('No running projects.') }}</p>
       <ul v-else>
         <li v-for="project in selectedCell.projects" :key="project.id">
           {{ project.name }}<small v-if="project.teamName"> · {{ project.teamName }}</small>
@@ -51,14 +51,16 @@
     </div>
 
     <div v-if="people.length" class="people-load__legend" aria-hidden="true">
-      <span><span class="people-load__swatch people-load__cell--free" />Room</span>
-      <span><span class="people-load__swatch people-load__cell--full" />Full ({{ maxPerPerson }})</span>
-      <span><span class="people-load__swatch people-load__cell--overloaded" />Overloaded (more than {{ maxPerPerson }})</span>
+      <span><span class="people-load__swatch people-load__cell--free" />{{ t('Room') }}</span>
+      <span><span class="people-load__swatch people-load__cell--full" />{{ t('Full ({max})', { max: maxPerPerson }) }}</span>
+      <span><span class="people-load__swatch people-load__cell--overloaded" />{{ t('Overloaded (more than {max})', { max: maxPerPerson }) }}</span>
     </div>
   </div>
 </template>
 
 <script>
+import { t, n } from "../lib/l10n.mjs";
+
 export default {
   name: "PeopleLoadGrid",
   props: {
@@ -68,7 +70,7 @@ export default {
     overloadWarnings: { type: Array, default: function () { return []; } },
     maxPerPerson: { type: Number, default: 2 },
     showTeams: { type: Boolean, default: true },
-    emptyText: { type: String, default: "No team members in this view." },
+    emptyText: { type: String, default: function () { return t("No team members in this view."); } },
   },
   data: function () {
     return { selected: null };
@@ -81,12 +83,19 @@ export default {
     },
     warnings: function () {
       return this.overloadWarnings.map(function (warning) {
+        // One translatable sentence; {name} is left in place so the name
+        // keeps its <strong> wherever the translation puts it.
+        var sentence = t("{name} is overloaded in {period} with {n} projects: {projects}", {
+          period: this.periodText(warning.overWeeks),
+          n: warning.peakLoad,
+          projects: this.projectList(warning.projectIds),
+        });
+        var at = sentence.indexOf("{name}");
         return {
           uid: warning.uid,
           displayName: warning.displayName,
-          peakLoad: warning.peakLoad,
-          period: this.periodText(warning.overWeeks),
-          projects: this.projectList(warning.projectIds),
+          before: at === -1 ? "" : sentence.slice(0, at),
+          after: at === -1 ? " " + sentence : sentence.slice(at + "{name}".length),
         };
       }, this);
     },
@@ -97,8 +106,8 @@ export default {
       var week = this.weeks[this.selected.index];
       if (!cell || !week) return null;
       return {
-        title: person.displayName + " · " + this.shortLabel(week.label) + ": " + this.loadText(cell.load),
-        projects: cell.projectIds.map(function (id) { return this.projectsById[id] || { id: id, name: "Project " + id }; }, this),
+        title: t("{name} · {week}: {load}", { name: person.displayName, week: this.shortLabel(week.label), load: this.loadText(cell.load) }),
+        projects: cell.projectIds.map(function (id) { return this.projectsById[id] || { id: id, name: t("Project {id}", { id: id }) }; }, this),
       };
     },
   },
@@ -108,19 +117,22 @@ export default {
   methods: {
     shortLabel: function (label) {
       var parts = String(label || "").split("-");
-      return parts.length > 1 ? parts[parts.length - 1] : label;
+      var last = parts.length > 1 ? parts[parts.length - 1] : label;
+      // "2026-W47" from the backend: the week number gets the user's prefix (wk 47).
+      var match = /^W(\d+)$/.exec(String(last || ""));
+      return match ? t("W{week}", { week: match[1] }) : last;
     },
     teamNames: function (person) {
       return person.teams.map(function (team) { return team.name; }).join(", ");
     },
     loadText: function (load) {
-      return load === 1 ? "1 project" : load + " projects";
+      return n("%n project", "%n projects", load);
     },
     cellLabel: function (person, index) {
       var cell = person.weeks[index];
-      var label = person.displayName + ", " + this.shortLabel(this.weeks[index] && this.weeks[index].label) + ": " + this.loadText(cell.load);
-      if (cell.state === "overloaded") return label + ", overloaded";
-      if (cell.state === "full") return label + ", full";
+      var label = t("{name}, {week}: {load}", { name: person.displayName, week: this.shortLabel(this.weeks[index] && this.weeks[index].label), load: this.loadText(cell.load) });
+      if (cell.state === "overloaded") return t("{label}, overloaded", { label: label });
+      if (cell.state === "full") return t("{label}, full", { label: label });
       return label;
     },
     isSelected: function (person, index) {
@@ -132,7 +144,7 @@ export default {
     projectList: function (projectIds) {
       return projectIds.map(function (id) {
         var project = this.projectsById[id];
-        if (!project) return "Project " + id;
+        if (!project) return t("Project {id}", { id: id });
         return project.teamName ? project.name + " (" + project.teamName + ")" : project.name;
       }, this).join(", ");
     },

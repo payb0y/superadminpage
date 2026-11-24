@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\SuperAdminPage\Service;
 
 use OCP\IDBConnection;
+use OCP\IL10N;
 
 /**
  * Read-only feed of member/operational activity for an org or project.
@@ -31,9 +32,11 @@ class ActivityService {
     use SqlDialectTrait;
 
     private IDBConnection $db;
+    private IL10N $l;
 
-    public function __construct(IDBConnection $db) {
+    public function __construct(IDBConnection $db, IL10N $l) {
         $this->db = $db;
+        $this->l = $l;
     }
 
     /**
@@ -372,10 +375,13 @@ class ActivityService {
                 : ($r['previous_plan_id'] !== $r['new_plan_id'] ? 'subscription.plan_changed' : 'subscription.updated');
 
             $summary = $r['previous_status'] !== $r['new_status']
-                ? "Subscription {$r['previous_status']} → {$r['new_status']}"
+                ? $this->l->t('Subscription %1$s → %2$s', [
+                    $this->codeLabel((string)$r['previous_status']),
+                    $this->codeLabel((string)$r['new_status']),
+                ])
                 : ($r['previous_plan_id'] !== $r['new_plan_id']
-                    ? "Plan changed: " . ($r['prev_plan_name'] ?? '—') . ' → ' . ($r['new_plan_name'] ?? '—')
-                    : 'Subscription updated');
+                    ? $this->l->t('Plan changed: %1$s → %2$s', [$r['prev_plan_name'] ?? '—', $r['new_plan_name'] ?? '—'])
+                    : $this->l->t('Subscription updated'));
 
             $out[] = $this->normalize([
                 'ts'              => strtotime($r['change_timestamp']) ?: 0,
@@ -435,7 +441,12 @@ class ActivityService {
                 'action'          => 'backup.' . $r['status'],
                 'target_type'     => 'backup_job',
                 'target_id'       => (string)$r['id'],
-                'summary'         => "Backup #{$r['id']} ({$r['backup_type']}, {$r['trigger_source']}) — {$r['status']}",
+                'summary'         => $this->l->t('Backup #%1$s (%2$s, %3$s) — %4$s', [
+                    $r['id'],
+                    $this->codeLabel((string)$r['backup_type']),
+                    $this->codeLabel((string)$r['trigger_source']),
+                    $this->codeLabel((string)$r['status']),
+                ]),
                 'meta'            => [
                     'backup_type'    => $r['backup_type'],
                     'trigger_source' => $r['trigger_source'],
@@ -481,7 +492,11 @@ class ActivityService {
                 'action'          => 'aho.' . $r['status'],
                 'target_type'     => 'aho_job',
                 'target_id'       => (string)$r['id'],
-                'summary'         => "Account hand-off {$r['source_user_uid']} → {$r['target_user_uid']} — {$r['status']}",
+                'summary'         => $this->l->t('Account hand-off %1$s → %2$s — %3$s', [
+                    $r['source_user_uid'],
+                    $r['target_user_uid'],
+                    $this->codeLabel((string)$r['status']),
+                ]),
                 'meta'            => [
                     'source_user' => $r['source_user_uid'],
                     'target_user' => $r['target_user_uid'],
@@ -526,7 +541,7 @@ class ActivityService {
                 'action'          => 'member.joined',
                 'target_type'     => 'user',
                 'target_id'       => $r['user_uid'],
-                'summary'         => "{$r['user_uid']} joined as {$r['role']}",
+                'summary'         => $this->l->t('%1$s joined as %2$s', [$r['user_uid'], $this->roleLabel((string)$r['role'])]),
                 'meta'            => ['role' => $r['role']],
             ]);
         }
@@ -586,7 +601,7 @@ class ActivityService {
                         'action'          => 'project.created',
                         'target_type'     => 'project',
                         'target_id'       => (string)$r['id'],
-                        'summary'         => "Project \"{$r['name']}\" created",
+                        'summary'         => $this->l->t('Project "%s" created', [$r['name']]),
                     ]);
                 }
             }
@@ -602,7 +617,7 @@ class ActivityService {
                         'action'          => 'project.archived',
                         'target_type'     => 'project',
                         'target_id'       => (string)$r['id'],
-                        'summary'         => "Project \"{$r['name']}\" archived",
+                        'summary'         => $this->l->t('Project "%s" archived', [$r['name']]),
                     ]);
                 }
             }
@@ -646,7 +661,7 @@ class ActivityService {
                 'action'          => 'share.public_link_created',
                 'target_type'     => $r['item_type'] ?: 'file',
                 'target_id'       => (string)$r['id'],
-                'summary'         => "Public link created for " . ($r['file_target'] ?: 'file'),
+                'summary'         => $this->l->t('Public link created for %s', [$r['file_target'] ?: $this->l->t('file')]),
                 'meta'            => [
                     'has_expiry' => $r['expiration'] !== null,
                 ],
@@ -692,7 +707,7 @@ class ActivityService {
                 'action'          => 'auth.session_active',
                 'target_type'     => 'session',
                 'target_id'       => null,
-                'summary'         => "{$r['uid']} active in session " . ($r['name'] ?: ''),
+                'summary'         => $this->l->t('%1$s active in session %2$s', [$r['uid'], $r['name'] ?: '']),
             ]);
         }
         return $out;
@@ -787,12 +802,60 @@ class ActivityService {
     }
 
     private function humanize(string $type, string $subject, ?string $user, ?string $file = null): string {
-        $actor = $user ?: 'System';
-        $file = $file ? " on {$file}" : '';
+        $actor = $user ?: $this->l->t('System');
         // Subject strings come from NC apps and aren't 1:1 actions, but they're
         // good enough as a free-form fragment — we prefix with the actor and
-        // join with the activity type for context.
-        $sub = $subject ? " ({$subject})" : '';
-        return "{$actor}: {$type}{$sub}{$file}";
+        // join with the activity type for context. One whole sentence per
+        // combination, so a translation can order its parts freely.
+        if ($subject !== '' && $file) {
+            return $this->l->t('%1$s: %2$s (%3$s) on %4$s', [$actor, $type, $subject, $file]);
+        }
+        if ($subject !== '') {
+            return $this->l->t('%1$s: %2$s (%3$s)', [$actor, $type, $subject]);
+        }
+        if ($file) {
+            return $this->l->t('%1$s: %2$s on %3$s', [$actor, $type, $file]);
+        }
+        return $this->l->t('%1$s: %2$s', [$actor, $type]);
+    }
+
+    /**
+     * Display text for a status, type or trigger code that lands inside a
+     * summary sentence. The codes stay in `action`/`meta` for anything that
+     * filters or styles; only the sentence is translated. An unknown code is
+     * shown as it is rather than guessed at.
+     */
+    private function codeLabel(string $code): string {
+        switch ($code) {
+            // subscription
+            case 'none':        return $this->l->t('none');
+            case 'active':      return $this->l->t('Active');
+            case 'trial':       return $this->l->t('Trial');
+            case 'paused':      return $this->l->t('Paused');
+            case 'cancelled':   return $this->l->t('Cancelled');
+            case 'expired':     return $this->l->t('Expired');
+            // backup and account hand-off jobs
+            case 'queued':      return $this->l->t('Queued');
+            case 'pending':     return $this->l->t('Pending');
+            case 'running':     return $this->l->t('Running');
+            case 'completed':   return $this->l->t('Completed');
+            case 'succeeded':   return $this->l->t('Succeeded');
+            case 'failed':      return $this->l->t('Failed');
+            case 'deleted':     return $this->l->t('Deleted');
+            // backup type and trigger
+            case 'full':        return $this->l->t('Full');
+            case 'incremental': return $this->l->t('Incremental');
+            case 'scheduled':   return $this->l->t('Scheduled');
+            case 'manual':      return $this->l->t('Manual');
+            default:            return $code;
+        }
+    }
+
+    private function roleLabel(string $role): string {
+        switch ($role) {
+            case 'admin':  return $this->l->t('admin');
+            case 'member': return $this->l->t('member');
+            default:       return $role;
+        }
     }
 }

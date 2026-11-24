@@ -5,12 +5,12 @@
         v-model="searchQuery"
         class="projects-panel__search iz-input"
         type="text"
-        placeholder="Search projects…"
+        :placeholder="t('Search projects…')"
       />
     </div>
 
     <div v-if="filteredProjects.length === 0" class="iz-empty">
-      No projects match your filters.
+      {{ t('No projects match your filters.') }}
     </div>
 
     <div
@@ -32,13 +32,13 @@
           <span class="projects-panel__name">{{ project.name }}</span>
           <div class="projects-panel__meta">
             <span class="projects-panel__meta-item">
-              {{ project.done }}/{{ project.total }} tasks
+              {{ t('{done}/{total} tasks', { done: project.done, total: project.total }) }}
             </span>
             <span
               v-if="project.overdue > 0"
               class="projects-panel__meta-item projects-panel__meta-item--danger"
             >
-              {{ project.overdue }} overdue
+              {{ t('{n} overdue', { n: project.overdue }) }}
             </span>
           </div>
         </div>
@@ -79,7 +79,7 @@
         <div class="projects-panel__cards-row">
           <div class="projects-panel__card iz-card">
             <div class="projects-panel__card-header">
-              <h4 class="projects-panel__card-title">Project Overview</h4>
+              <h4 class="projects-panel__card-title">{{ t('Project Overview') }}</h4>
               <span
                 v-if="project.statusLabel"
                 class="iz-pill"
@@ -88,36 +88,36 @@
             </div>
             <div class="projects-panel__info-grid">
               <div class="projects-panel__info-item">
-                <span class="iz-label projects-panel__info-label">Project Name</span>
+                <span class="iz-label projects-panel__info-label">{{ t('Project Name') }}</span>
                 <span class="projects-panel__info-value">{{ project.name }}</span>
               </div>
               <div v-if="project.number" class="projects-panel__info-item">
-                <span class="iz-label projects-panel__info-label">Project Number</span>
+                <span class="iz-label projects-panel__info-label">{{ t('Project Number') }}</span>
                 <span class="projects-panel__info-value">{{ project.number }}</span>
               </div>
               <div v-if="project.description" class="projects-panel__info-item">
-                <span class="iz-label projects-panel__info-label">Description</span>
+                <span class="iz-label projects-panel__info-label">{{ t('Description') }}</span>
                 <span class="projects-panel__info-value">{{ project.description }}</span>
               </div>
               <div
                 v-if="project.location && project.location !== ','"
                 class="projects-panel__info-item"
               >
-                <span class="iz-label projects-panel__info-label">Project Address</span>
+                <span class="iz-label projects-panel__info-label">{{ t('Project Address') }}</span>
                 <span class="projects-panel__info-value">{{ project.location }}</span>
               </div>
               <div class="projects-panel__info-item">
-                <span class="iz-label projects-panel__info-label">Created</span>
+                <span class="iz-label projects-panel__info-label">{{ t('Created') }}</span>
                 <span class="projects-panel__info-value">{{ formatDate(project.createdAt) }}</span>
               </div>
               <div class="projects-panel__info-item">
-                <span class="iz-label projects-panel__info-label">Last Updated</span>
+                <span class="iz-label projects-panel__info-label">{{ t('Last Updated') }}</span>
                 <span class="projects-panel__info-value">{{ formatDate(project.updatedAt) }}</span>
               </div>
             </div>
             <div class="projects-panel__completion">
               <div class="projects-panel__completion-header">
-                <span class="projects-panel__completion-label">Task Completion</span>
+                <span class="projects-panel__completion-label">{{ t('Task Completion') }}</span>
                 <span class="projects-panel__completion-pct">{{ project.progress }}%</span>
               </div>
               <div class="iz-meter">
@@ -128,27 +128,27 @@
                 ></div>
               </div>
               <span class="projects-panel__completion-detail">
-                {{ project.done }} of {{ project.total }} tasks completed
+                {{ t('{done} of {total} tasks completed', { done: project.done, total: project.total }) }}
               </span>
             </div>
           </div>
 
           <div class="projects-panel__card iz-card">
-            <h4 class="projects-panel__card-title">Client &amp; Resources</h4>
+            <h4 class="projects-panel__card-title">{{ t('Client & Resources') }}</h4>
             <div v-if="hasClientInfo(project)" class="projects-panel__info-grid">
               <div v-if="project.clientName" class="projects-panel__info-item">
-                <span class="iz-label projects-panel__info-label">Client</span>
+                <span class="iz-label projects-panel__info-label">{{ t('Client') }}</span>
                 <span class="projects-panel__info-value">{{ project.clientName }}</span>
               </div>
               <div v-if="project.clientEmail" class="projects-panel__info-item">
-                <span class="iz-label projects-panel__info-label">Email</span>
+                <span class="iz-label projects-panel__info-label">{{ t('Email') }}</span>
                 <a
                   :href="'mailto:' + project.clientEmail"
                   class="projects-panel__info-link"
                 >{{ project.clientEmail }}</a>
               </div>
               <div v-if="project.clientPhone" class="projects-panel__info-item">
-                <span class="iz-label projects-panel__info-label">Phone</span>
+                <span class="iz-label projects-panel__info-label">{{ t('Phone') }}</span>
                 <a
                   :href="'tel:' + project.clientPhone"
                   class="projects-panel__info-link"
@@ -158,26 +158,26 @@
                 v-if="project.clientAddress"
                 class="projects-panel__info-item"
               >
-                <span class="iz-label projects-panel__info-label">Client Address</span>
+                <span class="iz-label projects-panel__info-label">{{ t('Client Address') }}</span>
                 <span class="projects-panel__info-value projects-panel__info-value--multiline">{{ project.clientAddress }}</span>
               </div>
             </div>
             <div v-else class="iz-state projects-panel__no-client">
-              No client information
+              {{ t('No client information') }}
             </div>
-            <h4 class="projects-panel__card-title projects-panel__card-title--sub">Resources</h4>
+            <h4 class="projects-panel__card-title projects-panel__card-title--sub">{{ t('Resources') }}</h4>
             <div class="projects-panel__resources">
               <div class="projects-panel__resource-item">
                 <span class="projects-panel__resource-value">{{ (project.resources && project.resources.files) || 0 }}</span>
-                <span class="projects-panel__resource-label">Files</span>
+                <span class="projects-panel__resource-label">{{ t('Files') }}</span>
               </div>
               <div class="projects-panel__resource-item">
                 <span class="projects-panel__resource-value">{{ (project.resources && project.resources.whiteboards) || 0 }}</span>
-                <span class="projects-panel__resource-label">Whiteboards</span>
+                <span class="projects-panel__resource-label">{{ t('Whiteboards') }}</span>
               </div>
               <div class="projects-panel__resource-item">
                 <span class="projects-panel__resource-value">{{ (project.resources && project.resources.notes) || 0 }}</span>
-                <span class="projects-panel__resource-label">Notes</span>
+                <span class="projects-panel__resource-label">{{ t('Notes') }}</span>
               </div>
             </div>
           </div>
@@ -186,7 +186,7 @@
         <div class="projects-panel__map-row">
           <div class="projects-panel__card projects-panel__card--full">
             <div class="projects-panel__card-header">
-              <h4 class="projects-panel__card-title">Project Location</h4>
+              <h4 class="projects-panel__card-title">{{ t('Project Location') }}</h4>
             </div>
             <ProjectMap
               v-if="geocodeStatus[project.id] === 'loaded' && geocodeByProject[project.id]"
@@ -197,26 +197,26 @@
             <div
               v-else-if="geocodeStatus[project.id] === 'no_address'"
               class="projects-panel__map-state"
-            >No address available for this project.</div>
+            >{{ t('No address available for this project.') }}</div>
             <div
               v-else-if="geocodeStatus[project.id] === 'not_found'"
               class="projects-panel__map-state"
-            >Couldn't locate this address on the map.</div>
+            >{{ t('Couldn\'t locate this address on the map.') }}</div>
             <div
               v-else-if="geocodeStatus[project.id] === 'unavailable'"
               class="projects-panel__map-state projects-panel__map-state--error"
-            >{{ geocodeError[project.id] || "Map unavailable." }}</div>
+            >{{ geocodeError[project.id] || t('Map unavailable.') }}</div>
             <div
               v-else
               class="projects-panel__map-state"
-            >Loading map…</div>
+            >{{ t('Loading map…') }}</div>
           </div>
         </div>
 
         <div class="projects-panel__kpi-row">
           <div class="projects-panel__kpi-stat">
             <span class="projects-panel__kpi-stat-value">{{ project.progress }}%</span>
-            <span class="projects-panel__kpi-stat-label">Completion Rate</span>
+            <span class="projects-panel__kpi-stat-label">{{ t('Completion Rate') }}</span>
             <div class="projects-panel__kpi-bar">
               <div
                 class="projects-panel__kpi-bar-fill"
@@ -224,24 +224,24 @@
                 :style="{ width: project.progress + '%' }"
               ></div>
             </div>
-            <span class="projects-panel__kpi-stat-sub">{{ project.done }}/{{ project.total }} tasks</span>
+            <span class="projects-panel__kpi-stat-sub">{{ t('{done}/{total} tasks', { done: project.done, total: project.total }) }}</span>
           </div>
           <div class="projects-panel__kpi-stat">
             <span class="projects-panel__kpi-stat-value">{{ coordinationPending(project) }}</span>
-            <span class="projects-panel__kpi-stat-label">Coordination Pending</span>
-            <span class="projects-panel__kpi-stat-sub">Weeks since Request Date</span>
+            <span class="projects-panel__kpi-stat-label">{{ t('Coordination Pending') }}</span>
+            <span class="projects-panel__kpi-stat-sub">{{ t('Weeks since Request Date') }}</span>
           </div>
           <div class="projects-panel__kpi-stat">
             <span class="projects-panel__kpi-stat-value">{{ requiredPrepTime(project) }}</span>
-            <span class="projects-panel__kpi-stat-label">Required Prep Time</span>
-            <span class="projects-panel__kpi-stat-sub">Planned preparation period</span>
+            <span class="projects-panel__kpi-stat-label">{{ t('Required Prep Time') }}</span>
+            <span class="projects-panel__kpi-stat-sub">{{ t('Planned preparation period') }}</span>
           </div>
         </div>
 
         <section class="projects-panel__section">
           <h4 class="projects-panel__section-title">
             <span class="projects-panel__section-title-text">
-              Team Members
+              {{ t('Team Members') }}
               <span class="projects-panel__section-count">
                 {{ (project.members || []).length }}
               </span>
@@ -252,7 +252,7 @@
               @click="toggleProjectAddPanel(project.id)"
             >
               <span aria-hidden="true">{{ (addPanelByProject[project.id] && addPanelByProject[project.id].open) ? "×" : "+" }}</span>
-              {{ (addPanelByProject[project.id] && addPanelByProject[project.id].open) ? "Close" : "Add" }}
+              {{ (addPanelByProject[project.id] && addPanelByProject[project.id].open) ? t('Close') : t('Add') }}
             </button>
           </h4>
           <div class="projects-panel__section-body">
@@ -264,7 +264,7 @@
                 type="search"
                 class="iz-input"
                 v-model="addPanelByProject[project.id].search"
-                placeholder="Search org members…"
+                :placeholder="t('Search org members…')"
               />
               <div
                 v-if="addPanelByProject[project.id].error"
@@ -284,29 +284,29 @@
                       {{ u.displayName || u.userId }}
                     </span>
                     <span class="iz-identity__meta">
-                      <template v-if="u.email">{{ u.email }} · </template>uid: {{ u.userId }}
+                      <template v-if="u.email">{{ u.email }} · </template>{{ t('uid: {id}', { id: u.userId }) }}
                     </span>
                   </div>
                   <select
                     :value="rowRoleFor(project.id, u.userId)"
                     @change="setRowRole(project.id, u.userId, $event.target.value)"
                     class="projects-panel__add-form-role"
-                    :aria-label="'DRASCI role for ' + (u.displayName || u.userId)"
+                    :aria-label="t('DRASCI role for {name}', { name: u.displayName || u.userId })"
                   >
-                    <option value="">DRASCI role…</option>
-                    <option value="driver">Driver</option>
-                    <option value="responsible">Responsible</option>
-                    <option value="accountable">Accountable</option>
-                    <option value="supportive">Supportive</option>
-                    <option value="consulted">Consulted</option>
-                    <option value="informed">Informed</option>
+                    <option value="">{{ t('DRASCI role…') }}</option>
+                    <option value="driver">{{ t('Driver') }}</option>
+                    <option value="responsible">{{ t('Responsible') }}</option>
+                    <option value="accountable">{{ t('Accountable') }}</option>
+                    <option value="supportive">{{ t('Supportive') }}</option>
+                    <option value="consulted">{{ t('Consulted') }}</option>
+                    <option value="informed">{{ t('Informed') }}</option>
                   </select>
                   <button
                     type="button"
                     class="iz-user-picker__add"
                     :disabled="addPanelByProject[project.id].addingUid !== null || !rowRoleFor(project.id, u.userId)"
-                    :title="rowRoleFor(project.id, u.userId) ? '' : 'Choose a DRASCI role first'"
-                    :aria-label="'Add ' + (u.displayName || u.userId)"
+                    :title="rowRoleFor(project.id, u.userId) ? '' : t('Choose a DRASCI role first')"
+                    :aria-label="t('Add {name}', { name: u.displayName || u.userId })"
                     @click="addProjectMember(project.id, u.userId)"
                   >
                     <span
@@ -323,10 +323,10 @@
                 class="iz-state"
               >
                 <template v-if="addPanelByProject[project.id].search.trim()">
-                  No matches.
+                  {{ t('No matches.') }}
                 </template>
                 <template v-else>
-                  All organization members are already on this project.
+                  {{ t('All organization members are already on this project.') }}
                 </template>
               </div>
             </div>
@@ -351,7 +351,7 @@
                   <span
                     v-else
                     class="projects-panel__member-email projects-panel__member-email--muted"
-                  >No email</span>
+                  >{{ t('No email') }}</span>
                 </div>
                 <div class="projects-panel__member-badges">
                   <select
@@ -362,20 +362,20 @@
                     @change="updateMemberRole(project.id, m.userId, $event.target.value)"
                     @blur="cancelEditRole"
                   >
-                    <option value="">Unassigned</option>
-                    <option value="driver">Driver</option>
-                    <option value="responsible">Responsible</option>
-                    <option value="accountable">Accountable</option>
-                    <option value="supportive">Supportive</option>
-                    <option value="consulted">Consulted</option>
-                    <option value="informed">Informed</option>
+                    <option value="">{{ t('Unassigned') }}</option>
+                    <option value="driver">{{ t('Driver') }}</option>
+                    <option value="responsible">{{ t('Responsible') }}</option>
+                    <option value="accountable">{{ t('Accountable') }}</option>
+                    <option value="supportive">{{ t('Supportive') }}</option>
+                    <option value="consulted">{{ t('Consulted') }}</option>
+                    <option value="informed">{{ t('Informed') }}</option>
                   </select>
                   <button
                     v-else-if="drasciLabelFor(project.id, m.userId)"
                     type="button"
                     class="projects-panel__member-drasci"
                     :class="'projects-panel__member-drasci--' + (drasciRoleFor(project.id, m.userId) || 'unassigned')"
-                    :title="'Click to change DRASCI role'"
+                    :title="t('Click to change DRASCI role')"
                     @click="startEditRole(project.id, m.userId)"
                   >
                     {{ drasciLabelFor(project.id, m.userId) }}
@@ -387,7 +387,7 @@
                       : 'iz-pill--muted'"
                   >
                     <span v-if="m.isOwner" aria-hidden="true">★</span>
-                    {{ m.isOwner ? 'Owner' : 'Member' }}
+                    {{ m.isOwner ? t('Owner') : t('Member') }}
                   </span>
                 </div>
               </li>
@@ -396,13 +396,13 @@
               v-else
               class="projects-panel__members-empty"
             >
-              No team members assigned to this project.
+              {{ t('No team members assigned to this project.') }}
             </div>
           </div>
         </section>
 
         <section class="projects-panel__section">
-          <h4 class="projects-panel__section-title">Timeline</h4>
+          <h4 class="projects-panel__section-title">{{ t('Timeline') }}</h4>
           <div class="projects-panel__section-body">
             <!-- projectcreatoraio's plan: the Overview's timeline figures over
                  the Planning tab's Gantt (vendored from adminpage). -->
@@ -415,7 +415,7 @@
         </section>
 
         <section class="projects-panel__section">
-          <h4 class="projects-panel__section-title">Tasks</h4>
+          <h4 class="projects-panel__section-title">{{ t('Tasks') }}</h4>
           <div class="projects-panel__section-body">
             <ProjectTaskBrowser
               :tasks="tasksByProject[project.id] || []"
@@ -429,9 +429,9 @@
 
     <ConfirmDialog
       v-if="notice"
-      title="Couldn't save"
+      :title="t('Couldn\'t save')"
       :message="notice"
-      confirm-label="OK"
+      :confirm-label="t('OK')"
       alert-only
       @confirm="notice = null"
       @cancel="notice = null"
@@ -447,11 +447,26 @@ import ProjectTaskBrowser from "./ProjectTaskBrowser.vue";
 import ProjectMap from "./ProjectMap.vue";
 
 import ConfirmDialog from "./ConfirmDialog.vue";
+import { t, n, locale } from "../lib/l10n.mjs";
+
+// DRASCI role code -> label, made here so the badge follows the user's
+// language; the projectcreatoraio API's own label is only a fallback for
+// codes this list does not know.
+function drasciRoleLabel(role) {
+  switch (role) {
+    case "driver": return t("Driver");
+    case "responsible": return t("Responsible");
+    case "accountable": return t("Accountable");
+    case "supportive": return t("Supportive");
+    case "consulted": return t("Consulted");
+    case "informed": return t("Informed");
+    default: return null;
+  }
+}
 
 export default {
   name: "ProjectsPanel",
-  components: { ConfirmDialog },
-  components: { ProjectTimeline, ProjectTaskBrowser, ProjectMap },
+  components: { ConfirmDialog, ProjectTimeline, ProjectTaskBrowser, ProjectMap },
   emits: ["reload"],
   props: {
     projects: {
@@ -514,7 +529,7 @@ export default {
       if (!s) return "—";
       const d = new Date(s);
       if (isNaN(d.getTime())) return "—";
-      return d.toLocaleDateString();
+      return d.toLocaleDateString(locale());
     },
     initials(name) {
       if (!name) return "?";
@@ -531,18 +546,18 @@ export default {
         p.clientAddress
       );
     },
-    // Project status -> In Zicht pill tone. A map (not string concat) so an
-    // unrecognised status label degrades to the neutral tone rather than
-    // emitting a class that doesn't exist.
+    // Project status -> In Zicht pill tone, keyed on the backend's stable
+    // statusKey (never on the translated statusLabel). A map (not string
+    // concat) so an unknown key degrades to the neutral tone.
     statusClass(p) {
-      const label = (p.statusLabel || "").toLowerCase().replace(/ /g, "-");
+      const key = p.statusKey || "";
       return (
         {
           active: "iz-pill--success",
           "waiting-on-customer": "iz-pill--warning",
           "on-hold": "iz-pill--danger",
           done: "iz-pill--accent",
-        }[label] || "iz-pill--muted"
+        }[key] || "iz-pill--muted"
       );
     },
     timelineSrc(p) {
@@ -570,7 +585,7 @@ export default {
         (Date.now() - start.getTime()) / (1000 * 60 * 60 * 24),
       );
       const weeks = Math.round(days / 7);
-      return weeks + " wk" + (weeks !== 1 ? "s" : "");
+      return n("%n wk", "%n wks", weeks);
     },
     requiredPrepTime(p) {
       const item = this.findTimelineItem(p, "required_preparation");
@@ -582,7 +597,7 @@ export default {
         (e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24),
       );
       const weeks = Math.round(days / 7);
-      return weeks + " wk" + (weeks !== 1 ? "s" : "");
+      return n("%n wk", "%n wks", weeks);
     },
     isExpanded(id) {
       return this.expandedIds.indexOf(id) !== -1;
@@ -635,17 +650,17 @@ export default {
           this.$set(this.geocodeStatus, projectId, "not_found");
         } else if (code === 404 && reason === "no_project") {
           this.$set(this.geocodeStatus, projectId, "unavailable");
-          this.$set(this.geocodeError, projectId, "Project no longer exists.");
+          this.$set(this.geocodeError, projectId, t("Project no longer exists."));
         } else if (code === 503) {
           this.$set(this.geocodeStatus, projectId, "unavailable");
           this.$set(
             this.geocodeError,
             projectId,
-            "Geocoding service unavailable.",
+            t("Geocoding service unavailable."),
           );
         } else {
           this.$set(this.geocodeStatus, projectId, "unavailable");
-          this.$set(this.geocodeError, projectId, "Couldn't load map.");
+          this.$set(this.geocodeError, projectId, t("Couldn't load map."));
         }
       }
     },
@@ -667,7 +682,7 @@ export default {
         this.$set(
           this.tasksErrorByProject,
           projectId,
-          (e && e.message) || "Failed to load tasks",
+          (e && e.message) || t("Failed to load tasks"),
         );
       } finally {
         this.$set(this.tasksLoadingByProject, projectId, false);
@@ -697,7 +712,7 @@ export default {
           if (!uid) continue;
           map[uid] = {
             role: m.drasciRole || null,
-            label: m.drasciRoleLabel || "Unassigned",
+            label: drasciRoleLabel(m.drasciRole) || m.drasciRoleLabel || t("Unassigned"),
           };
         }
         this.$set(this.memberRolesByProject, projectId, map);
@@ -711,7 +726,7 @@ export default {
       if (!roles) return null;
       const entry = roles[userId];
       if (!entry) return null;
-      return entry.label || "Unassigned";
+      return entry.label || t("Unassigned");
     },
     drasciRoleFor(projectId, userId) {
       const roles = this.memberRolesByProject[projectId];
@@ -774,7 +789,7 @@ export default {
         // could not be themed and looked nothing like the rest of the app.
         this.notice =
           (e && e.response && e.response.data && e.response.data.message) ||
-          "Couldn't update DRASCI role. Try again.";
+          t("Couldn't update DRASCI role. Try again.");
       } finally {
         this.savingRoleKey = null;
       }
@@ -858,7 +873,7 @@ export default {
       if (!role) {
         // Should be unreachable — the [+] button is disabled when no role
         // is picked — but guard anyway so we never send an empty role.
-        s.error = "Choose a DRASCI role before adding.";
+        s.error = t("Choose a DRASCI role before adding.");
         return;
       }
       s.addingUid = uid;
@@ -899,14 +914,14 @@ export default {
       }
     },
     projectAddError(err) {
-      if (!err) return "Couldn't add member. Try again.";
-      if (!err.response) return "Couldn't reach the server. Try again.";
+      if (!err) return t("Couldn't add member. Try again.");
+      if (!err.response) return t("Couldn't reach the server. Try again.");
       const status = err.response.status;
-      if (status === 403) return "User no longer in this organization.";
-      if (status === 404) return "Project no longer exists.";
-      if (status === 400) return "Invalid request.";
-      if (status >= 500) return "Server error. Try again.";
-      return "Couldn't add member (HTTP " + status + ").";
+      if (status === 403) return t("User no longer in this organization.");
+      if (status === 404) return t("Project no longer exists.");
+      if (status === 400) return t("Invalid request.");
+      if (status >= 500) return t("Server error. Try again.");
+      return t("Couldn't add member (HTTP {status}).", { status });
     },
   },
 };

@@ -3,14 +3,14 @@
     <form class="iz-modal contract-modal" @submit.prevent="$emit('submit')">
       <header class="iz-modal__header">
         <h3 class="contract-modal__title">{{ title }}</h3>
-        <button class="iz-close iz-close--sm" type="button" aria-label="Close" :disabled="busy" @click="close">
+        <button class="iz-close iz-close--sm" type="button" :aria-label="t('Close')" :disabled="busy" @click="close">
           &times;
         </button>
       </header>
 
       <div class="iz-modal__body contract-modal__body">
         <label v-if="mode !== 'replace'" class="contract-modal__field">
-          <span class="iz-label">Contract name</span>
+          <span class="iz-label">{{ t("Contract name") }}</span>
           <input
             class="iz-input"
             type="text"
@@ -23,7 +23,7 @@
         </label>
 
         <label v-if="mode !== 'rename'" class="contract-modal__field">
-          <span class="iz-label">PDF file</span>
+          <span class="iz-label">{{ t("PDF file") }}</span>
           <input
             class="iz-input contract-modal__file"
             type="file"
@@ -31,16 +31,16 @@
             required
             @change="$emit('file-change', $event.target.files[0] || null)"
           />
-          <span class="contract-modal__hint">PDF only, up to 25 MB.</span>
+          <span class="contract-modal__hint">{{ t("PDF only, up to 25 MB.") }}</span>
         </label>
 
         <p v-if="error" class="contract-modal__error" role="alert">{{ error }}</p>
       </div>
 
       <footer class="iz-modal__footer">
-        <button class="iz-btn" type="button" :disabled="busy" @click="close">Cancel</button>
+        <button class="iz-btn" type="button" :disabled="busy" @click="close">{{ t("Cancel") }}</button>
         <button class="iz-btn iz-btn--primary" type="submit" :disabled="busy">
-          {{ busy ? "Saving…" : submitLabel }}
+          {{ busy ? t("Saving…") : submitLabel }}
         </button>
       </footer>
     </form>
@@ -48,6 +48,8 @@
 </template>
 
 <script>
+import { t } from "../lib/l10n.mjs";
+
 export default {
   name: "ContractModal",
   props: {
@@ -58,10 +60,20 @@ export default {
   },
   computed: {
     title() {
-      return { upload: "Upload contract", rename: "Rename contract", replace: "Replace contract file" }[this.mode] || "Contract";
+      const titles = {
+        upload: () => t("Upload contract"),
+        rename: () => t("Rename contract"),
+        replace: () => t("Replace contract file"),
+      };
+      return (titles[this.mode] || (() => t("Contract")))();
     },
     submitLabel() {
-      return { upload: "Upload", rename: "Save name", replace: "Replace file" }[this.mode] || "Save";
+      const labels = {
+        upload: () => t("Upload"),
+        rename: () => t("Save name"),
+        replace: () => t("Replace file"),
+      };
+      return (labels[this.mode] || (() => t("Save")))();
     },
   },
   mounted() {

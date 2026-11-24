@@ -52,7 +52,7 @@
         <div class="alerts-panel__metrics">
           <div class="alerts-panel__metric">
             <span class="alerts-panel__metric-value">{{ alert.count }}</span>
-            <span class="alerts-panel__metric-label">{{ alert.tone === "success" ? "all clear" : "to review" }}</span>
+            <span class="alerts-panel__metric-label">{{ alert.tone === "success" ? t("all clear") : t("to review") }}</span>
           </div>
         </div>
 
@@ -77,7 +77,7 @@
           <span
             v-if="remainingOf(alert)"
             class="alerts-panel__more"
-          >+{{ remainingOf(alert) }} more</span>
+          >{{ t("+{n} more", { n: remainingOf(alert) }) }}</span>
         </div>
       </KpiCard>
     </div>
@@ -86,6 +86,7 @@
 
 <script>
 import KpiCard from "./KpiCard.vue";
+import { t } from "../lib/l10n.mjs";
 
 // Explicit tone → colour table. Mapping through a table (rather than building
 // a var name from `alert.tone`) keeps an unexpected tone falling back to the
@@ -142,7 +143,7 @@ export default {
     tagLabel(key, offender) {
       return key === "orgsNoSub"
         ? offender.orgName
-        : offender.orgName + " ×" + offender.count;
+        : t("{organization} ×{count}", { organization: offender.orgName, count: offender.count });
     },
     // The same organization can appear on several cards at once, so the visible
     // label alone ("Test ×3") is not a unique accessible name — two buttons
@@ -150,10 +151,13 @@ export default {
     // the alert says which one you are on, and the count is spelled out because
     // "×" is read inconsistently across screen readers.
     tagAria(alert, key, offender) {
-      const who = key === "orgsNoSub"
-        ? offender.orgName
-        : offender.orgName + ", " + offender.count;
-      return alert.label + ": " + who + " — open this organization";
+      return key === "orgsNoSub"
+        ? t("{alert}: {organization} — open this organization", { alert: alert.label, organization: offender.orgName })
+        : t("{alert}: {organization}, {count} — open this organization", {
+          alert: alert.label,
+          organization: offender.orgName,
+          count: offender.count,
+        });
     },
   },
 };

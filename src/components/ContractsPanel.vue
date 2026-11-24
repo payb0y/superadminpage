@@ -2,31 +2,31 @@
   <section class="iz-panel iz-panel--flush contracts-panel">
     <header class="contracts-panel__header">
       <div>
-        <h3 class="iz-panel__title">Contract files</h3>
-        <p class="contracts-panel__subtitle">Private PDF contracts for this organization.</p>
+        <h3 class="iz-panel__title">{{ t("Contract files") }}</h3>
+        <p class="contracts-panel__subtitle">{{ t("Private PDF contracts for this organization.") }}</p>
       </div>
-      <button class="iz-btn iz-btn--primary" type="button" @click="openUpload">Upload contract</button>
+      <button class="iz-btn iz-btn--primary" type="button" @click="openUpload">{{ t("Upload contract") }}</button>
     </header>
 
     <p v-if="loadError" class="contracts-panel__message contracts-panel__message--error" role="alert">
       {{ loadError }}
-      <button class="iz-btn iz-btn--sm" type="button" @click="loadContracts">Retry</button>
+      <button class="iz-btn iz-btn--sm" type="button" @click="loadContracts">{{ t("Retry") }}</button>
     </p>
-    <div v-else-if="loading" class="iz-empty contracts-panel__empty">Loading contracts…</div>
+    <div v-else-if="loading" class="iz-empty contracts-panel__empty">{{ t("Loading contracts…") }}</div>
     <div v-else-if="contracts.length === 0" class="iz-empty contracts-panel__empty">
-      <p class="contracts-panel__empty-title">No contracts uploaded</p>
-      <p class="contracts-panel__subtitle">Upload the first PDF contract for this organization.</p>
+      <p class="contracts-panel__empty-title">{{ t("No contracts uploaded") }}</p>
+      <p class="contracts-panel__subtitle">{{ t("Upload the first PDF contract for this organization.") }}</p>
     </div>
     <div v-else class="iz-table-wrap">
       <table class="iz-table contracts-panel__table">
         <thead>
           <tr>
-            <th>Contract</th>
-            <th>File</th>
-            <th>Size</th>
-            <th>Uploaded by</th>
-            <th>Updated</th>
-            <th><span class="contracts-panel__sr-only">Actions</span></th>
+            <th>{{ t("Contract") }}</th>
+            <th>{{ t("File") }}</th>
+            <th>{{ t("Size") }}</th>
+            <th>{{ t("Uploaded by") }}</th>
+            <th>{{ t("Updated") }}</th>
+            <th><span class="contracts-panel__sr-only">{{ t("Actions") }}</span></th>
           </tr>
         </thead>
         <tbody>
@@ -39,24 +39,24 @@
             <td>{{ formatDate(contract.updatedAt) }}</td>
             <td>
               <div class="contracts-panel__actions">
-                <a class="iz-btn iz-btn--sm" :href="downloadUrl(contract)" download>Download</a>
-                <button class="iz-btn iz-btn--sm" type="button" @click="openRename(contract)">Rename</button>
-                <button class="iz-btn iz-btn--sm" type="button" @click="openReplace(contract)">Replace</button>
-                <button class="iz-btn iz-btn--sm iz-btn--primary" type="button" @click="openSignatureRequest(contract)">Request signatures</button>
-                <button class="iz-btn iz-btn--sm iz-btn--danger" type="button" @click="confirmDelete(contract)">Delete</button>
+                <a class="iz-btn iz-btn--sm" :href="downloadUrl(contract)" download>{{ t("Download") }}</a>
+                <button class="iz-btn iz-btn--sm" type="button" @click="openRename(contract)">{{ t("Rename") }}</button>
+                <button class="iz-btn iz-btn--sm" type="button" @click="openReplace(contract)">{{ t("Replace") }}</button>
+                <button class="iz-btn iz-btn--sm iz-btn--primary" type="button" @click="openSignatureRequest(contract)">{{ t("Request signatures") }}</button>
+                <button class="iz-btn iz-btn--sm iz-btn--danger" type="button" @click="confirmDelete(contract)">{{ t("Delete") }}</button>
               </div>
             </td>
           </tr>
           <tr v-for="request in signingRequests[contract.id] || []" :key="'sign-' + request.id" class="contracts-panel__request-row">
             <td colspan="6">
               <div class="contracts-panel__request">
-                <span class="iz-badge" :class="requestTone(request.status)">{{ request.status }}</span>
-                <span>Version checksum {{ request.sourceChecksum.slice(0, 10) }}…</span>
+                <span class="iz-badge" :class="requestTone(request.status)">{{ requestStatusLabel(request.status) }}</span>
+                <span>{{ t("Version checksum {checksum}…", { checksum: request.sourceChecksum.slice(0, 10) }) }}</span>
                 <span>{{ signerSummary(request.signers) }}</span>
                 <div class="contracts-panel__actions">
-                  <button v-if="request.status === 'draft'" class="iz-btn iz-btn--sm" type="button" @click="resumePlacement(contract, request)">Place fields</button>
-                  <button v-if="request.status === 'draft'" class="iz-btn iz-btn--sm iz-btn--primary" type="button" :disabled="sendingRequestId === request.id" @click="sendRequest(contract, request)">{{ sendingRequestId === request.id ? "Sending…" : "Send invitations" }}</button>
-                  <a v-if="request.hasSignedCopy" class="iz-btn iz-btn--sm iz-btn--primary" :href="signedDownloadUrl(contract, request)" download>Download signed PDF</a>
+                  <button v-if="request.status === 'draft'" class="iz-btn iz-btn--sm" type="button" @click="resumePlacement(contract, request)">{{ t("Place fields") }}</button>
+                  <button v-if="request.status === 'draft'" class="iz-btn iz-btn--sm iz-btn--primary" type="button" :disabled="sendingRequestId === request.id" @click="sendRequest(contract, request)">{{ sendingRequestId === request.id ? t("Sending…") : t("Send invitations") }}</button>
+                  <a v-if="request.hasSignedCopy" class="iz-btn iz-btn--sm iz-btn--primary" :href="signedDownloadUrl(contract, request)" download>{{ t("Download signed PDF") }}</a>
                 </div>
               </div>
             </td>
@@ -80,10 +80,10 @@
 
     <ConfirmDialog
       v-if="deleteTarget"
-      title="Delete contract?"
-      :message="'Permanently delete “' + deleteTarget.displayName + '” and its stored PDF?'"
-      confirm-label="Delete contract"
-      busy-label="Deleting…"
+      :title="t('Delete contract?')"
+      :message="t('Permanently delete “{name}” and its stored PDF?', { name: deleteTarget.displayName })"
+      :confirm-label="t('Delete contract')"
+      :busy-label="t('Deleting…')"
       :danger="true"
       :busy="deleting"
       :error="deleteError"
@@ -120,8 +120,18 @@ import ConfirmDialog from "./ConfirmDialog.vue";
 import ContractModal from "./ContractModal.vue";
 import ContractPlacementModal from "./ContractPlacementModal.vue";
 import SignatureRequestModal from "./SignatureRequestModal.vue";
+import { t, formatNumber, locale } from "../lib/l10n.mjs";
 
 const OCS_HEADERS = { "OCS-APIRequest": "true", Accept: "application/json" };
+
+// Signing request status code (from the organization app) -> label. The code
+// stays the key for tones and logic; only the label is translated.
+const REQUEST_STATUS_LABELS = {
+  draft: () => t("draft"),
+  pending: () => t("pending"),
+  completed: () => t("completed"),
+  cancelled: () => t("cancelled"),
+};
 
 function unwrapOcs(response) {
   return response && response.data && response.data.ocs ? response.data.ocs.data : response.data;
@@ -172,7 +182,7 @@ export default {
         this.contracts = unwrapOcs(response).contracts || [];
         await Promise.all(this.contracts.map((contract) => this.loadSignatureRequests(contract.id)));
       } catch (error) {
-        this.loadError = this.apiError(error, "Could not load contracts.");
+        this.loadError = this.apiError(error, t("Could not load contracts."));
       } finally {
         this.loading = false;
       }
@@ -201,7 +211,7 @@ export default {
         this.creatingSignature = false;
         this.openPlacement(contract, data.request);
       } catch (error) {
-        this.signatureError = this.apiError(error, "Could not create the signing draft.");
+        this.signatureError = this.apiError(error, t("Could not create the signing draft."));
         this.creatingSignature = false;
       }
     },
@@ -227,7 +237,7 @@ export default {
         await axios.post(this.endpoint("/" + contract.id + "/signature-requests/" + request.id + "/send"), {}, { params: { format: "json" }, headers: OCS_HEADERS });
         await this.loadSignatureRequests(contract.id);
       } catch (error) {
-        this.loadError = this.apiError(error, "Could not send signature invitations.");
+        this.loadError = this.apiError(error, t("Could not send signature invitations."));
       } finally {
         this.sendingRequestId = null;
       }
@@ -235,8 +245,17 @@ export default {
     requestTone(status) {
       return { draft: "iz-badge--muted", pending: "iz-badge--warning", completed: "iz-badge--success", cancelled: "iz-badge--danger" }[status] || "iz-badge--muted";
     },
+    requestStatusLabel(status) {
+      const label = REQUEST_STATUS_LABELS[status];
+      return label ? label() : status;
+    },
+    // A signer's status is LibreSign's own statusText, shown as it arrives.
     signerSummary(signers) {
-      return (signers || []).map((signer) => signer.displayName + " <" + signer.email + ">" + (signer.status ? " · " + signer.status : "")).join(", ");
+      return (signers || [])
+        .map((signer) => (signer.status
+          ? t("{name} <{email}> · {status}", { name: signer.displayName, email: signer.email, status: signer.status })
+          : signer.displayName + " <" + signer.email + ">"))
+        .join(", ");
     },
     openUpload() {
       this.openModal("upload", null, "");
@@ -262,11 +281,11 @@ export default {
     async save() {
       if (this.saving) return;
       if (this.modalMode !== "rename" && !this.formFile) {
-        this.saveError = "Choose a PDF file.";
+        this.saveError = t("Choose a PDF file.");
         return;
       }
       if (this.modalMode !== "replace" && !this.formName.trim()) {
-        this.saveError = "Enter a contract name.";
+        this.saveError = t("Enter a contract name.");
         return;
       }
       this.saving = true;
@@ -284,7 +303,7 @@ export default {
         this.closeModalAfterSave();
         await this.loadContracts();
       } catch (error) {
-        this.saveError = this.apiError(error, "Could not save the contract.");
+        this.saveError = this.apiError(error, t("Could not save the contract."));
       } finally {
         this.saving = false;
       }
@@ -308,7 +327,7 @@ export default {
         this.deleteTarget = null;
         await this.loadContracts();
       } catch (error) {
-        this.deleteError = this.apiError(error, "Could not delete the contract.");
+        this.deleteError = this.apiError(error, t("Could not delete the contract."));
       } finally {
         this.deleting = false;
       }
@@ -321,14 +340,16 @@ export default {
     },
     formatBytes(value) {
       const bytes = Number(value) || 0;
+      // Unit symbols are the same in Dutch (B / KB / MB / GB); the number is
+      // printed the user's way.
       if (bytes < 1024) return bytes + " B";
-      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
-      return (bytes / 1048576).toFixed(1) + " MB";
+      if (bytes < 1048576) return formatNumber(bytes / 1024) + " KB";
+      return formatNumber(bytes / 1048576) + " MB";
     },
     formatDate(value) {
       if (!value) return "—";
       const date = new Date(value.replace(" ", "T") + "Z");
-      return isNaN(date.getTime()) ? value : date.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
+      return isNaN(date.getTime()) ? value : date.toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short" });
     },
     apiError(error, fallback) {
       const body = error && error.response && error.response.data;

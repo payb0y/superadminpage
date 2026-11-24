@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\SuperAdminPage\Service;
 
 use OCP\IDBConnection;
+use OCP\IL10N;
 
 class OrgOverviewService {
 
@@ -13,9 +14,25 @@ class OrgOverviewService {
 
     private IDBConnection $db;
 
+    /**
+     * Project status codes as projectcreatoraio stores them in
+     * oc_custom_projects.status — mirror of OCA\ProjectCreatorAIO\ProjectStatus
+     * (projectcreatoraio/lib/ProjectStatus.php). Kept local so this app does not
+     * depend on that class at runtime; change both together.
+     * Values are the stable keys the frontend styles on (statusKey).
+     */
+    private const PROJECT_STATUS_KEYS = [
+        0 => 'archived',
+        1 => 'active',
+        2 => 'waiting-on-customer',
+        3 => 'on-hold',
+        4 => 'done',
+    ];
+
     public function __construct(
         IDBConnection $db,
         private StorageUsageService $storageUsageService,
+        private IL10N $l,
     ) {
         $this->db = $db;
     }
@@ -112,7 +129,9 @@ class OrgOverviewService {
                 'totalTasks'         => (int)$r['total_tasks'],
                 'doneTasks'          => (int)$r['done_tasks'],
                 'overdueTasks'       => (int)$r['overdue_tasks'],
-                'planName'           => $r['plan_name'] ?? 'No plan',
+                // Null when the org has no plan: the frontend shows "No plan"
+                // in the user's language and treats null as the no-plan bucket.
+                'planName'           => $r['plan_name'] ?? null,
                 // Caps ride along so the roster can answer "who is at their
                 // limit" without a second round trip; 0 means the plan sets no
                 // limit on that resource, not a limit of nothing.
@@ -195,7 +214,7 @@ class OrgOverviewService {
         $row = $stmt->fetch();
 
         if (!$row) {
-            return ['id' => $orgId, 'name' => 'Unknown', 'contactFirstName' => '', 'contactLastName' => '', 'contactEmail' => '—', 'contactPhone' => '', 'adminUid' => '—'];
+            return ['id' => $orgId, 'name' => $this->l->t('Unknown'), 'contactFirstName' => '', 'contactLastName' => '', 'contactEmail' => '—', 'contactPhone' => '', 'adminUid' => '—'];
         }
 
         return [
@@ -239,7 +258,7 @@ class OrgOverviewService {
             return [
                 'status'           => 'none',
                 'planId'           => null,
-                'planName'         => 'No plan',
+                'planName'         => $this->l->t('No plan'),
                 'price'            => 0.0,
                 'currency'         => 'EUR',
                 'maxProjects'      => 0,
@@ -503,6 +522,7 @@ class OrgOverviewService {
                 'boardId'     => $bid,
                 'number'      => $p['number'] ?? '',
                 'status'      => (int)($p['status'] ?? 0),
+                'statusKey'   => $this->statusKey((int)($p['status'] ?? 0)),
                 'statusLabel' => $this->statusLabel((int)($p['status'] ?? 0)),
                 'description' => $p['description'] ?? '',
                 'clientName'    => $p['client_name'] ?? '',
@@ -578,6 +598,7 @@ class OrgOverviewService {
             'boardId'     => (int)($p['board_id'] ?? 0),
             'number'      => $p['number'] ?? '',
             'status'      => (int)($p['status'] ?? 0),
+            'statusKey'   => $this->statusKey((int)($p['status'] ?? 0)),
             'statusLabel' => $this->statusLabel((int)($p['status'] ?? 0)),
             'description' => $p['description'] ?? '',
             'clientName'    => $p['client_name'] ?? '',
@@ -598,13 +619,20 @@ class OrgOverviewService {
         ];
     }
 
+    /** Stable code for a project status, for logic and styling; never translated. */
+    private function statusKey(int $status): string {
+        return self::PROJECT_STATUS_KEYS[$status] ?? 'unknown';
+    }
+
+    /** The status as the user reads it, in their language. */
     private function statusLabel(int $status): string {
-        switch ($status) {
-            case 0: return 'Active';
-            case 1: return 'Waiting on Customer';
-            case 2: return 'On Hold';
-            case 3: return 'Done';
-            default: return 'Unknown';
+        switch ($this->statusKey($status)) {
+            case 'archived':            return $this->l->t('Archived');
+            case 'active':              return $this->l->t('Active');
+            case 'waiting-on-customer': return $this->l->t('Waiting on Customer');
+            case 'on-hold':             return $this->l->t('On Hold');
+            case 'done':                return $this->l->t('Done');
+            default:                    return $this->l->t('Unknown');
         }
     }
 
@@ -646,7 +674,7 @@ class OrgOverviewService {
         $sqlNotes = "
             SELECT cp.id AS project_id, COUNT(f.fileid) AS cnt
             FROM *PREFIX*custom_projects cp
-            LEFT JOIN *PREFIX*filecache pnf ON pnf.parent = cp.folder_id AND pnf.name = 'Public Notes'
+            LEFT JOIN *PREFIX*filecache pnf ON pnf.parent = cp.folder_id AND pnf.name IN ('Public Notes', 'Openbare notities')
             LEFT JOIN *PREFIX*filecache f ON f.parent = pnf.fileid
                 AND f.mimetype != (SELECT id FROM *PREFIX*mimetypes WHERE mimetype = 'httpd/unix-directory')
             WHERE cp.organization_id = ? AND cp.id IN ($ph)

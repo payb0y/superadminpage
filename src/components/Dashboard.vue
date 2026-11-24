@@ -2,7 +2,7 @@
   <div class="superadmin-dashboard iz-app">
     <div v-if="loading" class="superadmin-dashboard__loading">
       <div class="iz-spinner iz-spinner--lg"></div>
-      <p>Loading super-admin dashboard…</p>
+      <p>{{ t("Loading super-admin dashboard…") }}</p>
     </div>
 
     <div v-else-if="error" class="superadmin-dashboard__error">
@@ -11,7 +11,7 @@
         type="button"
         class="iz-btn iz-btn--accent"
         @click="retry"
-      >Try again</button>
+      >{{ t("Try again") }}</button>
     </div>
 
     <template v-else>
@@ -25,7 +25,7 @@
           }"
           :aria-selected="activeTab === 'health'"
           @click="setActiveTab('health')"
-        >System Health</button>
+        >{{ t("System Health") }}</button>
         <button
           type="button"
           role="tab"
@@ -35,7 +35,7 @@
           }"
           :aria-selected="activeTab === 'orgs'"
           @click="setActiveTab('orgs')"
-        >Organizations</button>
+        >{{ t("Organizations") }}</button>
         <button
           type="button"
           role="tab"
@@ -45,7 +45,7 @@
           }"
           :aria-selected="activeTab === 'financials'"
           @click="setActiveTab('financials')"
-        >Financials</button>
+        >{{ t("Financials") }}</button>
         <button
           type="button"
           role="tab"
@@ -55,7 +55,7 @@
           }"
           :aria-selected="activeTab === 'portfolio'"
           @click="setActiveTab('portfolio')"
-        >Project Portfolio</button>
+        >{{ t("Project Portfolio") }}</button>
       </div>
 
       <template v-if="activeTab === 'health'">
@@ -106,11 +106,19 @@ import AlertsPanel from "./AlertsPanel.vue";
 import SystemHealthPanel from "./SystemHealthPanel.vue";
 import FinancialsPanel from "./FinancialsPanel.vue";
 import ProjectPortfolioPanel from "./ProjectPortfolioPanel.vue";
+import { t, n } from "../lib/l10n.mjs";
 
 // The tab bar's vocabulary, in one place. Both the click handler and the
 // localStorage rehydration validate against this, so adding a tab is one edit
 // rather than three that can drift apart.
 const TAB_KEYS = ["health", "orgs", "portfolio", "financials"];
+
+// Status codes from the services health check → label, made at display time.
+const SERVICE_STATUS_LABELS = {
+  ok: () => t("Healthy"),
+  degraded: () => t("Degraded"),
+  down: () => t("Down"),
+};
 
 export default {
   name: "Dashboard",
@@ -164,15 +172,21 @@ export default {
     servicesAlert() {
       const s = this.servicesSummary;
       if (!s) {
-        return { count: "…", label: "Services degraded", tone: "muted", detail: "checking dependencies" };
+        return { count: "…", label: t("Services degraded"), tone: "muted", detail: t("checking dependencies") };
       }
-      const detail = s.degraded === 0
-        ? s.checked + (s.checked === 1 ? " dependency answering" : " dependencies answering")
-        : s.worstName + " · " + s.worstStatus +
-          (s.worstLatency !== null ? " · " + s.worstLatency + "ms" : "");
+      let detail;
+      if (s.degraded === 0) {
+        detail = n("%n dependency answering", "%n dependencies answering", s.checked);
+      } else {
+        // The health check reports a status code; the label is made here.
+        const status = (SERVICE_STATUS_LABELS[s.worstStatus] || (() => s.worstStatus))();
+        detail = s.worstLatency !== null
+          ? t("{service} · {status} · {latency}ms", { service: s.worstName, status, latency: s.worstLatency })
+          : t("{service} · {status}", { service: s.worstName, status });
+      }
       return {
         count: s.degraded,
-        label: "Services degraded",
+        label: t("Services degraded"),
         tone: s.degraded > 0 ? "danger" : "success",
         detail: detail,
       };
@@ -270,18 +284,18 @@ export default {
       const serverMsg =
         e && e.response && e.response.data && e.response.data.message;
       if (status === 403) {
-        return "You don't have permission to view this dashboard — super-admin access is required.";
+        return t("You don't have permission to view this dashboard — super-admin access is required.");
       }
       if (serverMsg) {
         return serverMsg;
       }
       if (status && status >= 500) {
-        return "The server ran into a problem loading the dashboard. Please try again in a moment.";
+        return t("The server ran into a problem loading the dashboard. Please try again in a moment.");
       }
       if (e && e.request && !e.response) {
-        return "Couldn't reach the server. Check your connection and try again.";
+        return t("Couldn't reach the server. Check your connection and try again.");
       }
-      return "Something went wrong loading the dashboard. Please try again.";
+      return t("Something went wrong loading the dashboard. Please try again.");
     },
     async refreshOrgs() {
       // Triggered by OrgListPanel after any child reload (member add/

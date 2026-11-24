@@ -14,7 +14,7 @@
         <button
           class="iz-close iz-close--sm"
           type="button"
-          aria-label="Close"
+          :aria-label="t('Close')"
           :disabled="busy"
           @click="onCancel"
         >
@@ -40,7 +40,7 @@
           :disabled="busy"
           @click="onCancel"
         >
-          {{ cancelLabel }}
+          {{ cancelLabel || t("Cancel") }}
         </button>
         <button
           ref="confirmBtn"
@@ -50,7 +50,7 @@
           :disabled="busy"
           @click="$emit('confirm')"
         >
-          {{ busy ? busyLabel : confirmLabel }}
+          {{ busy ? (busyLabel || t("Working…")) : (confirmLabel || t("Confirm")) }}
         </button>
       </footer>
     </div>
@@ -81,10 +81,11 @@ export default {
   props: {
     title: { type: String, required: true },
     message: { type: String, default: "" },
-    confirmLabel: { type: String, default: "Confirm" },
-    cancelLabel: { type: String, default: "Cancel" },
+    // Empty means the translated default: "Confirm", "Cancel", "Working…".
+    confirmLabel: { type: String, default: "" },
+    cancelLabel: { type: String, default: "" },
     // Shown in place of confirmLabel while the parent's request is in flight.
-    busyLabel: { type: String, default: "Working…" },
+    busyLabel: { type: String, default: "" },
     // Red confirm button for irreversible actions; blue-pink primary otherwise.
     danger: { type: Boolean, default: false },
     // Notice mode: one dismiss button, no cancel. This is the alert() shape.

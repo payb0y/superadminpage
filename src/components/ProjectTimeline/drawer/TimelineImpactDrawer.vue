@@ -6,13 +6,13 @@
 				<div class="header-title-group">
 					<div class="header-badge">
 						<AlertCircleOutline :size="16" class="header-badge-icon" />
-						<span>IMPACT & RECOVERY ADVISOR</span>
+						<span>{{ t('IMPACT & RECOVERY ADVISOR') }}</span>
 					</div>
 					<h3 class="header-title">
-						Schedule Impact Analysis
+						{{ t('Schedule Impact Analysis') }}
 					</h3>
 				</div>
-				<button class="close-btn" aria-label="Close" @click="$emit('close')">
+				<button class="close-btn" :aria-label="t('Close')" @click="$emit('close')">
 					<Close :size="20" />
 				</button>
 			</header>
@@ -21,25 +21,25 @@
 				<!-- Context Guide matching Mockup -->
 				<div class="guide-box">
 					<div class="guide-box__title">
-						Where & when do you see this?
+						{{ t('Where & when do you see this?') }}
 					</div>
 					<div class="guide-steps">
 						<div class="guide-step">
 							<span class="guide-num">1</span>
 							<div class="guide-text">
-								<strong>Directly in the Gantt:</strong> Bar colors reflect delay and downstream lines turn red.
+								<strong>{{ guideSteps[0][0] }}</strong>{{ guideSteps[0][1] }}
 							</div>
 						</div>
 						<div class="guide-step">
 							<span class="guide-num">2</span>
 							<div class="guide-text">
-								<strong>Impact dialog:</strong> Shows consequences and tailored recovery options.
+								<strong>{{ guideSteps[1][0] }}</strong>{{ guideSteps[1][1] }}
 							</div>
 						</div>
 						<div class="guide-step">
 							<span class="guide-num">3</span>
 							<div class="guide-text">
-								<strong>What-if mode:</strong> Test scenarios non-destructively before committing.
+								<strong>{{ guideSteps[2][0] }}</strong>{{ guideSteps[2][1] }}
 							</div>
 						</div>
 					</div>
@@ -52,10 +52,10 @@
 					</div>
 					<div class="task-card__body">
 						<div class="task-card__title">
-							Task "{{ taskLabel }}" is delayed by {{ delayWeeks }} weeks
+							{{ t('Task "{task}" is delayed by {n} weeks', { task: taskLabel, n: delayWeeks }) }}
 						</div>
 						<div class="task-card__sub">
-							New expected end date: {{ newEndDateFormatted }}
+							{{ t('New expected end date: {date}', { date: newEndDateFormatted }) }}
 						</div>
 					</div>
 				</div>
@@ -63,7 +63,7 @@
 				<!-- Impact without measures matching Mockup -->
 				<div class="impact-section">
 					<div class="section-heading">
-						<span>Impact without measures</span>
+						<span>{{ t('Impact without measures') }}</span>
 						<div class="severity-pill" :class="'severity-pill--' + severityClass">
 							<span class="severity-dot" />
 							<span>{{ severityLabel }}</span>
@@ -80,7 +80,7 @@
 				<!-- Choose a recovery option (A to F) matching Mockup -->
 				<div class="recovery-section">
 					<div class="section-heading">
-						<span>Choose a recovery option:</span>
+						<span>{{ t('Choose a recovery option:') }}</span>
 					</div>
 
 					<div class="options-list">
@@ -97,7 +97,7 @@
 							<div class="option-body">
 								<div class="option-title-row">
 									<span class="option-title">{{ opt.title }}</span>
-									<span v-if="opt.recommended" class="opt-tag opt-tag--rec">Recommended</span>
+									<span v-if="opt.recommended" class="opt-tag opt-tag--rec">{{ t('Recommended') }}</span>
 									<span v-else-if="opt.tag" class="opt-tag">{{ opt.tag }}</span>
 								</div>
 								<p class="option-desc">
@@ -124,7 +124,7 @@
 					<template #icon>
 						<FlaskOutline :size="18" />
 					</template>
-					Open What-if mode
+					{{ t('Open What-if mode') }}
 				</NcButton>
 			</footer>
 		</div>
@@ -138,6 +138,14 @@ import AlertCircleOutline from 'vue-material-design-icons/AlertCircleOutline.vue
 import ChevronRight from 'vue-material-design-icons/ChevronRight.vue'
 import Close from 'vue-material-design-icons/Close.vue'
 import FlaskOutline from 'vue-material-design-icons/FlaskOutline.vue'
+import { t } from '../../../lib/l10n.mjs'
+
+// "Lead: rest" → ["Lead:", " rest"], so the lead can stay bold while the
+// sentence is translated as one string.
+const splitLead = (text) => {
+	const i = text.indexOf(':')
+	return i < 0 ? ['', text] : [text.slice(0, i + 1), text.slice(i + 1)]
+}
 
 export default {
 	name: 'TimelineImpactDrawer',
@@ -164,8 +172,16 @@ export default {
 		task() {
 			return this.analysis?.task || {}
 		},
+		guideSteps() {
+			return [
+				splitLead(t('Directly in the Gantt: Bar colors reflect delay and downstream lines turn red.')),
+				splitLead(t('Impact dialog: Shows consequences and tailored recovery options.')),
+				splitLead(t('What-if mode: Test scenarios non-destructively before committing.')),
+			]
+		},
 		taskLabel() {
-			return this.task.label || 'Permits'
+			// Demo fallback from the mockup; the backend should always send a task.
+			return this.task.label || t('Permits')
 		},
 		delayWeeks() {
 			return this.task.delayWeeks || 4
@@ -176,7 +192,7 @@ export default {
 			const day = d.getDate().toString().padStart(2, '0')
 			const month = (d.getMonth() + 1).toString().padStart(2, '0')
 			const year = d.getFullYear()
-			return `${day}/${month}/${year}`
+			return t('{day}/{month}/{year}', { day, month, year })
 		},
 		severityClass() {
 			return this.analysis?.severity || 'high'
@@ -184,19 +200,20 @@ export default {
 		severityLabel() {
 			switch (this.severityClass) {
 			case 'high':
-				return 'High Risk'
+				return t('High Risk')
 			case 'medium':
-				return 'Medium Risk'
+				return t('Medium Risk')
 			default:
-				return 'Low Risk'
+				return t('Low Risk')
 			}
 		},
 		unmitigatedImpacts() {
+			// Demo fallback from the mockup, shown when the backend sends none.
 			return this.analysis?.unmitigatedImpacts || [
-				'Work preparation: +4 weeks',
-				'Start construction: +4 weeks',
-				'Desired start (14/12/2026): no longer achievable',
-				'Available float: 1 week (consumed by delay)',
+				t('Work preparation: +4 weeks'),
+				t('Start construction: +4 weeks'),
+				t('Desired start (14/12/2026): no longer achievable'),
+				t('Available float: 1 week (consumed by delay)'),
 			]
 		},
 		recoveryOptions() {

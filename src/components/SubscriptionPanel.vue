@@ -5,10 +5,9 @@
       v-if="!hasSubscription"
       class="iz-empty sub-panel__empty"
     >
-      <div class="sub-panel__empty-title">No active subscription</div>
+      <div class="sub-panel__empty-title">{{ t('No active subscription') }}</div>
       <div class="sub-panel__empty-body">
-        This organization has no active subscription record yet. Subscription
-        edits require an existing active record on the server.
+        {{ t('This organization has no active subscription record yet. Subscription edits require an existing active record on the server.') }}
       </div>
     </div>
 
@@ -20,7 +19,7 @@
       <!-- Top row: Status + Plan -->
       <div class="sub-panel__row sub-panel__row--two">
         <div class="sub-panel__card">
-          <div class="sub-panel__label">STATUS</div>
+          <div class="sub-panel__label">{{ t('STATUS') }}</div>
           <span
             class="iz-pill iz-pill--lg"
             :class="statusTone"
@@ -29,15 +28,15 @@
             {{ statusLabel }}
           </span>
           <div class="sub-panel__sub" v-if="sub.startedAt">
-            Since {{ formatDate(sub.startedAt) }}
+            {{ t('Since {date}', { date: formatDate(sub.startedAt) }) }}
           </div>
         </div>
         <div class="sub-panel__card">
-          <div class="sub-panel__label">PLAN</div>
+          <div class="sub-panel__label">{{ t('PLAN') }}</div>
           <div class="sub-panel__plan-line">
             <span class="sub-panel__plan-pill">{{ sub.planName }}</span>
-            <span v-if="sub.isPublic" class="sub-panel__plan-meta">· Public plan</span>
-            <span v-else class="sub-panel__plan-meta">· Private plan</span>
+            <span v-if="sub.isPublic" class="sub-panel__plan-meta">{{ t('· Public plan') }}</span>
+            <span v-else class="sub-panel__plan-meta">{{ t('· Private plan') }}</span>
           </div>
           <div class="sub-panel__sub">{{ priceLine }}</div>
         </div>
@@ -45,14 +44,14 @@
 
       <!-- Dates -->
       <div class="sub-panel__card sub-panel__row--full">
-        <div class="sub-panel__label">DATES</div>
+        <div class="sub-panel__label">{{ t('DATES') }}</div>
         <div class="sub-panel__kv-grid">
           <div>
-            <div class="sub-panel__kv-label">Started</div>
+            <div class="sub-panel__kv-label">{{ t('Started') }}</div>
             <div class="sub-panel__kv-value">{{ formatDate(sub.startedAt) || "—" }}</div>
           </div>
           <div>
-            <div class="sub-panel__kv-label">Ends</div>
+            <div class="sub-panel__kv-label">{{ t('Ends') }}</div>
             <div class="sub-panel__kv-value">
               {{ formatDate(sub.endedAt) || "—" }}
               <span
@@ -67,13 +66,13 @@
 
       <!-- Limits -->
       <div class="sub-panel__card sub-panel__row--full">
-        <div class="sub-panel__label">LIMITS</div>
+        <div class="sub-panel__label">{{ t('LIMITS') }}</div>
         <div class="sub-panel__kv-grid">
           <div>
-            <div class="sub-panel__kv-label">Members</div>
+            <div class="sub-panel__kv-label">{{ t('Members') }}</div>
             <div class="sub-panel__limit-row">
               <span class="sub-panel__limit-num">{{ memberCount }}</span>
-              <span class="sub-panel__limit-of">of {{ sub.maxMembers || "∞" }}</span>
+              <span class="sub-panel__limit-of">{{ t("of {max}", { max: sub.maxMembers || "∞" }) }}</span>
             </div>
             <div class="iz-meter iz-meter--thin">
               <div
@@ -83,10 +82,10 @@
             </div>
           </div>
           <div>
-            <div class="sub-panel__kv-label">Projects</div>
+            <div class="sub-panel__kv-label">{{ t('Projects') }}</div>
             <div class="sub-panel__limit-row">
               <span class="sub-panel__limit-num">{{ projectCount }}</span>
-              <span class="sub-panel__limit-of">of {{ sub.maxProjects || "∞" }}</span>
+              <span class="sub-panel__limit-of">{{ t("of {max}", { max: sub.maxProjects || "∞" }) }}</span>
             </div>
             <div class="iz-meter iz-meter--thin">
               <div
@@ -101,11 +100,11 @@
       <!-- Storage + Pricing -->
       <div class="sub-panel__row sub-panel__row--two">
         <div class="sub-panel__card">
-          <div class="sub-panel__label">STORAGE</div>
+          <div class="sub-panel__label">{{ t('STORAGE') }}</div>
           <div class="sub-panel__storage-total">
             <div class="sub-panel__limit-row">
               <span class="sub-panel__limit-num">{{ formatBytes(storage.usedBytes) }}</span>
-              <span class="sub-panel__limit-of">of {{ formatBytes(storage.capacityBytes) }}</span>
+              <span class="sub-panel__limit-of">{{ t("of {max}", { max: formatBytes(storage.capacityBytes) }) }}</span>
             </div>
             <span>{{ storagePercentageDisplay }}</span>
           </div>
@@ -114,28 +113,28 @@
           </div>
           <div class="sub-panel__storage-breakdown">
             <div class="sub-panel__kv-line">
-              <span>Private · {{ privateStorage.memberCount || 0 }} members</span>
+              <span>{{ t('Private · {n} members', { n: privateStorage.memberCount || 0 }) }}</span>
               <span class="sub-panel__kv-strong">{{ storagePartDisplay(privateStorage) }}</span>
             </div>
             <div class="sub-panel__kv-line">
-              <span>Shared · {{ sharedStorage.projectCount || 0 }} projects</span>
+              <span>{{ t('Shared · {n} projects', { n: sharedStorage.projectCount || 0 }) }}</span>
               <span class="sub-panel__kv-strong">{{ storagePartDisplay(sharedStorage) }}</span>
             </div>
           </div>
           <div class="sub-panel__sub">
-            Allocation: {{ sub.privateStorageGb }} GB per user and {{ sub.sharedStorageGb }} GB per project.
-            <template v-if="storage.calculatedAt"> Calculated {{ formatDateTime(storage.calculatedAt) }}.</template>
-            <template v-if="storage.complete === false"> Some storage could not be measured.</template>
+            {{ t('Allocation: {private} GB per user and {shared} GB per project.', { private: number(sub.privateStorageGb, 2), shared: number(sub.sharedStorageGb, 2) }) }}
+            <template v-if="storage.calculatedAt"> {{ t('Calculated {datetime}.', { datetime: formatDateTime(storage.calculatedAt) }) }}</template>
+            <template v-if="storage.complete === false"> {{ t('Some storage could not be measured.') }}</template>
           </div>
         </div>
         <div class="sub-panel__card">
-          <div class="sub-panel__label">PRICING</div>
+          <div class="sub-panel__label">{{ t('PRICING') }}</div>
           <div class="sub-panel__kv-line">
-            <span>Monthly</span>
+            <span>{{ t('Monthly') }}</span>
             <span class="sub-panel__kv-strong">{{ formatMoney(sub.price, sub.currency) }}</span>
           </div>
           <div class="sub-panel__kv-line">
-            <span>Yearly</span>
+            <span>{{ t('Yearly') }}</span>
             <span class="sub-panel__kv-strong">{{ formatMoney(sub.price * 12, sub.currency) }}</span>
           </div>
         </div>
@@ -147,30 +146,30 @@
           type="button"
           class="iz-btn iz-btn--primary"
           @click="enterEditMode"
-        >Edit subscription…</button>
+        >{{ t('Edit subscription…') }}</button>
       </div>
     </div>
 
     <!-- ── Edit mode ────────────────────────────────────────────────── -->
     <div v-else>
       <div class="sub-panel__edit-header">
-        <div class="sub-panel__edit-title">Edit subscription</div>
+        <div class="sub-panel__edit-title">{{ t('Edit subscription') }}</div>
         <div class="sub-panel__edit-meta">{{ org.profile.name }}</div>
       </div>
 
       <!-- Plan -->
       <div class="sub-panel__field">
         <label class="sub-panel__field-label" for="sub-plan">
-          Plan <span class="sub-panel__field-required">*</span>
+          {{ t('Plan') }} <span class="sub-panel__field-required">*</span>
         </label>
-        <div v-if="plansLoading" class="iz-state sub-panel__field-state">Loading plans…</div>
+        <div v-if="plansLoading" class="iz-state sub-panel__field-state">{{ t('Loading plans…') }}</div>
         <div v-else-if="plansError" class="sub-panel__field-error">
           {{ plansError }}
           <button
             type="button"
             class="iz-btn iz-btn--sm iz-btn--accent"
             @click="loadPlans"
-          >Retry</button>
+          >{{ t('Retry') }}</button>
         </div>
         <div v-else class="sub-panel__plan-row">
           <select
@@ -193,28 +192,28 @@
             :class="{ 'sub-panel__plan-custom-btn--active': customPlanOpen }"
             :disabled="saving"
             @click="customPlanOpen ? closeCustomPlan() : openCustomPlan()"
-          >{{ customPlanOpen ? "Cancel custom" : "+ Create custom" }}</button>
+          >{{ customPlanOpen ? t("Cancel custom") : t("+ Create custom") }}</button>
         </div>
         <div class="sub-panel__field-hint">
-          Changing the plan auto-fills caps and pricing from the chosen plan.
+          {{ t('Changing the plan auto-fills caps and pricing from the chosen plan.') }}
         </div>
 
         <!-- Custom plan sub-form -->
         <div v-if="customPlanOpen" class="sub-panel__custom">
           <div class="sub-panel__custom-header">
-            <span class="sub-panel__custom-title">NEW CUSTOM PLAN</span>
+            <span class="sub-panel__custom-title">{{ t('NEW CUSTOM PLAN') }}</span>
             <button
               type="button"
               class="iz-close iz-close--sm"
               :disabled="saving"
-              aria-label="Cancel custom plan"
+              :aria-label="t('Cancel custom plan')"
               @click="closeCustomPlan"
             >×</button>
           </div>
 
           <div class="sub-panel__custom-field">
             <label class="sub-panel__custom-label">
-              Plan name <span class="sub-panel__field-required">*</span>
+              {{ t('Plan name') }} <span class="sub-panel__field-required">*</span>
             </label>
             <input
               type="text"
@@ -232,7 +231,7 @@
           <div class="sub-panel__custom-grid">
             <div class="sub-panel__custom-field">
               <label class="sub-panel__custom-label">
-                Members <span class="sub-panel__field-required">*</span>
+                {{ t('Members') }} <span class="sub-panel__field-required">*</span>
               </label>
               <input
                 type="number"
@@ -250,7 +249,7 @@
             </div>
             <div class="sub-panel__custom-field">
               <label class="sub-panel__custom-label">
-                Projects <span class="sub-panel__field-required">*</span>
+                {{ t('Projects') }} <span class="sub-panel__field-required">*</span>
               </label>
               <input
                 type="number"
@@ -271,7 +270,7 @@
           <div class="sub-panel__custom-grid">
             <div class="sub-panel__custom-field">
               <label class="sub-panel__custom-label">
-                Shared/project <span class="sub-panel__field-required">*</span>
+                {{ t('Shared/project') }} <span class="sub-panel__field-required">*</span>
               </label>
               <div class="sub-panel__unit-row">
                 <input
@@ -283,7 +282,7 @@
                   :disabled="saving"
                   @blur="markCustomBlurred('sharedStorageGb')"
                 />
-                <span class="sub-panel__unit-suffix">GB</span>
+                <span class="sub-panel__unit-suffix">{{ t('GB') }}</span>
               </div>
               <div
                 v-if="customPlanBlurred.sharedStorageGb && customPlanFieldErrors.sharedStorageGb"
@@ -292,7 +291,7 @@
             </div>
             <div class="sub-panel__custom-field">
               <label class="sub-panel__custom-label">
-                Private/user <span class="sub-panel__field-required">*</span>
+                {{ t('Private/user') }} <span class="sub-panel__field-required">*</span>
               </label>
               <div class="sub-panel__unit-row">
                 <input
@@ -304,7 +303,7 @@
                   :disabled="saving"
                   @blur="markCustomBlurred('privateStorageGb')"
                 />
-                <span class="sub-panel__unit-suffix">GB</span>
+                <span class="sub-panel__unit-suffix">{{ t('GB') }}</span>
               </div>
               <div
                 v-if="customPlanBlurred.privateStorageGb && customPlanFieldErrors.privateStorageGb"
@@ -316,7 +315,7 @@
           <div class="sub-panel__custom-grid">
             <div class="sub-panel__custom-field">
               <label class="sub-panel__custom-label">
-                Private/external <span class="sub-panel__field-optional">(optional, default 1 GB)</span>
+                {{ t('Private/external') }} <span class="sub-panel__field-optional">{{ t('(optional, default 1 GB)') }}</span>
               </label>
               <div class="sub-panel__unit-row">
                 <input
@@ -329,7 +328,7 @@
                   :disabled="saving"
                   @blur="markCustomBlurred('externalStorageGb')"
                 />
-                <span class="sub-panel__unit-suffix">GB</span>
+                <span class="sub-panel__unit-suffix">{{ t('GB') }}</span>
               </div>
               <div
                 v-if="customPlanBlurred.externalStorageGb && customPlanFieldErrors.externalStorageGb"
@@ -341,7 +340,7 @@
           <div class="sub-panel__custom-grid">
             <div class="sub-panel__custom-field">
               <label class="sub-panel__custom-label">
-                Price <span class="sub-panel__field-optional">(optional)</span>
+                {{ t('Price') }} <span class="sub-panel__field-optional">{{ t('(optional)') }}</span>
               </label>
               <input
                 type="number"
@@ -358,7 +357,7 @@
               >{{ customPlanFieldErrors.price }}</div>
             </div>
             <div class="sub-panel__custom-field">
-              <label class="sub-panel__custom-label">Currency</label>
+              <label class="sub-panel__custom-label">{{ t('Currency') }}</label>
               <select
                 v-model="customPlan.currency"
                 class="iz-input"
@@ -382,7 +381,7 @@
       <!-- Status -->
       <div class="sub-panel__field">
         <label class="sub-panel__field-label">
-          Status <span class="sub-panel__field-required">*</span>
+          {{ t('Status') }} <span class="sub-panel__field-required">*</span>
         </label>
         <div class="sub-panel__status-row">
           <label
@@ -405,8 +404,8 @@
       <!-- Extend duration -->
       <div class="sub-panel__field">
         <label class="sub-panel__field-label">
-          Extend duration
-          <span class="sub-panel__field-optional">(optional)</span>
+          {{ t('Extend duration') }}
+          <span class="sub-panel__field-optional">{{ t('(optional)') }}</span>
         </label>
         <div class="sub-panel__extend-row">
           <button
@@ -420,7 +419,7 @@
           >{{ opt.label }}</button>
         </div>
         <div v-if="endDatePreview" class="sub-panel__field-hint">
-          New end date will be {{ endDatePreview }}.
+          {{ t('New end date will be {date}.', { date: endDatePreview }) }}
         </div>
       </div>
 
@@ -429,23 +428,23 @@
         v-if="customPlanOpen && canCreateCustomPlan"
         class="iz-inset sub-panel__preview"
       >
-        <div class="sub-panel__label">VALUES THAT WILL BE SUBMITTED</div>
-        <div class="sub-panel__preview-section">NEW PLAN</div>
+        <div class="sub-panel__label">{{ t('VALUES THAT WILL BE SUBMITTED') }}</div>
+        <div class="sub-panel__preview-section">{{ t('NEW PLAN') }}</div>
         <div class="sub-panel__preview-grid">
           <span>name</span><span>{{ customPlan.name }}</span>
           <span>maxMembers</span><span>{{ customPlan.maxMembers }}</span>
           <span>maxProjects</span><span>{{ customPlan.maxProjects }}</span>
           <span>sharedStoragePerProject</span><span>{{ Math.round(customPlan.sharedStorageGb * 1073741824) }}</span>
           <span>privateStoragePerUser</span><span>{{ Math.round(customPlan.privateStorageGb * 1073741824) }}</span>
-          <span>externalStorageQuota</span><span>{{ hasValue(customPlan.externalStorageGb) ? Math.round(customPlan.externalStorageGb * 1073741824) : "default" }}</span>
+          <span>externalStorageQuota</span><span>{{ hasValue(customPlan.externalStorageGb) ? Math.round(customPlan.externalStorageGb * 1073741824) : t("default") }}</span>
           <span v-if="customPlan.price !== '' && customPlan.price !== null">price</span>
           <span v-if="customPlan.price !== '' && customPlan.price !== null">{{ customPlan.price }}</span>
           <span>currency</span><span>{{ customPlan.currency }}</span>
           <span>isPublic</span><span>{{ customPlan.isPublic }}</span>
         </div>
-        <div class="sub-panel__preview-section">SUBSCRIPTION</div>
+        <div class="sub-panel__preview-section">{{ t('SUBSCRIPTION') }}</div>
         <div class="sub-panel__preview-grid">
-          <span>planId</span><span>(new plan id)</span>
+          <span>planId</span><span>{{ t('(new plan id)') }}</span>
           <span>maxMembers</span><span>{{ customPlan.maxMembers }}</span>
           <span>maxProjects</span><span>{{ customPlan.maxProjects }}</span>
           <span>price</span><span>{{ customPlan.price !== "" && customPlan.price !== null ? customPlan.price : 0 }}</span>
@@ -455,14 +454,14 @@
         </div>
       </div>
       <div v-else-if="!customPlanOpen && selectedPlan" class="iz-inset sub-panel__preview">
-        <div class="sub-panel__label">VALUES THAT WILL BE SUBMITTED</div>
+        <div class="sub-panel__label">{{ t('VALUES THAT WILL BE SUBMITTED') }}</div>
         <div class="sub-panel__preview-grid">
-          <span>Plan ID</span><span>{{ selectedPlan.id }}</span>
+          <span>{{ t('Plan ID') }}</span><span>{{ selectedPlan.id }}</span>
           <span>maxMembers</span><span>{{ selectedPlan.maxMembers }}</span>
           <span>maxProjects</span><span>{{ selectedPlan.maxProjects }}</span>
           <span>sharedStoragePerProject</span><span>{{ selectedPlan.sharedStoragePerProject }}</span>
           <span>privateStoragePerUser</span><span>{{ selectedPlan.privateStoragePerUser }}</span>
-          <span>externalStorageQuota</span><span>{{ selectedPlan.externalStorageQuota != null ? selectedPlan.externalStorageQuota : "default" }}</span>
+          <span>externalStorageQuota</span><span>{{ selectedPlan.externalStorageQuota != null ? selectedPlan.externalStorageQuota : t("default") }}</span>
           <span>price</span><span>{{ selectedPlan.price != null ? selectedPlan.price : 0 }}</span>
           <span>currency</span><span>{{ selectedPlan.currency || "EUR" }}</span>
           <span v-if="form.extendDuration">extendDuration</span><span v-if="form.extendDuration">{{ form.extendDuration }}</span>
@@ -482,13 +481,13 @@
           class="iz-btn iz-btn--ghost"
           :disabled="saving"
           @click="cancelEdit"
-        >Cancel</button>
+        >{{ t('Cancel') }}</button>
         <button
           type="button"
           class="iz-btn iz-btn--primary"
           :disabled="!canSave"
           @click="openConfirm"
-        >Save changes</button>
+        >{{ t('Save changes') }}</button>
       </div>
     </div>
 
@@ -503,11 +502,11 @@
     >
       <div class="iz-modal sub-panel__modal">
         <div class="iz-modal__header">
-          <span>Confirm with your password</span>
+          <span>{{ t('Confirm with your password') }}</span>
           <button
             type="button"
             class="iz-close"
-            aria-label="Close"
+            :aria-label="t('Close')"
             :disabled="saving"
             @click="closeConfirm"
           >×</button>
@@ -518,8 +517,7 @@
           @submit.prevent="saveChanges"
         >
           <p class="iz-modal__confirm-text">
-            In Zicht requires re-confirming your admin password before
-            applying subscription changes.
+            {{ t('In Zicht requires re-confirming your admin password before applying subscription changes.') }}
           </p>
           <!--
             Hidden username companion: password managers pair a password
@@ -544,7 +542,7 @@
             v-model="confirmPassword"
             class="sub-panel__modal-password"
             name="password"
-            placeholder="Your admin password"
+            :placeholder="t('Your admin password')"
             :disabled="saving"
             autocomplete="current-password"
             @keydown.enter="onPasswordEnter"
@@ -560,7 +558,7 @@
             class="iz-btn iz-btn--ghost"
             :disabled="saving"
             @click="closeConfirm"
-          >Cancel</button>
+          >{{ t('Cancel') }}</button>
           <button
             type="button"
             class="iz-btn iz-btn--primary"
@@ -572,7 +570,7 @@
               class="iz-spinner"
               aria-hidden="true"
             ></span>
-            Confirm &amp; save
+            {{ t('Confirm & save') }}
           </button>
         </div>
       </div>
@@ -583,6 +581,7 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl, generateOcsUrl } from "@nextcloud/router";
+import { t, n, formatNumber, locale } from "../lib/l10n.mjs";
 
 // Org-app endpoints are exposed over OCS — use generateOcsUrl + the
 // OCS-APIRequest header + format=json query, then unwrap res.data.ocs.data.
@@ -599,18 +598,21 @@ function unwrapOcs(res) {
   return d || {};
 }
 
-const STATUS_OPTIONS = [
-  { value: "active", label: "Active" },
-  { value: "paused", label: "Paused" },
-  { value: "cancelled", label: "Cancelled" },
-];
+// Subscription status code → label. The code is what the API stores; the
+// label is made when shown, in the user's language.
+const STATUS_LABELS = {
+  active: () => t("Active"),
+  paused: () => t("Paused"),
+  cancelled: () => t("Cancelled"),
+};
 
+// value is the duration string sent to the API (stays English); label is shown.
 const EXTEND_OPTIONS = [
-  { value: "", label: "None" },
-  { value: "+1 month", label: "+1 month" },
-  { value: "+3 months", label: "+3 months" },
-  { value: "+6 months", label: "+6 months" },
-  { value: "+1 year", label: "+1 year" },
+  { value: "", label: () => t("None") },
+  { value: "+1 month", label: () => t("+1 month") },
+  { value: "+3 months", label: () => t("+3 months") },
+  { value: "+6 months", label: () => t("+6 months") },
+  { value: "+1 year", label: () => t("+1 year") },
 ];
 
 export default {
@@ -661,11 +663,15 @@ export default {
       customPlanFieldErrors: {},
       customPlanBlurred: {},
       customPlanError: null,
-      statusOptions: STATUS_OPTIONS,
-      extendOptions: EXTEND_OPTIONS,
     };
   },
   computed: {
+    statusOptions() {
+      return Object.keys(STATUS_LABELS).map((value) => ({ value, label: STATUS_LABELS[value]() }));
+    },
+    extendOptions() {
+      return EXTEND_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label() }));
+    },
     sub() {
       return this.org.subscription || {};
     },
@@ -682,11 +688,12 @@ export default {
     },
     statusLabel() {
       if (!this.sub.status) return "—";
+      if (STATUS_LABELS[this.sub.status]) return STATUS_LABELS[this.sub.status]();
       return this.sub.status.charAt(0).toUpperCase() + this.sub.status.slice(1);
     },
     priceLine() {
       if (!this.sub.price) return "—";
-      return this.formatMoney(this.sub.price, this.sub.currency) + " / month";
+      return t("{amount} / month", { amount: this.formatMoney(this.sub.price, this.sub.currency) });
     },
     memberCount() {
       return (this.org.members || []).length;
@@ -717,7 +724,7 @@ export default {
       return Math.min(100, Math.max(0, Number(this.storage.percentage) || 0));
     },
     storagePercentageDisplay() {
-      return this.storage.percentage == null ? "—" : this.storage.percentage + "%";
+      return this.storage.percentage == null ? "—" : formatNumber(Number(this.storage.percentage)) + "%";
     },
     endsRelative() {
       if (!this.sub.endedAt) return "";
@@ -725,18 +732,18 @@ export default {
       if (isNaN(end.getTime())) return "";
       const diffMs = end.getTime() - Date.now();
       const days = Math.round(diffMs / (1000 * 60 * 60 * 24));
-      if (days === 0) return "today";
+      if (days === 0) return t("today");
       const abs = Math.abs(days);
       let str;
-      if (abs < 60) str = abs + " day" + (abs === 1 ? "" : "s");
+      if (abs < 60) str = n("%n day", "%n days", abs);
       else if (abs < 730) {
         const months = Math.round(abs / 30);
-        str = months + " month" + (months === 1 ? "" : "s");
+        str = n("%n month", "%n months", months);
       } else {
         const years = Math.round(abs / 365);
-        str = years + " year" + (years === 1 ? "" : "s");
+        str = n("%n year", "%n years", years);
       }
-      return days >= 0 ? "in " + str : str + " ago";
+      return days >= 0 ? t("in {time}", { time: str }) : t("{time} ago", { time: str });
     },
     endsInPast() {
       if (!this.sub.endedAt) return false;
@@ -761,15 +768,15 @@ export default {
         this.form.extendDuration,
       );
       if (!match) return "";
-      const n = parseInt(match[1], 10);
+      const amount = parseInt(match[1], 10);
       const unit = match[2].toLowerCase();
       const d = new Date(base.getTime());
       if (unit.startsWith("day")) {
-        d.setDate(d.getDate() + n);
+        d.setDate(d.getDate() + amount);
       } else if (unit.startsWith("month")) {
-        d.setMonth(d.getMonth() + n);
+        d.setMonth(d.getMonth() + amount);
       } else {
-        d.setFullYear(d.getFullYear() + n);
+        d.setFullYear(d.getFullYear() + amount);
       }
       return this.formatDate(d.toISOString());
     },
@@ -827,33 +834,33 @@ export default {
       if (!input) return "";
       const d = new Date(input);
       if (isNaN(d.getTime())) return "";
-      return d.toLocaleDateString(undefined, {
+      return d.toLocaleDateString(locale(), {
         day: "2-digit",
         month: "short",
         year: "numeric",
       });
     },
     formatMoney(amount, currency) {
-      const n = Number(amount) || 0;
+      const value = Number(amount) || 0;
       const cur = currency || "EUR";
       try {
-        return new Intl.NumberFormat(undefined, {
+        return new Intl.NumberFormat(locale(), {
           style: "currency",
           currency: cur,
           maximumFractionDigits: 0,
-        }).format(n);
+        }).format(value);
       } catch (e) {
-        return n.toFixed(0) + " " + cur;
+        return value.toFixed(0) + " " + cur;
       }
     },
     formatBytes(value) {
       if (value == null) return "—";
       const bytes = Number(value) || 0;
       if (bytes <= 0) return "0 B";
-      const units = ["B", "KB", "MB", "GB", "TB"];
+      const units = t("B / KB / MB / GB / TB").split(" / ");
       const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
       const scaled = bytes / Math.pow(1024, index);
-      return scaled.toFixed(index >= 3 && scaled < 10 ? 1 : 0) + " " + units[index];
+      return formatNumber(scaled, index >= 3 && scaled < 10 ? 1 : 0) + " " + units[index];
     },
     storagePartDisplay(part) {
       return this.formatBytes(part.usedBytes) + " / " + this.formatBytes(part.capacityBytes);
@@ -862,26 +869,23 @@ export default {
       if (!input) return "";
       const date = new Date(input);
       if (isNaN(date.getTime())) return "";
-      return date.toLocaleString(undefined, {
+      return date.toLocaleString(locale(), {
         day: "2-digit",
         month: "short",
         hour: "2-digit",
         minute: "2-digit",
       });
     },
+    // A plain number in the user's locale (2.5 → "2,5" in Dutch).
+    number(value, maximumFractionDigits) {
+      return formatNumber(Number(value) || 0, maximumFractionDigits);
+    },
     planSummary(p) {
-      const price =
-        p.price != null
-          ? this.formatMoney(p.price, p.currency || "EUR") + "/mo"
-          : "—";
-      return (
-        price +
-        " · " +
-        p.maxMembers +
-        " members · " +
-        p.maxProjects +
-        " projects"
-      );
+      return t("{price}/mo · {members} members · {projects} projects", {
+        price: p.price != null ? this.formatMoney(p.price, p.currency || "EUR") : "—",
+        members: p.maxMembers,
+        projects: p.maxProjects,
+      });
     },
     enterEditMode() {
       this.mode = "edit";
@@ -950,7 +954,7 @@ export default {
         const data = unwrapOcs(res);
         this.plans = data.plans || [];
       } catch (e) {
-        this.plansError = this.extractServerError(e, "Couldn't load plans.");
+        this.plansError = this.extractServerError(e, t("Couldn't load plans."));
       } finally {
         this.plansLoading = false;
       }
@@ -991,27 +995,27 @@ export default {
     validateCustomPlan() {
       const cp = this.customPlan;
       const errs = {};
-      if (!cp.name || !cp.name.trim()) errs.name = "Required";
+      if (!cp.name || !cp.name.trim()) errs.name = t("Required");
       if (!Number.isFinite(+cp.maxMembers) || +cp.maxMembers < 1) {
-        errs.maxMembers = "Must be at least 1";
+        errs.maxMembers = t("Must be at least 1");
       }
       if (!Number.isFinite(+cp.maxProjects) || +cp.maxProjects < 1) {
-        errs.maxProjects = "Must be at least 1";
+        errs.maxProjects = t("Must be at least 1");
       }
       if (!Number.isFinite(+cp.sharedStorageGb) || +cp.sharedStorageGb <= 0) {
-        errs.sharedStorageGb = "Must be greater than 0";
+        errs.sharedStorageGb = t("Must be greater than 0");
       }
       if (!Number.isFinite(+cp.privateStorageGb) || +cp.privateStorageGb <= 0) {
-        errs.privateStorageGb = "Must be greater than 0";
+        errs.privateStorageGb = t("Must be greater than 0");
       }
       if (this.hasValue(cp.externalStorageGb)) {
         if (!Number.isFinite(+cp.externalStorageGb) || +cp.externalStorageGb < 0) {
-          errs.externalStorageGb = "Must be a non-negative number";
+          errs.externalStorageGb = t("Must be a non-negative number");
         }
       }
       if (cp.price !== "" && cp.price !== null) {
         if (!Number.isFinite(+cp.price) || +cp.price < 0) {
-          errs.price = "Must be a non-negative number";
+          errs.price = t("Must be a non-negative number");
         }
       }
       this.customPlanFieldErrors = errs;
@@ -1128,7 +1132,7 @@ export default {
           (e && e.response && e.response.config && e.response.config.url) ||
           "";
         if (url.indexOf("/login/confirm") !== -1 && status === 403) {
-          this.saveError = "Wrong password. Try again.";
+          this.saveError = t("Wrong password. Try again.");
           this.confirmPassword = "";
           this.focusConfirmInput();
         } else if (
@@ -1139,13 +1143,13 @@ export default {
           // password modal closed so the admin can fix the inputs first.
           this.customPlanError = this.extractServerError(
             e,
-            "Couldn't create plan. Try again.",
+            t("Couldn't create plan. Try again."),
           );
           this.confirmOpen = false;
           this.confirmPassword = "";
         } else if (status === 404) {
           this.saveError =
-            "Subscription no longer exists. The organization may have been deleted.";
+            t("Subscription no longer exists. The organization may have been deleted.");
           this.confirmOpen = false;
           this.$emit("reload");
         } else {
@@ -1155,7 +1159,7 @@ export default {
           // re-runs, no duplicate plan.
           this.saveError = this.extractServerError(
             e,
-            "Couldn't save changes. Try again.",
+            t("Couldn't save changes. Try again."),
           );
         }
       } finally {
@@ -1164,7 +1168,7 @@ export default {
     },
     extractServerError(err, fallback) {
       if (!err) return fallback;
-      if (!err.response) return "Couldn't reach the server. Try again.";
+      if (!err.response) return t("Couldn't reach the server. Try again.");
       const data = err.response.data;
       const ocsMsg =
         data && data.ocs && data.ocs.meta && data.ocs.meta.message;
@@ -1172,7 +1176,7 @@ export default {
       if (data && typeof data.message === "string" && data.message) {
         return data.message;
       }
-      return fallback + " (HTTP " + err.response.status + ")";
+      return t("{message} (HTTP {status})", { message: fallback, status: err.response.status });
     },
   },
 };

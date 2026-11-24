@@ -9,12 +9,12 @@
     <div class="iz-modal co-modal">
       <!-- Header -->
       <div class="iz-modal__header">
-        <span class="co-modal__title">Create organization</span>
+        <span class="co-modal__title">{{ t("Create organization") }}</span>
         <button
           type="button"
           class="iz-close"
           :disabled="saving"
-          aria-label="Close"
+          :aria-label="t('Close')"
           @click="cancel"
         >×</button>
       </div>
@@ -25,23 +25,23 @@
         <div v-if="createdOrg" class="iz-reveal co-modal__reveal">
           <div class="iz-reveal__heading">
             <span class="iz-reveal__check" aria-hidden="true">✓</span>
-            Organization created
+            {{ t("Organization created") }}
           </div>
           <div class="iz-reveal__row">
-            <span class="iz-reveal__label">Org</span>
+            <span class="iz-reveal__label">{{ t("Org") }}</span>
             <span class="iz-reveal__value">{{ createdOrg.displayname }}</span>
           </div>
           <div class="iz-reveal__row">
-            <span class="iz-reveal__label">Admin UID</span>
+            <span class="iz-reveal__label">{{ t("Admin UID") }}</span>
             <span class="iz-reveal__value">{{ createdOrg.adminUserId }}</span>
             <button
               type="button"
               class="iz-btn iz-btn--sm"
               @click="copyToClipboard(createdOrg.adminUserId, 'uid')"
-            >{{ copyFlags.uid ? "Copied!" : "Copy" }}</button>
+            >{{ copyFlags.uid ? t("Copied!") : t("Copy") }}</button>
           </div>
           <div class="iz-reveal__row">
-            <span class="iz-reveal__label">Password</span>
+            <span class="iz-reveal__label">{{ t("Password") }}</span>
             <span class="iz-reveal__value">
               <template v-if="revealPassword">{{ createdOrg.adminPassword }}</template>
               <template v-else>{{ "•".repeat(createdOrg.adminPassword.length) }}</template>
@@ -50,23 +50,22 @@
               type="button"
               class="iz-btn iz-btn--sm"
               @click="revealPassword = !revealPassword"
-            >{{ revealPassword ? "Hide" : "Show" }}</button>
+            >{{ revealPassword ? t("Hide") : t("Show") }}</button>
             <button
               type="button"
               class="iz-btn iz-btn--sm"
               @click="copyToClipboard(createdOrg.adminPassword, 'password')"
-            >{{ copyFlags.password ? "Copied!" : "Copy" }}</button>
+            >{{ copyFlags.password ? t("Copied!") : t("Copy") }}</button>
           </div>
           <div class="iz-reveal__row iz-reveal__row--actions">
             <button
               type="button"
               class="iz-btn iz-btn--sm"
               @click="copyToClipboard(createdOrg.adminUserId + ' / ' + createdOrg.adminPassword, 'both')"
-            >{{ copyFlags.both ? "Copied!" : "Copy both" }}</button>
+            >{{ copyFlags.both ? t("Copied!") : t("Copy both") }}</button>
           </div>
           <p class="iz-reveal__warning">
-            Share these credentials with the new admin now — the password
-            won't be visible again.
+            {{ t("Share these credentials with the new admin now — the password won't be visible again.") }}
           </p>
         </div>
 
@@ -85,7 +84,7 @@
                 :disabled="saving"
                 @change="onModeChange"
               />
-              <span aria-hidden="true">⚡</span> Trial
+              <span aria-hidden="true">⚡</span> {{ t("Trial") }}
             </label>
             <label
               class="iz-btn iz-btn--sm"
@@ -98,19 +97,19 @@
                 :disabled="saving"
                 @change="onModeChange"
               />
-              Standard
+              {{ t("Standard") }}
             </label>
           </div>
 
           <div v-if="form.mode === 'trial'" class="co-modal__hint">
-            Trial orgs use server-configured limits. No plan picker is required.
+            {{ t("Trial orgs use server-configured limits. No plan picker is required.") }}
           </div>
 
           <!-- Organization -->
-          <div class="co-modal__section-label">ORGANIZATION</div>
+          <div class="co-modal__section-label">{{ t("ORGANIZATION") }}</div>
           <div class="co-modal__field">
             <label class="co-modal__label" for="co-displayname">
-              Display name <span class="co-modal__req">*</span>
+              {{ t("Display name") }} <span class="co-modal__req">*</span>
             </label>
             <input
               id="co-displayname"
@@ -127,7 +126,7 @@
           </div>
           <div class="co-modal__field">
             <label class="co-modal__label" for="co-validity">
-              {{ form.mode === "trial" ? "Trial validity" : "Subscription validity" }}
+              {{ form.mode === "trial" ? t("Trial validity") : t("Subscription validity") }}
               <span class="co-modal__req">*</span>
             </label>
             <select
@@ -140,21 +139,21 @@
                 v-for="v in validityOptions"
                 :key="v"
                 :value="v"
-              >{{ v }}</option>
+              >{{ validityLabel(v) }}</option>
             </select>
           </div>
 
           <!-- Plan (Standard only) -->
           <template v-if="form.mode === 'standard'">
-            <div class="co-modal__section-label">PLAN</div>
-            <div v-if="plansLoading" class="iz-state co-modal__state">Loading plans…</div>
+            <div class="co-modal__section-label">{{ t("PLAN") }}</div>
+            <div v-if="plansLoading" class="iz-state co-modal__state">{{ t("Loading plans…") }}</div>
             <div v-else-if="plansError" class="co-modal__field-error">
               {{ plansError }}
               <button
                 type="button"
                 class="iz-btn iz-btn--sm iz-btn--accent"
                 @click="loadPlans"
-              >Retry</button>
+              >{{ t("Retry") }}</button>
             </div>
             <div v-else class="co-modal__plan-row">
               <select
@@ -166,7 +165,7 @@
                   v-for="p in plans"
                   :key="p.id"
                   :value="p.id"
-                >{{ p.name }} — {{ planSummary(p) }}</option>
+                >{{ planSummary(p) }}</option>
               </select>
               <button
                 type="button"
@@ -174,23 +173,23 @@
                 :class="{ 'co-modal__plan-custom-btn--active': form.customPlanOpen }"
                 :disabled="saving"
                 @click="form.customPlanOpen ? closeCustomPlan() : openCustomPlan()"
-              >{{ form.customPlanOpen ? "Cancel custom" : "+ Create custom" }}</button>
+              >{{ form.customPlanOpen ? t("Cancel custom") : t("+ Create custom") }}</button>
             </div>
             <!-- Custom plan sub-form (only when toggle is on) -->
             <div v-if="form.customPlanOpen" class="co-modal__custom">
               <div class="co-modal__custom-header">
-                <span class="co-modal__custom-title">NEW CUSTOM PLAN</span>
+                <span class="co-modal__custom-title">{{ t("NEW CUSTOM PLAN") }}</span>
                 <button
                   type="button"
                   class="iz-close iz-close--sm"
                   :disabled="saving"
-                  aria-label="Cancel custom plan"
+                  :aria-label="t('Cancel custom plan')"
                   @click="closeCustomPlan"
                 >×</button>
               </div>
               <div class="co-modal__field">
                 <label class="co-modal__label">
-                  Plan name <span class="co-modal__req">*</span>
+                  {{ t("Plan name") }} <span class="co-modal__req">*</span>
                 </label>
                 <input
                   type="text"
@@ -207,7 +206,7 @@
               <div class="co-modal__grid">
                 <div class="co-modal__field">
                   <label class="co-modal__label">
-                    Members <span class="co-modal__req">*</span>
+                    {{ t("Members") }} <span class="co-modal__req">*</span>
                   </label>
                   <input
                     type="number"
@@ -225,7 +224,7 @@
                 </div>
                 <div class="co-modal__field">
                   <label class="co-modal__label">
-                    Projects <span class="co-modal__req">*</span>
+                    {{ t("Projects") }} <span class="co-modal__req">*</span>
                   </label>
                   <input
                     type="number"
@@ -245,7 +244,7 @@
               <div class="co-modal__grid">
                 <div class="co-modal__field">
                   <label class="co-modal__label">
-                    Shared/project <span class="co-modal__req">*</span>
+                    {{ t("Shared/project") }} <span class="co-modal__req">*</span>
                   </label>
                   <div class="co-modal__unit-row">
                     <input
@@ -257,7 +256,7 @@
                       :disabled="saving"
                       @blur="markBlurred('cpShared')"
                     />
-                    <span class="co-modal__unit">GB</span>
+                    <span class="co-modal__unit">{{ t("GB") }}</span>
                   </div>
                   <div
                     v-if="blurred.cpShared && fieldErrors.cpShared"
@@ -266,7 +265,7 @@
                 </div>
                 <div class="co-modal__field">
                   <label class="co-modal__label">
-                    Private/user <span class="co-modal__req">*</span>
+                    {{ t("Private/user") }} <span class="co-modal__req">*</span>
                   </label>
                   <div class="co-modal__unit-row">
                     <input
@@ -278,7 +277,7 @@
                       :disabled="saving"
                       @blur="markBlurred('cpPrivate')"
                     />
-                    <span class="co-modal__unit">GB</span>
+                    <span class="co-modal__unit">{{ t("GB") }}</span>
                   </div>
                   <div
                     v-if="blurred.cpPrivate && fieldErrors.cpPrivate"
@@ -289,7 +288,7 @@
               <div class="co-modal__grid">
                 <div class="co-modal__field">
                   <label class="co-modal__label">
-                    Price <span class="co-modal__optional">(optional)</span>
+                    {{ t("Price") }} <span class="co-modal__optional">{{ t("(optional)") }}</span>
                   </label>
                   <input
                     type="number"
@@ -306,7 +305,7 @@
                   >{{ fieldErrors.cpPrice }}</div>
                 </div>
                 <div class="co-modal__field">
-                  <label class="co-modal__label">Currency</label>
+                  <label class="co-modal__label">{{ t("Currency") }}</label>
                   <select
                     v-model="form.customPlan.currency"
                     class="iz-input"
@@ -324,7 +323,7 @@
 
           <!-- Contact -->
           <div class="co-modal__section-label">
-            CONTACT <span class="co-modal__optional">(optional)</span>
+            {{ t("CONTACT") }} <span class="co-modal__optional">{{ t("(optional)") }}</span>
           </div>
           <div class="co-modal__grid">
             <div class="co-modal__field">
@@ -332,7 +331,7 @@
                 type="text"
                 class="iz-input"
                 v-model="form.contactFirstName"
-                placeholder="First name"
+                :placeholder="t('First name')"
                 :disabled="saving"
               />
             </div>
@@ -341,7 +340,7 @@
                 type="text"
                 class="iz-input"
                 v-model="form.contactLastName"
-                placeholder="Last name"
+                :placeholder="t('Last name')"
                 :disabled="saving"
               />
             </div>
@@ -351,7 +350,7 @@
               type="email"
               class="iz-input"
               v-model="form.contactEmail"
-              placeholder="Email"
+              :placeholder="t('Email')"
               :disabled="saving"
               @blur="markBlurred('contactEmail')"
             />
@@ -365,20 +364,20 @@
               type="text"
               class="iz-input"
               v-model="form.contactPhone"
-              placeholder="Phone"
+              :placeholder="t('Phone')"
               :disabled="saving"
             />
           </div>
 
           <!-- Admin user -->
           <div class="co-modal__section-label">
-            ADMIN USER
-            <span class="co-modal__optional">(created fresh)</span>
+            {{ t("ADMIN USER") }}
+            <span class="co-modal__optional">{{ t("(created fresh)") }}</span>
           </div>
           <div class="co-modal__grid">
             <div class="co-modal__field">
               <label class="co-modal__label">
-                UID <span class="co-modal__req">*</span>
+                {{ t("UID") }} <span class="co-modal__req">*</span>
               </label>
               <input
                 type="text"
@@ -396,7 +395,7 @@
             </div>
             <div class="co-modal__field">
               <label class="co-modal__label">
-                Display name <span class="co-modal__req">*</span>
+                {{ t("Display name") }} <span class="co-modal__req">*</span>
               </label>
               <input
                 type="text"
@@ -412,7 +411,7 @@
             </div>
           </div>
           <div class="co-modal__field">
-            <label class="co-modal__label">Email</label>
+            <label class="co-modal__label">{{ t("Email") }}</label>
             <input
               type="email"
               class="iz-input"
@@ -427,7 +426,7 @@
           </div>
           <div class="co-modal__field">
             <label class="co-modal__label">
-              Password <span class="co-modal__req">*</span>
+              {{ t("Password") }} <span class="co-modal__req">*</span>
             </label>
             <div class="co-modal__password-row">
               <input
@@ -443,7 +442,7 @@
                 type="button"
                 class="co-modal__icon-btn"
                 :disabled="saving"
-                :aria-label="form.adminShowPassword ? 'Hide password' : 'Show password'"
+                :aria-label="form.adminShowPassword ? t('Hide password') : t('Show password')"
                 @click="form.adminShowPassword = !form.adminShowPassword"
               >
                 <svg
@@ -486,7 +485,7 @@
                 type="button"
                 class="co-modal__icon-btn"
                 :disabled="saving"
-                aria-label="Regenerate password"
+                :aria-label="t('Regenerate password')"
                 @click="form.adminPassword = generatePassword()"
               >↻</button>
             </div>
@@ -497,7 +496,7 @@
                 :disabled="saving"
                 @change="onAutoGenerateChange"
               />
-              Auto-generate
+              {{ t("Auto-generate") }}
             </label>
             <div
               v-if="blurred.adminPassword && fieldErrors.adminPassword"
@@ -520,7 +519,7 @@
             type="button"
             class="iz-btn iz-btn--primary"
             @click="confirmCreatedOrg"
-          >Done</button>
+          >{{ tc("Done", "button") }}</button>
         </template>
         <template v-else>
           <button
@@ -528,13 +527,13 @@
             class="iz-btn iz-btn--ghost"
             :disabled="saving"
             @click="cancel"
-          >Cancel</button>
+          >{{ t("Cancel") }}</button>
           <button
             type="button"
             class="iz-btn iz-btn--primary"
             :disabled="!canSave"
             @click="openConfirm"
-          >Create organization</button>
+          >{{ t("Create organization") }}</button>
         </template>
       </div>
     </div>
@@ -550,12 +549,12 @@
     >
       <div class="co-modal__confirm">
         <div class="co-modal__confirm-header">
-          <span>Confirm with your password</span>
+          <span>{{ t("Confirm with your password") }}</span>
           <button
             type="button"
             class="iz-close"
             :disabled="saving"
-            aria-label="Close"
+            :aria-label="t('Close')"
             @click="closeConfirm"
           >×</button>
         </div>
@@ -565,8 +564,7 @@
           @submit.prevent="saveOrg"
         >
           <p class="iz-modal__confirm-text">
-            In Zicht requires re-confirming your super-admin password
-            before creating an organization.
+            {{ t("In Zicht requires re-confirming your super-admin password before creating an organization.") }}
           </p>
           <input
             type="text"
@@ -584,7 +582,7 @@
             v-model="confirmPassword"
             class="co-modal__confirm-password"
             name="password"
-            placeholder="Your admin password"
+            :placeholder="t('Your admin password')"
             :disabled="saving"
             autocomplete="current-password"
             @keydown.enter="onConfirmEnter"
@@ -600,7 +598,7 @@
             class="iz-btn iz-btn--ghost"
             :disabled="saving"
             @click="closeConfirm"
-          >Cancel</button>
+          >{{ t("Cancel") }}</button>
           <button
             type="button"
             class="iz-btn iz-btn--primary"
@@ -612,7 +610,7 @@
               class="iz-spinner"
               aria-hidden="true"
             ></span>
-            Confirm &amp; create
+            {{ t("Confirm & create") }}
           </button>
         </div>
       </div>
@@ -623,6 +621,7 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl, generateOcsUrl } from "@nextcloud/router";
+import { t, locale } from "../lib/l10n.mjs";
 
 const ORG_OCS_HEADERS = {
   "OCS-APIRequest": "true",
@@ -636,6 +635,8 @@ function unwrapOcs(res) {
   return d || {};
 }
 
+// The validity values are what the organization app parses, so they stay
+// English; VALIDITY_LABELS gives each one its translated label.
 const TRIAL_VALIDITY = ["14 days", "30 days", "3 months"];
 const STANDARD_VALIDITY = [
   "1 month",
@@ -644,6 +645,16 @@ const STANDARD_VALIDITY = [
   "1 year",
   "2 years",
 ];
+
+const VALIDITY_LABELS = {
+  "14 days": () => t("14 days"),
+  "30 days": () => t("30 days"),
+  "1 month": () => t("1 month"),
+  "3 months": () => t("3 months"),
+  "6 months": () => t("6 months"),
+  "1 year": () => t("1 year"),
+  "2 years": () => t("2 years"),
+};
 
 export default {
   name: "CreateOrgModal",
@@ -776,6 +787,10 @@ export default {
     });
   },
   methods: {
+    validityLabel(value) {
+      const label = VALIDITY_LABELS[value];
+      return label ? label() : value;
+    },
     cancel() {
       if (this.saving) return;
       this.$emit("close");
@@ -811,7 +826,7 @@ export default {
           this.form.planId = this.plans[0].id;
         }
       } catch (e) {
-        this.plansError = this.extractServerError(e, "Couldn't load plans.");
+        this.plansError = this.extractServerError(e, t("Couldn't load plans."));
       } finally {
         this.plansLoading = false;
       }
@@ -858,52 +873,52 @@ export default {
     validate() {
       const errs = {};
       const f = this.form;
-      if (!f.displayname.trim()) errs.displayname = "Required";
+      if (!f.displayname.trim()) errs.displayname = t("Required");
       // Contact email
       const e = f.contactEmail.trim();
       if (e && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
-        errs.contactEmail = "Invalid email";
+        errs.contactEmail = t("Invalid email");
       }
       // Admin uid
       const uid = f.adminUserId.trim();
       if (!uid) {
-        errs.adminUserId = "Required";
+        errs.adminUserId = t("Required");
       } else if (!/^[A-Za-z0-9._@-]+$/.test(uid)) {
-        errs.adminUserId = "Use letters, digits, or . _ @ - (no spaces).";
+        errs.adminUserId = t("Use letters, digits, or . _ @ - (no spaces).");
       }
-      if (!f.adminDisplayName.trim()) errs.adminDisplayName = "Required";
+      if (!f.adminDisplayName.trim()) errs.adminDisplayName = t("Required");
       const ae = f.adminEmail.trim();
       if (ae && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ae)) {
-        errs.adminEmail = "Invalid email";
+        errs.adminEmail = t("Invalid email");
       }
       if (!f.adminAutoGenerate) {
-        if (!f.adminPassword) errs.adminPassword = "Required";
+        if (!f.adminPassword) errs.adminPassword = t("Required");
         else if (f.adminPassword.length < 10) {
-          errs.adminPassword = "At least 10 characters";
+          errs.adminPassword = t("At least 10 characters");
         }
       }
       // Custom plan
       if (f.mode === "standard" && f.customPlanOpen) {
         const cp = f.customPlan;
-        if (!cp.name || !cp.name.trim()) errs.cpName = "Required";
+        if (!cp.name || !cp.name.trim()) errs.cpName = t("Required");
         if (!Number.isFinite(+cp.maxMembers) || +cp.maxMembers < 1) {
-          errs.cpMembers = "Must be at least 1";
+          errs.cpMembers = t("Must be at least 1");
         }
         if (!Number.isFinite(+cp.maxProjects) || +cp.maxProjects < 1) {
-          errs.cpProjects = "Must be at least 1";
+          errs.cpProjects = t("Must be at least 1");
         }
         if (!Number.isFinite(+cp.sharedStorageGb) || +cp.sharedStorageGb <= 0) {
-          errs.cpShared = "Must be greater than 0";
+          errs.cpShared = t("Must be greater than 0");
         }
         if (
           !Number.isFinite(+cp.privateStorageGb) ||
           +cp.privateStorageGb <= 0
         ) {
-          errs.cpPrivate = "Must be greater than 0";
+          errs.cpPrivate = t("Must be greater than 0");
         }
         if (cp.price !== "" && cp.price !== null) {
           if (!Number.isFinite(+cp.price) || +cp.price < 0) {
-            errs.cpPrice = "Must be a non-negative number";
+            errs.cpPrice = t("Must be a non-negative number");
           }
         }
       }
@@ -954,30 +969,24 @@ export default {
       if (this.canConfirm) this.saveOrg();
     },
     planSummary(p) {
-      const price =
-        p.price != null
-          ? this.formatMoney(p.price, p.currency || "EUR") + "/mo"
-          : "—";
-      return (
-        price +
-        " · " +
-        p.maxMembers +
-        " members · " +
-        p.maxProjects +
-        " projects"
-      );
+      return t("{plan} — {price}/mo · {members} members · {projects} projects", {
+        plan: p.name,
+        price: p.price != null ? this.formatMoney(p.price, p.currency || "EUR") : "—",
+        members: p.maxMembers,
+        projects: p.maxProjects,
+      });
     },
     formatMoney(amount, currency) {
-      const n = Number(amount) || 0;
+      const value = Number(amount) || 0;
       const cur = currency || "EUR";
       try {
-        return new Intl.NumberFormat(undefined, {
+        return new Intl.NumberFormat(locale(), {
           style: "currency",
           currency: cur,
           maximumFractionDigits: 0,
-        }).format(n);
+        }).format(value);
       } catch (e) {
-        return n.toFixed(0) + " " + cur;
+        return value.toFixed(0) + " " + cur;
       }
     },
     buildCreateBody() {
@@ -1078,13 +1087,13 @@ export default {
           (e && e.response && e.response.config && e.response.config.url) ||
           "";
         if (url.indexOf("/login/confirm") !== -1 && status === 403) {
-          this.saveError = "Wrong password. Try again.";
+          this.saveError = t("Wrong password. Try again.");
           this.confirmPassword = "";
           this.focusConfirmInput();
         } else {
           this.saveError = this.extractServerError(
             e,
-            "Couldn't create organization. Try again.",
+            t("Couldn't create organization. Try again."),
           );
         }
       } finally {
@@ -1093,7 +1102,7 @@ export default {
     },
     extractServerError(err, fallback) {
       if (!err) return fallback;
-      if (!err.response) return "Couldn't reach the server. Try again.";
+      if (!err.response) return t("Couldn't reach the server. Try again.");
       const data = err.response.data;
       const ocsMsg =
         data && data.ocs && data.ocs.meta && data.ocs.meta.message;
@@ -1101,7 +1110,7 @@ export default {
       if (data && typeof data.message === "string" && data.message) {
         return data.message;
       }
-      return fallback + " (HTTP " + err.response.status + ")";
+      return t("{message} (HTTP {status})", { message: fallback, status: err.response.status });
     },
     copyToClipboard(text, key) {
       const setFlag = (val) => {

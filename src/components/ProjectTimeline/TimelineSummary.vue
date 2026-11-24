@@ -6,12 +6,12 @@
 				size="small"
 				:disabled="loading || saving"
 				@click="load">
-				{{ loading ? 'Refreshing…' : 'Refresh timeline' }}
+				{{ loading ? t('Refreshing…') : t('Refresh timeline') }}
 			</NcButton>
 		</div>
 		<div v-if="loading" class="timeline-summary__loading">
 			<NcLoadingIcon :size="20" />
-			<span>Synchronizing readiness state…</span>
+			<span>{{ t('Synchronizing readiness state…') }}</span>
 		</div>
 
 		<div v-else class="timeline-summary__flow">
@@ -21,7 +21,7 @@
 					<Plus :size="16" />
 				</div>
 				<div class="step__content">
-					<div class="step__label">Request Date</div>
+					<div class="step__label">{{ t('Request Date') }}</div>
 					<div class="step__value">{{ formatDate(summary.requestDate) }}</div>
 				</div>
 				<div class="step__connector step__connector--active"></div>
@@ -33,7 +33,7 @@
 					<Clock :size="16" />
 				</div>
 				<div class="step__content">
-					<div class="step__label">Coordination Pending</div>
+					<div class="step__label">{{ t('Coordination Pending') }}</div>
 					<div class="step__value">{{ coordinationPendingText || '—' }}</div>
 					<div v-if="coordinationPendingRangeText" class="step__meta">
 						{{ coordinationPendingRangeText }}
@@ -50,22 +50,22 @@
 					<AlertCircle v-else :size="16" />
 				</div>
 				<div class="step__content">
-					<div class="step__label">Process Completed</div>
+					<div class="step__label">{{ t('Process Completed') }}</div>
 					<div class="step__value-group">
 						<span class="step__value step__status-pill" :class="statusClass">{{ statusText }}</span>
-						<span v-if="hasProgress" class="step__badge">{{ summary.processCompleted.doneCount }}/{{ summary.processCompleted.totalRequired }}</span>
+						<span v-if="hasProgress" class="step__badge">{{ t('{done}/{total}', { done: summary.processCompleted.doneCount, total: summary.processCompleted.totalRequired }) }}</span>
 					</div>
 					<div v-if="summary.processCompleted.date" class="step__meta">
-						Completed on {{ formatDate(summary.processCompleted.date) }}
+						{{ t('Completed on {date}', { date: formatDate(summary.processCompleted.date) }) }}
 					</div>
 					<div v-if="summary.processCompleted.status === 'incomplete'" class="step__subtext">
-						Complete checklist items to unlock execution planning.
+						{{ t('Complete checklist items to unlock execution planning.') }}
 					</div>
 					<div v-if="showMissingTitles" class="step__hint">
 						<span
 							class="step__missing-chip"
-							:title="'Missing: ' + summary.processCompleted.missingTitles.join(', ')">
-							Missing {{ summary.processCompleted.missingTitles.length }}
+							:title="t('Missing: {titles}', { titles: summary.processCompleted.missingTitles.join(', ') })">
+							{{ t('Missing {n}', { n: summary.processCompleted.missingTitles.length }) }}
 						</span>
 					</div>
 				</div>
@@ -78,9 +78,9 @@
 					<CalendarEdit :size="16" />
 				</div>
 				<div class="step__content">
-					<div class="step__label">Required Preparation Time</div>
+					<div class="step__label">{{ t('Required Preparation Time') }}</div>
 					<div class="prep-input">
-						<label class="prep-input__label" :for="`prep-weeks-${projectId}`">Weeks</label>
+						<label class="prep-input__label" :for="`prep-weeks-${projectId}`">{{ t('Weeks') }}</label>
 						<input
 							:id="`prep-weeks-${projectId}`"
 							v-model="prepWeeksInput"
@@ -100,7 +100,7 @@
 								class="prep-save-btn"
 								:disabled="saving"
 								@click="savePrepWeeks">
-								{{ saving ? '...' : 'Save' }}
+								{{ saving ? t('...') : t('Save') }}
 							</NcButton>
 						</transition>
 					</div>
@@ -114,10 +114,10 @@
 					<FlagVariant :size="16" />
 				</div>
 				<div class="step__content">
-					<div class="step__label">Earliest Execution Date</div>
-					<div class="step__value step__value--target">{{ summary.earliestExecutionDate ? formatDate(summary.earliestExecutionDate) : 'TBD' }}</div>
+					<div class="step__label">{{ t('Earliest Execution Date') }}</div>
+					<div class="step__value step__value--target">{{ summary.earliestExecutionDate ? formatDate(summary.earliestExecutionDate) : t('TBD') }}</div>
 					<div v-if="!summary.earliestExecutionDate && hypotheticalDateInfo" class="step__estimate">
-						<span class="step__estimate-label">Completed today</span>
+						<span class="step__estimate-label">{{ t('Completed today') }}</span>
 						<span class="step__estimate-sep">→</span>
 						<span class="step__estimate-date">{{ hypotheticalDateInfo.formatted }}</span>
 					</div>
@@ -130,6 +130,7 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
+import { t, n } from '../../lib/l10n.mjs'
 import { NcButton, NcLoadingIcon } from '@nextcloud/vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import Check from 'vue-material-design-icons/Check.vue'
@@ -184,11 +185,11 @@ export default {
 		},
 		statusText() {
 			const status = this.summary.processCompleted?.status
-			if (status === 'complete') return 'Ready'
-			if (status === 'incomplete') return 'Pending'
-			if (status === 'missing_cards') return 'Initial'
-			if (status === 'not_configured') return 'N/A'
-			if (status === 'error') return 'Error'
+			if (status === 'complete') return t('Ready')
+			if (status === 'incomplete') return t('Pending')
+			if (status === 'missing_cards') return t('Initial')
+			if (status === 'not_configured') return t('N/A')
+			if (status === 'error') return t('Error')
 			return '—'
 		},
 		statusClass() {
@@ -222,14 +223,13 @@ export default {
 			if (!Number.isFinite(weeks) || weeks < 0) return ''
 
 			const normalized = Math.round(weeks * 10) / 10
-			const display = Number.isInteger(normalized) ? String(normalized) : normalized.toFixed(1)
-			return `${display} ${normalized === 1 ? 'week' : 'weeks'}`
+			return n('%n week', '%n weeks', normalized)
 		},
 		coordinationPendingRangeText() {
 			const fromDate = this.summary?.coordinationPendingPeriod?.fromDate
 			const toDate = this.summary?.coordinationPendingPeriod?.toDate
 			if (!fromDate || !toDate) return ''
-			return `${this.formatDate(fromDate)} → ${this.formatDate(toDate)}`
+			return t('{from} → {to}', { from: this.formatDate(fromDate), to: this.formatDate(toDate) })
 		},
 		coordinationIconClass() {
 			return this.summary?.coordinationPendingPeriod?.isFinal ? 'step__icon--success' : 'step__icon--warning'
@@ -251,7 +251,7 @@ export default {
 			const month = String(projected.getMonth() + 1).padStart(2, '0')
 			const year = projected.getFullYear()
 
-			return { formatted: `${day}/${month}/${year}` }
+			return { formatted: t('{day}/{month}/{year}', { day, month, year }) }
 		},
 	},
 	watch: {
@@ -269,7 +269,7 @@ export default {
 			const day = date.getDate().toString().padStart(2, '0')
 			const month = (date.getMonth() + 1).toString().padStart(2, '0')
 			const year = date.getFullYear()
-			return `${day}/${month}/${year}`
+			return t('{day}/{month}/{year}', { day, month, year })
 		},
 		async load() {
 			this.loading = true

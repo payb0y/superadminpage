@@ -8,6 +8,7 @@ use OCP\Http\Client\IClientService;
 use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IDBConnection;
+use OCP\IL10N;
 
 class SystemHealthService {
 
@@ -15,17 +16,20 @@ class SystemHealthService {
     private ICacheFactory $cacheFactory;
     private IDBConnection $db;
     private IClientService $clientService;
+    private IL10N $l;
 
     public function __construct(
         IConfig $config,
         ICacheFactory $cacheFactory,
         IDBConnection $db,
         IClientService $clientService,
+        IL10N $l,
     ) {
         $this->config = $config;
         $this->cacheFactory = $cacheFactory;
         $this->db = $db;
         $this->clientService = $clientService;
+        $this->l = $l;
     }
 
     public function getSnapshot(): array {
@@ -365,7 +369,7 @@ class SystemHealthService {
         if ($cache !== null) {
             $cached = $cache->get('snapshot');
             if (is_array($cached)) {
-                return $cached;
+                return $this->withNames($cached);
             }
         }
 
@@ -374,6 +378,20 @@ class SystemHealthService {
         if ($cache !== null) {
             $cache->set('snapshot', $services, 15);
         }
+        return $this->withNames($services);
+    }
+
+    /**
+     * Display names in the viewer's language. Applied after the cache, which
+     * every admin shares, so one user's language never reaches another.
+     */
+    private function withNames(array $services): array {
+        foreach ($services as &$service) {
+            if (($service['key'] ?? null) === 'pdf-to-image') {
+                $service['name'] = $this->l->t('PDF → Image');
+            }
+        }
+        unset($service);
         return $services;
     }
 

@@ -16,6 +16,7 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IGroupManager;
+use OCP\IL10N;
 use OCP\IRequest;
 use OCP\IUserSession;
 use Psr\Log\LoggerInterface;
@@ -33,6 +34,7 @@ class DashboardController extends Controller {
     private GeocodeService $geocode;
     private FinancialsService $financials;
     private LoggerInterface $logger;
+    private IL10N $l;
 
     public function __construct(
         string $appName,
@@ -48,6 +50,7 @@ class DashboardController extends Controller {
         GeocodeService $geocode,
         FinancialsService $financials,
         LoggerInterface $logger,
+        IL10N $l,
     ) {
         parent::__construct($appName, $request);
         $this->userSession = $userSession;
@@ -61,6 +64,7 @@ class DashboardController extends Controller {
         $this->geocode = $geocode;
         $this->financials = $financials;
         $this->logger = $logger;
+        $this->l = $l;
     }
 
     /**
@@ -270,7 +274,7 @@ class DashboardController extends Controller {
             return new JSONResponse(
                 [
                     'error' => 'internal',
-                    'message' => 'Something went wrong loading this data. Please try again in a moment.',
+                    'message' => $this->l->t('Something went wrong loading this data. Please try again in a moment.'),
                 ],
                 Http::STATUS_INTERNAL_SERVER_ERROR,
             );

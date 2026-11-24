@@ -15,17 +15,17 @@
         >
           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
         </svg>
-        System Health
+        {{ t('System Health') }}
       </h3>
       <div class="system-health__header-actions">
         <span
           v-if="snapshot"
           class="system-health__live"
           :class="{ 'system-health__live--paused': pollPaused }"
-          :title="pollPaused ? 'Live updates paused (tab hidden)' : 'Live, updating every ' + (pollMs / 1000) + 's'"
+          :title="pollPaused ? t('Live updates paused (tab hidden)') : t('Live, updating every {n}s', { n: pollMs / 1000 })"
         >
           <span class="system-health__live-dot"></span>
-          {{ pollPaused ? "Paused" : "Live" }}
+          {{ pollPaused ? t("Paused") : t("Live") }}
         </span>
         <button
           class="system-health__refresh"
@@ -36,18 +36,18 @@
             class="system-health__refresh-icon"
             :class="{ 'system-health__refresh-icon--spinning': loading }"
           >↻</span>
-          {{ loading ? "Refreshing…" : "Refresh" }}
+          {{ loading ? t("Refreshing…") : t("Refresh") }}
         </button>
       </div>
     </header>
 
     <div v-if="error && !snapshot" class="system-health__error">
       {{ error }}
-      <button class="iz-btn iz-btn--sm iz-btn--danger-quiet system-health__retry" @click="fetch">Retry</button>
+      <button class="iz-btn iz-btn--sm iz-btn--danger-quiet system-health__retry" @click="fetch">{{ t('Retry') }}</button>
     </div>
 
     <template v-else>
-      <div class="system-health__subhead system-health__subhead--first">Resources</div>
+      <div class="system-health__subhead system-health__subhead--first">{{ tc('Resources', 'system') }}</div>
       <div class="iz-stat-grid">
         <div
           v-for="card in cards"
@@ -75,7 +75,7 @@
       </div>
 
       <template v-if="networkVisible">
-        <div class="system-health__subhead">Network</div>
+        <div class="system-health__subhead">{{ t('Network') }}</div>
         <div class="iz-stat-grid">
           <div
             v-for="card in networkCards"
@@ -93,7 +93,7 @@
       </template>
 
       <template v-if="usersVisible">
-        <div class="system-health__subhead">Active Users</div>
+        <div class="system-health__subhead">{{ t('Active Users') }}</div>
         <div class="iz-stat-grid">
           <div
             v-for="card in userCards"
@@ -111,7 +111,7 @@
       </template>
 
       <template v-if="servicesVisible || hpbHostVisible">
-        <div class="system-health__subhead">Services</div>
+        <div class="system-health__subhead">{{ t('Services') }}</div>
         <div class="iz-stat-grid">
           <div
             v-for="card in serviceCards"
@@ -163,16 +163,19 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
+import { t, formatNumber, locale } from "../lib/l10n.mjs";
 
 const GIB = 1024 ** 3;
 const MIB = 1024 ** 2;
 const POLL_MS = 3000;
 
-function formatBytes(n) {
-  if (n === null || n === undefined || !Number.isFinite(n)) return "—";
-  if (n >= GIB) return (n / GIB).toFixed(1) + " GB";
-  if (n >= MIB) return (n / MIB).toFixed(0) + " MB";
-  return (n / 1024).toFixed(0) + " KB";
+// Unit symbols (GB, MB, KB, B/s …) read the same in Dutch; only the number
+// follows the user's locale (decimal comma).
+function formatBytes(bytes) {
+  if (bytes === null || bytes === undefined || !Number.isFinite(bytes)) return "—";
+  if (bytes >= GIB) return formatNumber(bytes / GIB, 1) + " GB";
+  if (bytes >= MIB) return formatNumber(bytes / MIB, 0) + " MB";
+  return formatNumber(bytes / 1024, 0) + " KB";
 }
 
 function formatDuration(seconds) {
@@ -180,24 +183,24 @@ function formatDuration(seconds) {
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
-  if (days > 0) return days + "d " + hours + "h " + mins + "m";
-  if (hours > 0) return hours + "h " + mins + "m";
-  return mins + "m";
+  if (days > 0) return t("{d}d {h}h {m}m", { d: days, h: hours, m: mins });
+  if (hours > 0) return t("{h}h {m}m", { h: hours, m: mins });
+  return t("{m}m", { m: mins });
 }
 
 function formatRate(bytesPerSec) {
   if (bytesPerSec === null || bytesPerSec === undefined || !Number.isFinite(bytesPerSec)) {
     return "—";
   }
-  if (bytesPerSec >= GIB) return (bytesPerSec / GIB).toFixed(2) + " GB/s";
-  if (bytesPerSec >= MIB) return (bytesPerSec / MIB).toFixed(2) + " MB/s";
-  if (bytesPerSec >= 1024) return (bytesPerSec / 1024).toFixed(1) + " KB/s";
+  if (bytesPerSec >= GIB) return formatNumber(bytesPerSec / GIB, 2) + " GB/s";
+  if (bytesPerSec >= MIB) return formatNumber(bytesPerSec / MIB, 2) + " MB/s";
+  if (bytesPerSec >= 1024) return formatNumber(bytesPerSec / 1024, 1) + " KB/s";
   return Math.round(bytesPerSec) + " B/s";
 }
 
-function formatCount(n) {
-  if (n === null || n === undefined || !Number.isFinite(n)) return "—";
-  return new Intl.NumberFormat().format(n);
+function formatCount(count) {
+  if (count === null || count === undefined || !Number.isFinite(count)) return "—";
+  return new Intl.NumberFormat(locale()).format(count);
 }
 
 export default {
@@ -230,32 +233,32 @@ export default {
       return !!(this.snapshot && this.snapshot.users);
     },
     networkCards() {
-      const n = this.snapshot && this.snapshot.network;
+      const net = this.snapshot && this.snapshot.network;
       return [
         {
           key: "host",
-          title: "Host",
-          valueLine: (n && n.hostname) ? n.hostname : "—",
-          subtitle: "Hostname",
+          title: t("Host"),
+          valueLine: (net && net.hostname) ? net.hostname : "—",
+          subtitle: t("Hostname"),
         },
         {
           key: "in",
-          title: "Inbound",
-          valueLine: formatRate(n && n.rxBytesPerSec),
-          subtitle: "Receive rate",
+          title: t("Inbound"),
+          valueLine: formatRate(net && net.rxBytesPerSec),
+          subtitle: t("Receive rate"),
         },
         {
           key: "out",
-          title: "Outbound",
-          valueLine: formatRate(n && n.txBytesPerSec),
-          subtitle: "Transmit rate",
+          title: t("Outbound"),
+          valueLine: formatRate(net && net.txBytesPerSec),
+          subtitle: t("Transmit rate"),
         },
         {
           key: "iface",
-          title: "Interface",
-          valueLine: (n && n.interface) ? n.interface : "—",
-          subtitle: n
-            ? "↓ " + formatBytes(n.rxBytesTotal) + " · ↑ " + formatBytes(n.txBytesTotal)
+          title: t("Interface"),
+          valueLine: (net && net.interface) ? net.interface : "—",
+          subtitle: net
+            ? "↓ " + formatBytes(net.rxBytesTotal) + " · ↑ " + formatBytes(net.txBytesTotal)
             : "",
         },
       ];
@@ -265,27 +268,27 @@ export default {
       return [
         {
           key: "u5",
-          title: "Last 5 min",
+          title: t("Last 5 min"),
           valueLine: formatCount(u && u.last5min),
-          subtitle: "Active sessions",
+          subtitle: t("Active sessions"),
         },
         {
           key: "u1h",
-          title: "Last hour",
+          title: t("Last hour"),
           valueLine: formatCount(u && u.last1hour),
-          subtitle: "Active sessions",
+          subtitle: t("Active sessions"),
         },
         {
           key: "u1d",
-          title: "Last 24 hours",
+          title: t("Last 24 hours"),
           valueLine: formatCount(u && u.last24hour),
-          subtitle: "Active sessions",
+          subtitle: t("Active sessions"),
         },
         {
           key: "uall",
-          title: "Total",
+          title: t("Total"),
           valueLine: formatCount(u && u.total),
-          subtitle: "Accounts",
+          subtitle: t("Accounts"),
         },
       ];
     },
@@ -298,13 +301,13 @@ export default {
       const list = (this.snapshot && this.snapshot.services) || [];
       return list.map((s) => {
         const statusLabel =
-          s.status === "ok" ? "Healthy"
-            : s.status === "degraded" ? "Degraded"
-              : "Down";
+          s.status === "ok" ? t("Healthy")
+            : s.status === "degraded" ? t("Degraded")
+              : t("Down");
         const host = (s.url || "").replace(/^https?:\/\//, "");
         const subtitle =
           (s.status !== "down" && s.latencyMs != null)
-            ? s.latencyMs + " ms · " + host
+            ? t("{ms} ms · {host}", { ms: s.latencyMs, host })
             : host;
         return { key: s.key, name: s.name, statusLabel, tone: s.status, subtitle };
       });
@@ -321,41 +324,41 @@ export default {
       const memoryCard = mem
         ? {
             key: "hpb-mem",
-            title: "HPB Memory",
+            title: t("HPB Memory"),
             valueLine: formatBytes(mem.usedBytes) + " / " + formatBytes(mem.totalBytes),
             percent: mem.percent,
-            subtitle: (h.network && h.network.hostname) ? h.network.hostname : "HPB host",
+            subtitle: (h.network && h.network.hostname) ? h.network.hostname : t("HPB host"),
           }
         : {
             key: "hpb-mem",
-            title: "HPB Memory",
+            title: t("HPB Memory"),
             valueLine: "—",
             percent: null,
-            subtitle: unreachable ? "Monitor unreachable" : "HPB host",
+            subtitle: unreachable ? t("Monitor unreachable") : t("HPB host"),
           };
 
       const disk = h && h.disk;
       const diskCard = disk
         ? {
             key: "hpb-disk",
-            title: "HPB Disk",
+            title: t("HPB Disk"),
             valueLine: formatBytes(disk.usedBytes) + " / " + formatBytes(disk.totalBytes),
             percent: disk.percent,
             subtitle: disk.path || "/",
           }
         : {
             key: "hpb-disk",
-            title: "HPB Disk",
+            title: t("HPB Disk"),
             valueLine: "—",
             percent: null,
-            subtitle: unreachable ? "Monitor unreachable" : "/",
+            subtitle: unreachable ? t("Monitor unreachable") : "/",
           };
 
       const net = h && h.network;
       const networkCard = net
         ? {
             key: "hpb-net",
-            title: "HPB Network",
+            title: t("HPB Network"),
             valueLine: "↓ " + formatRate(net.rxBytesPerSec) + " · ↑ " + formatRate(net.txBytesPerSec),
             percent: null,
             subtitle: (net.interface || "—")
@@ -364,10 +367,10 @@ export default {
           }
         : {
             key: "hpb-net",
-            title: "HPB Network",
+            title: t("HPB Network"),
             valueLine: "—",
             percent: null,
-            subtitle: unreachable ? "Monitor unreachable" : "—",
+            subtitle: unreachable ? t("Monitor unreachable") : "—",
           };
 
       return [memoryCard, diskCard, networkCard];
@@ -426,46 +429,47 @@ export default {
     cpuCard() {
       const c = this.snapshot && this.snapshot.cpu;
       if (!c) {
-        return { key: "cpu", title: "CPU load", valueLine: "—", percent: null, subtitle: "" };
+        return { key: "cpu", title: t("CPU load"), valueLine: "—", percent: null, subtitle: "" };
       }
       const cores = c.cores;
       const valueLine = cores
-        ? c.load1.toFixed(2) + " / " + cores
-        : c.load1.toFixed(2);
+        ? formatNumber(c.load1, 2) + " / " + cores
+        : formatNumber(c.load1, 2);
       const percent = cores
         ? Math.min(100, Math.round((c.load1 / cores) * 100))
         : null;
-      const subtitle =
-        "1m " + c.load1.toFixed(2) +
-        " · 5m " + c.load5.toFixed(2) +
-        " · 15m " + c.load15.toFixed(2);
-      return { key: "cpu", title: "CPU load", valueLine, percent, subtitle };
+      const subtitle = t("1m {a} · 5m {b} · 15m {c}", {
+        a: formatNumber(c.load1, 2),
+        b: formatNumber(c.load5, 2),
+        c: formatNumber(c.load15, 2),
+      });
+      return { key: "cpu", title: t("CPU load"), valueLine, percent, subtitle };
     },
     memoryCard() {
       const m = this.snapshot && this.snapshot.memory;
       const s = this.snapshot && this.snapshot.swap;
       if (!m) {
-        return { key: "memory", title: "Memory", valueLine: "—", percent: null, subtitle: "" };
+        return { key: "memory", title: t("Memory"), valueLine: "—", percent: null, subtitle: "" };
       }
       return {
         key: "memory",
-        title: "Memory",
+        title: t("Memory"),
         valueLine: formatBytes(m.usedBytes) + " / " + formatBytes(m.totalBytes),
         percent: m.percent,
         subtitle: s
-          ? "swap " + formatBytes(s.usedBytes) + " / " + formatBytes(s.totalBytes)
+          ? t("swap {used} / {total}", { used: formatBytes(s.usedBytes), total: formatBytes(s.totalBytes) })
           : "",
       };
     },
     diskCard() {
       const d = this.snapshot && this.snapshot.disk;
       if (!d) {
-        return { key: "disk", title: "Disk", valueLine: "—", percent: null, subtitle: "" };
+        return { key: "disk", title: t("Disk"), valueLine: "—", percent: null, subtitle: "" };
       }
       if (d.totalBytes === null) {
         return {
           key: "disk",
-          title: "Disk",
+          title: t("Disk"),
           valueLine: "—",
           percent: null,
           subtitle: d.path || "",
@@ -473,22 +477,22 @@ export default {
       }
       return {
         key: "disk",
-        title: "Disk",
+        title: t("Disk"),
         valueLine: formatBytes(d.usedBytes) + " / " + formatBytes(d.totalBytes),
         percent: d.percent,
-        subtitle: "data partition",
+        subtitle: t("data partition"),
       };
     },
     uptimeCard() {
       const u = this.snapshot && this.snapshot.uptime;
       const v = this.snapshot && this.snapshot.nextcloudVersion;
-      const subtitle = v ? "NC " + v : "since boot";
+      const subtitle = v ? t("NC {version}", { version: v }) : t("since boot");
       if (!u) {
-        return { key: "uptime", title: "Uptime", valueLine: "—", percent: null, subtitle };
+        return { key: "uptime", title: t("Uptime"), valueLine: "—", percent: null, subtitle };
       }
       return {
         key: "uptime",
-        title: "Uptime",
+        title: t("Uptime"),
         valueLine: formatDuration(u.seconds),
         percent: null,
         subtitle,
@@ -507,7 +511,7 @@ export default {
       if (!snapshot) return null;
       const list = Array.isArray(snapshot.services) ? snapshot.services.slice() : [];
       if (snapshot.hpbHost) {
-        list.push(Object.assign({ name: "HPB signalling" }, snapshot.hpbHost));
+        list.push(Object.assign({ name: t("HPB signalling") }, snapshot.hpbHost));
       }
       const bad = list.filter((x) => x && x.status !== "ok");
       // "down" is worse than "degraded", and the card names the worst one.
@@ -550,7 +554,7 @@ export default {
       } catch (e) {
         // Surface errors only on foreground fetches; silent polls keep the
         // previous values and quietly try again on the next tick.
-        if (!silent) this.error = "Couldn't load system metrics.";
+        if (!silent) this.error = t("Couldn't load system metrics.");
       } finally {
         this._fetching = false;
         if (!silent) this.loading = false;

@@ -10,11 +10,11 @@
        the Planning tab's two requests. adminpage's public proxy returns both
        in one. The card titles itself. -->
   <div class="ptl">
-    <div v-if="loading && !summary" class="iz-empty">Loading the timeline…</div>
+    <div v-if="loading && !summary" class="iz-empty">{{ t("Loading the timeline…") }}</div>
 
     <div v-else-if="error" class="iz-empty ptl__state">
       <span>{{ error }}</span>
-      <button type="button" class="iz-btn iz-btn--sm" @click="load">Try again</button>
+      <button type="button" class="iz-btn iz-btn--sm" @click="load">{{ t("Try again") }}</button>
     </div>
 
     <template v-else-if="summary">
@@ -23,7 +23,7 @@
         <span class="iz-pill" :class="statusPillClass">{{ timeline.status.label }}</span>
         <span class="ptl__status-text">{{ timeline.status.text }}</span>
         <a v-if="planningUrl" :href="planningUrl" class="ptl__open">
-          Open Planning
+          {{ t("Open Planning") }}
           <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
             <polyline points="15 3 21 3 21 9" />
@@ -35,14 +35,14 @@
       <!-- How far along the whole timeline is -->
       <div class="ptl__overall">
         <p class="ptl__overall-line">
-          <strong class="ptl__overall-figure iz-figure">{{ timeline.overall.percent === null ? "—" : timeline.overall.percent + "%" }}</strong>
+          <strong class="ptl__overall-figure iz-figure">{{ timeline.overall.percent === null ? "—" : t("{pct}%", { pct: timeline.overall.percent }) }}</strong>
           <span>{{ timeline.overall.text }}</span>
         </p>
         <div
           v-if="timeline.overall.percent !== null"
           class="iz-meter"
           role="progressbar"
-          aria-label="Share of the timeline passed"
+          :aria-label="t('Share of the timeline passed')"
           aria-valuemin="0"
           aria-valuemax="100"
           :aria-valuenow="timeline.overall.percent"
@@ -54,17 +54,17 @@
 
       <!-- Initiation / Execution / Delivery, in the Planning tab's words -->
       <div class="ptl__groups">
-        <section class="ptl__group" :aria-label="'Initiation' + stageText(0)">
-          <h5 class="ptl__group-heading"><i class="ptl__dot" :class="stageClass(0)" aria-hidden="true"></i>Initiation</h5>
+        <section class="ptl__group" :aria-label="t('Initiation{stage}', { stage: stageText(0) })">
+          <h5 class="ptl__group-heading"><i class="ptl__dot" :class="stageClass(0)" aria-hidden="true"></i>{{ t("Initiation") }}</h5>
           <dl class="ptl__facts">
             <div>
-              <dt>Process steps</dt>
-              <dd>{{ timeline.initiation.configured ? timeline.initiation.done + " of " + timeline.initiation.total + " done" : "Not configured" }}</dd>
+              <dt>{{ t("Process steps") }}</dt>
+              <dd>{{ timeline.initiation.configured ? t("{done} of {total} done", { done: timeline.initiation.done, total: timeline.initiation.total }) : t("Not configured") }}</dd>
               <div
                 v-if="timeline.initiation.configured"
                 class="iz-meter iz-meter--thin ptl__steps"
                 role="progressbar"
-                aria-label="Process steps done"
+                :aria-label="t('Process steps done')"
                 aria-valuemin="0"
                 :aria-valuemax="timeline.initiation.total"
                 :aria-valuenow="timeline.initiation.done"
@@ -74,47 +74,47 @@
               <small :class="{ 'ptl__warn': timeline.initiation.warn }">{{ timeline.initiation.note }}</small>
             </div>
             <div>
-              <dt>Handover</dt>
+              <dt>{{ t("Handover") }}</dt>
               <dd :class="{ 'ptl__unset': !timeline.initiation.handover }">{{ label(timeline.initiation.handover) }}</dd>
               <small :class="{ 'ptl__warn': timeline.initiation.handoverWarn }">{{ timeline.initiation.handoverNote }}</small>
             </div>
           </dl>
         </section>
-        <section class="ptl__group" :aria-label="'Execution' + stageText(1)">
-          <h5 class="ptl__group-heading"><i class="ptl__dot" :class="stageClass(1)" aria-hidden="true"></i>Execution</h5>
+        <section class="ptl__group" :aria-label="t('Execution{stage}', { stage: stageText(1) })">
+          <h5 class="ptl__group-heading"><i class="ptl__dot" :class="stageClass(1)" aria-hidden="true"></i>{{ t("Execution") }}</h5>
           <dl class="ptl__facts">
             <div>
-              <dt>Request date</dt>
+              <dt>{{ t("Request date") }}</dt>
               <dd :class="{ 'ptl__unset': !timeline.initiation.requestDate }">{{ label(timeline.initiation.requestDate) }}</dd>
             </div>
             <div>
-              <dt>Minimum start</dt>
+              <dt>{{ t("Minimum start") }}</dt>
               <dd :class="{ 'ptl__unset': !timeline.execution.minimumStart }">{{ timeline.execution.minimumStart ? label(timeline.execution.minimumStart) : "—" }}</dd>
               <small>{{ timeline.execution.note }}</small>
             </div>
             <div>
-              <dt>Desired start</dt>
+              <dt>{{ t("Desired start") }}</dt>
               <dd :class="{ 'ptl__unset': !timeline.execution.desired }">{{ label(timeline.execution.desired) }}</dd>
             </div>
             <div>
-              <dt>Actual start</dt>
+              <dt>{{ t("Actual start") }}</dt>
               <dd :class="{ 'ptl__unset': !timeline.execution.actual }">{{ label(timeline.execution.actual) }}</dd>
             </div>
           </dl>
         </section>
-        <section class="ptl__group" :aria-label="'Delivery' + stageText(2)">
-          <h5 class="ptl__group-heading"><i class="ptl__dot" :class="stageClass(2)" aria-hidden="true"></i>Delivery</h5>
+        <section class="ptl__group" :aria-label="t('Delivery{stage}', { stage: stageText(2) })">
+          <h5 class="ptl__group-heading"><i class="ptl__dot" :class="stageClass(2)" aria-hidden="true"></i>{{ t("Delivery") }}</h5>
           <dl class="ptl__facts">
             <div>
-              <dt>End date</dt>
+              <dt>{{ t("End date") }}</dt>
               <dd :class="{ 'ptl__unset': !timeline.delivery.end }">
-                <span v-if="timeline.delivery.planned" class="ptl__unset">Planned </span>{{ label(timeline.delivery.end) }}
+                {{ timeline.delivery.planned ? t("Planned {date}", { date: label(timeline.delivery.end) }) : label(timeline.delivery.end) }}
               </dd>
               <small>{{ timeline.delivery.note }}</small>
             </div>
             <div>
-              <dt>Weeks on site</dt>
-              <dd :class="{ 'ptl__unset': timeline.delivery.weeks === null }">{{ timeline.delivery.weeks === null ? "Not set" : timeline.delivery.weeks }}</dd>
+              <dt>{{ t("Weeks on site") }}</dt>
+              <dd :class="{ 'ptl__unset': timeline.delivery.weeks === null }">{{ timeline.delivery.weeks === null ? t("Not set") : timeline.delivery.weeks }}</dd>
             </div>
           </dl>
         </section>
@@ -124,29 +124,29 @@
            the same rows, scale and status column, without editing, What-If or
            Add Item. The side column is the readable list; the chart beside it
            repeats it as bars, so it is hidden from assistive technology. -->
-      <div v-if="!gantt.hasContent" class="iz-empty">No timeline items defined</div>
+      <div v-if="!gantt.hasContent" class="iz-empty">{{ t("No timeline items defined") }}</div>
       <div v-else class="ptl__planner">
         <div class="ptl__toolbar">
-          <span v-if="gantt.hasActiveDelays" class="ptl__delays" title="Schedule slippage detected">
+          <span v-if="gantt.hasActiveDelays" class="ptl__delays" :title="t('Schedule slippage detected')">
             <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24"><path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" /></svg>
-            Delays Detected
+            {{ t("Delays Detected") }}
           </span>
           <div class="ptl__controls">
             <div class="ptl__control-group">
-              <button type="button" class="ptl__control" aria-label="Previous" @click="navigatePrev">
+              <button type="button" class="ptl__control" :aria-label="t('Previous')" @click="navigatePrev">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" /></svg>
               </button>
-              <button type="button" class="ptl__control ptl__control--today" @click="navigateToday">Today</button>
-              <button type="button" class="ptl__control" aria-label="Next" @click="navigateNext">
+              <button type="button" class="ptl__control ptl__control--today" @click="navigateToday">{{ t("Today") }}</button>
+              <button type="button" class="ptl__control" :aria-label="t('Next')" @click="navigateNext">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
               </button>
             </div>
             <div class="ptl__control-group">
-              <button type="button" class="ptl__control" title="Zoom out" aria-label="Zoom out" @click="zoomOut">
+              <button type="button" class="ptl__control" :title="t('Zoom out')" :aria-label="t('Zoom out')" @click="zoomOut">
                 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5,14H14.71L14.43,13.73C15.41,12.59 16,11.11 16,9.5A6.5,6.5 0 0,0 9.5,3A6.5,6.5 0 0,0 3,9.5A6.5,6.5 0 0,0 9.5,16C11.11,16 12.59,15.41 13.73,14.43L14,14.71V15.5L19,20.5L20.5,19L15.5,14M9.5,14C7,14 5,12 5,9.5C5,7 7,5 9.5,5C12,5 14,7 14,9.5C14,12 12,14 9.5,14M7,9H12V10H7V9Z" /></svg>
               </button>
-              <span class="ptl__zoom">{{ dayWidth }}px/d</span>
-              <button type="button" class="ptl__control" title="Zoom in" aria-label="Zoom in" @click="zoomIn">
+              <span class="ptl__zoom">{{ t("{n}px/d", { n: dayWidth }) }}</span>
+              <button type="button" class="ptl__control" :title="t('Zoom in')" :aria-label="t('Zoom in')" @click="zoomIn">
                 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg>
               </button>
             </div>
@@ -156,15 +156,15 @@
         <div ref="grid" class="ptl__gantt">
           <!-- Column 1: the rows, named -->
           <div ref="sidebar" class="ptl__sidebar">
-            <div class="ptl__head-cell" :style="{ height: headHeight + 'px' }">Timeline details</div>
-            <div v-if="gantt.system" class="ptl__side-row ptl__side-row--system" title="System Planning (calculated)">
+            <div class="ptl__head-cell" :style="{ height: headHeight + 'px' }">{{ t("Timeline details") }}</div>
+            <div v-if="gantt.system" class="ptl__side-row ptl__side-row--system" :title="t('System Planning (calculated)')">
               <span class="ptl__sp-badge">1</span>
               <span class="ptl__sp-icon">
                 <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" /></svg>
               </span>
               <div class="ptl__side-content">
                 <div class="ptl__side-top">
-                  <span class="ptl__side-name">System Planning</span>
+                  <span class="ptl__side-name">{{ t("System Planning") }}</span>
                   <span class="ptl__duration">{{ gantt.system.duration }}</span>
                 </div>
                 <div class="ptl__side-dates">{{ gantt.system.dates }}</div>
@@ -183,7 +183,7 @@
                   type="button"
                   class="ptl__toggle"
                   :aria-expanded="row.open ? 'true' : 'false'"
-                  :aria-label="row.open ? 'Collapse phase' : 'Expand phase'"
+                  :aria-label="row.open ? t('Collapse phase') : t('Expand phase')"
                   @click.stop="togglePhase(row.phase.key)"
                 >
                   <svg v-if="row.open" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg>
@@ -200,7 +200,7 @@
               </template>
               <template v-else-if="row.type === 'task'">
                 <span class="ptl__tree" aria-hidden="true"><i class="ptl__tree-v"></i><i class="ptl__tree-h"></i></span>
-                <span v-if="row.task.deckCardId" class="ptl__deck-icon" title="Deck Card">
+                <span v-if="row.task.deckCardId" class="ptl__deck-icon" :title="t('Deck Card')">
                   <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24"><path fill="currentColor" d="M5,2H19A1,1 0 0,1 20,3V13A1,1 0 0,1 19,14H5A1,1 0 0,1 4,13V3A1,1 0 0,1 5,2M6,4V12H18V4H6M20,17A1,1 0 0,1 19,18H5A1,1 0 0,1 4,17V16H20V17M20,21A1,1 0 0,1 19,22H5A1,1 0 0,1 4,21V20H20V21Z" /></svg>
                 </span>
                 <div class="ptl__side-content">
@@ -210,8 +210,8 @@
                       :class="{ 'ptl__task-name--done': row.task.done, 'ptl__task-name--delayed': row.task.delayed }"
                       :title="row.task.label"
                     >{{ row.task.label }}</span>
-                    <span v-if="row.task.delayDays > 0" class="ptl__delay-tag">+{{ row.task.delayBadge }}</span>
-                    <span v-else class="ptl__duration">{{ row.task.durationDays }}d</span>
+                    <span v-if="row.task.delayDays > 0" class="ptl__delay-tag">{{ t("+{delay}", { delay: row.task.delayBadge }) }}</span>
+                    <span v-else class="ptl__duration">{{ t("{n}d", { n: row.task.durationDays }) }}</span>
                   </div>
                   <div class="ptl__side-dates">{{ row.task.dates }}</div>
                 </div>
@@ -247,7 +247,7 @@
                   <div class="ptl__hover-week" :style="{ left: hover.weekLeft + 'px', width: hover.weekWidth + 'px', top: headHeight - 22 + 'px' }"></div>
                   <div class="ptl__hover-chip" :style="{ left: hover.chipX + 'px', top: Math.max(2, headHeight - 22 - 24) + 'px' }">
                     <span>{{ hover.date }}</span>
-                    <span class="ptl__hover-week-tag">W{{ hover.week }}</span>
+                    <span class="ptl__hover-week-tag">{{ t("W{n}", { n: hover.week }) }}</span>
                     <span class="ptl__hover-relative">{{ hover.relative }}</span>
                   </div>
                 </div>
@@ -302,7 +302,7 @@
 
                 <div class="ptl__today" :style="{ left: gantt.today.offset * dayWidth + 'px' }">
                   <div class="ptl__today-line"></div>
-                  <div class="ptl__today-badge">Today</div>
+                  <div class="ptl__today-badge">{{ t("Today") }}</div>
                 </div>
 
                 <div
@@ -313,7 +313,7 @@
                   :style="{ left: flag.left + 'px' }"
                 >
                   <div class="ptl__guide-line"></div>
-                  <div class="ptl__guide-flag" :style="{ top: 36 + flag.level * 20 + 'px' }">{{ flag.label }} · {{ flag.date }}</div>
+                  <div class="ptl__guide-flag" :style="{ top: 36 + flag.level * 20 + 'px' }">{{ t("{label} · {date}", { label: flag.label, date: flag.date }) }}</div>
                 </div>
 
                 <!-- 1. System Planning -->
@@ -334,7 +334,7 @@
                     class="ptl__sp-marker"
                     :class="'ptl__sp-marker--' + marker.key"
                     :style="{ left: marker.offset * dayWidth + 'px' }"
-                    :title="marker.label + ': ' + marker.date"
+                    :title="t('{label}: {date}', { label: marker.label, date: marker.date })"
                   >
                     <div class="ptl__sp-pin">
                       <svg v-if="marker.key === 'min-start'" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M12 6.46C11.72 6.46 11.44 6.56 11.22 6.78L6.78 11.22C6.35 11.65 6.35 12.35 6.78 12.78L11.22 17.22C11.65 17.65 12.35 17.65 12.78 17.22L17.22 12.78C17.65 12.35 17.65 11.65 17.22 11.22L12.78 6.78C12.56 6.56 12.28 6.46 12 6.46Z" /></svg>
@@ -348,12 +348,12 @@
                     <div class="ptl__sp-guide"></div>
                   </div>
                   <div class="ptl__sp-legend" :style="{ left: Math.max(16, gantt.system.legendOffset * dayWidth) + 'px' }">
-                    <span class="ptl__sp-legend-item"><i class="ptl__sp-swatch ptl__sp-swatch--deck"></i>Deck tasks</span>
-                    <span class="ptl__sp-legend-item"><i class="ptl__sp-swatch ptl__sp-swatch--prep"></i>Preparation</span>
-                    <span class="ptl__sp-legend-item"><i class="ptl__sp-swatch ptl__sp-swatch--float"></i>Float</span>
-                    <span class="ptl__sp-legend-item"><span class="ptl__sp-icon-key ptl__sp-icon-key--min-start">◆</span>Minimum start</span>
-                    <span v-if="gantt.system.legend.desired" class="ptl__sp-legend-item"><span class="ptl__sp-icon-key ptl__sp-icon-key--desired-start">▶</span>Desired start</span>
-                    <span v-if="gantt.system.legend.actual" class="ptl__sp-legend-item"><span class="ptl__sp-icon-key ptl__sp-icon-key--actual-start">⚑</span>Actual start</span>
+                    <span class="ptl__sp-legend-item"><i class="ptl__sp-swatch ptl__sp-swatch--deck"></i>{{ t("Deck tasks") }}</span>
+                    <span class="ptl__sp-legend-item"><i class="ptl__sp-swatch ptl__sp-swatch--prep"></i>{{ t("Preparation") }}</span>
+                    <span class="ptl__sp-legend-item"><i class="ptl__sp-swatch ptl__sp-swatch--float"></i>{{ t("Float") }}</span>
+                    <span class="ptl__sp-legend-item"><span class="ptl__sp-icon-key ptl__sp-icon-key--min-start">◆</span>{{ t("Minimum start") }}</span>
+                    <span v-if="gantt.system.legend.desired" class="ptl__sp-legend-item"><span class="ptl__sp-icon-key ptl__sp-icon-key--desired-start">▶</span>{{ t("Desired start") }}</span>
+                    <span v-if="gantt.system.legend.actual" class="ptl__sp-legend-item"><span class="ptl__sp-icon-key ptl__sp-icon-key--actual-start">⚑</span>{{ t("Actual start") }}</span>
                   </div>
                 </div>
 
@@ -370,7 +370,7 @@
                       v-if="row.phase.bar"
                       class="ptl__phase-bar"
                       :style="{ left: row.phase.bar.offset * dayWidth + 'px', width: row.phase.bar.days * dayWidth + 'px', borderColor: row.phase.color, backgroundColor: row.phase.tint }"
-                      :title="row.phase.name + ': ' + row.phase.dates"
+                      :title="t('{phase}: {dates}', { phase: row.phase.name, dates: row.phase.dates })"
                     >
                       <span v-if="row.phase.bar.days * dayWidth > 90" class="ptl__phase-bar-label">{{ row.phase.name }}</span>
                     </div>
@@ -389,7 +389,7 @@
                       v-if="row.task.ghost"
                       class="ptl__bar ptl__bar--ghost"
                       :style="{ left: row.task.ghost.offset * dayWidth + 'px', width: row.task.ghost.days * dayWidth + 'px' }"
-                      title="Original baseline schedule"
+                      :title="t('Original baseline schedule')"
                     ></div>
                     <div
                       class="ptl__bar ptl__bar--task"
@@ -399,7 +399,7 @@
                     >
                       <svg v-if="row.task.done" class="ptl__done-icon" width="14" height="14" viewBox="0 0 24 24"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" /></svg>
                       <span v-if="row.task.durationDays * dayWidth > 40" class="ptl__bar-label">{{ row.task.label }}</span>
-                      <span v-if="row.task.delayDays > 0" class="ptl__delay-badge" title="Schedule slippage">+{{ row.task.delayBadge }}</span>
+                      <span v-if="row.task.delayDays > 0" class="ptl__delay-badge" :title="t('Schedule slippage')">{{ t("+{delay}", { delay: row.task.delayBadge }) }}</span>
                     </div>
                   </template>
                   <template v-else>
@@ -425,7 +425,7 @@
 
           <!-- Column 3: the traffic light -->
           <div class="ptl__status-col">
-            <div class="ptl__head-cell ptl__head-cell--center" :style="{ height: headHeight + 'px' }">Status</div>
+            <div class="ptl__head-cell ptl__head-cell--center" :style="{ height: headHeight + 'px' }">{{ t("Status") }}</div>
             <div v-if="gantt.system" class="ptl__status-row ptl__status-row--system">
               <span class="ptl__pill" :class="'ptl__pill--' + gantt.system.status.tone">
                 <span class="ptl__pill-dot"></span>{{ gantt.system.status.label }}
@@ -451,6 +451,7 @@
 
 <script>
 import axios from "@nextcloud/axios";
+import { t } from "../lib/l10n.mjs";
 import {
   dateLabel,
   dayOf,
@@ -641,7 +642,7 @@ export default {
           var summary = responses[0].data;
           self.summary = summary && typeof summary === "object" ? summary : null;
           if (!self.summary) {
-            self.error = "The timeline could not be loaded.";
+            self.error = t("The timeline could not be loaded.");
             return;
           }
           var items = responses[1] ? responses[1].data : self.summary.items;
@@ -652,8 +653,8 @@ export default {
           var status = e && e.response ? e.response.status : 0;
           self.error =
             status === 403 || status === 404
-              ? "This project's planning isn't available here."
-              : "The timeline could not be loaded.";
+              ? t("This project's planning isn't available here.")
+              : t("The timeline could not be loaded.");
         })
         .then(function () {
           if (seq === self.requestSeq) self.loading = false;
@@ -675,7 +676,7 @@ export default {
     },
     stageText: function (index) {
       var stage = this.timeline.stage;
-      return index < stage ? ", done" : index === stage ? ", current" : "";
+      return index < stage ? t(", done") : index === stage ? t(", current") : "";
     },
     // The element that scrolls the dates sideways, and how much of the date
     // column shows between the pinned ones — getTimelineScroller.

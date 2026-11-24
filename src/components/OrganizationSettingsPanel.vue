@@ -3,7 +3,7 @@
     <div
       class="iz-segment org-settings__nav"
       role="tablist"
-      aria-label="Organization settings"
+      :aria-label="t('Organization settings')"
     >
       <button
         v-for="section in sections"
@@ -25,15 +25,15 @@
 
     <div v-else-if="activeSection === 'pdf'" class="org-pdf">
       <header class="org-pdf__header">
-        <h3 class="iz-panel__title">Default project PDF</h3>
+        <h3 class="iz-panel__title">{{ t('Default project PDF') }}</h3>
         <p class="org-pdf__subtitle">
-          This PDF is automatically added to the shared folder of every new project in this organization.
+          {{ t('This PDF is automatically added to the shared folder of every new project in this organization.') }}
         </p>
       </header>
 
       <p v-if="error" class="org-pdf__error" role="alert">{{ error }}</p>
 
-      <div v-if="loading" class="iz-empty org-pdf__loading">Loading template settings...</div>
+      <div v-if="loading" class="iz-empty org-pdf__loading">{{ t('Loading template settings...') }}</div>
 
       <template v-else>
         <div class="org-pdf__status">
@@ -44,14 +44,14 @@
             </svg>
           </span>
           <span class="org-pdf__status-copy">
-            <span class="iz-label">Current template</span>
-            <strong>{{ hasCustomPdf ? currentFileName || "Custom organization PDF" : "System default PDF" }}</strong>
-            <small>{{ hasCustomPdf ? "Custom template active" : "Fallback used for new projects" }}</small>
+            <span class="iz-label">{{ t('Current template') }}</span>
+            <strong>{{ hasCustomPdf ? currentFileName || t("Custom organization PDF") : t("System default PDF") }}</strong>
+            <small>{{ hasCustomPdf ? t("Custom template active") : t("Fallback used for new projects") }}</small>
           </span>
         </div>
 
         <div class="org-pdf__field">
-          <label class="iz-label" for="org-pdf-file">Upload a new PDF template</label>
+          <label class="iz-label" for="org-pdf-file">{{ t('Upload a new PDF template') }}</label>
           <div
             class="org-pdf__dropzone"
             :class="{ 'org-pdf__dropzone--selected': selectedFile }"
@@ -82,23 +82,23 @@
               <small>{{ formatFileSize(selectedFile.size) }}</small>
             </template>
             <template v-else>
-              <strong>Choose or drop a PDF here</strong>
-              <small>Only PDF documents are accepted</small>
+              <strong>{{ t('Choose or drop a PDF here') }}</strong>
+              <small>{{ t('Only PDF documents are accepted') }}</small>
             </template>
           </div>
         </div>
 
         <div v-if="selectedFile" class="org-pdf__field">
-          <label class="iz-label" for="org-pdf-name">Filename in new projects</label>
+          <label class="iz-label" for="org-pdf-name">{{ t('Filename in new projects') }}</label>
           <input
             id="org-pdf-name"
             v-model="fileName"
             class="iz-input"
             type="text"
-            placeholder="e.g. Welcome guide.pdf"
+            :placeholder="t('e.g. Welcome guide.pdf')"
             :disabled="busy"
           />
-          <small>The .pdf extension is added if omitted.</small>
+          <small>{{ t('The .pdf extension is added if omitted.') }}</small>
         </div>
 
         <!-- The modal's footer buttons, now an inline action bar. "Cancel" went
@@ -111,14 +111,14 @@
             class="iz-btn iz-btn--danger"
             :disabled="busy"
             @click="showResetConfirmation = true"
-          >Reset to default</button>
+          >{{ t('Reset to default') }}</button>
           <span class="org-pdf__actions-spacer"></span>
           <button
             type="button"
             class="iz-btn iz-btn--primary"
             :disabled="!selectedFile || busy"
             @click="save"
-          >{{ uploading ? "Uploading..." : "Save template" }}</button>
+          >{{ uploading ? t("Uploading...") : t("Save template") }}</button>
         </div>
       </template>
     </div>
@@ -131,10 +131,10 @@
 
     <ConfirmDialog
       v-if="showResetConfirmation"
-      title="Reset project PDF?"
-      message="The custom template will be removed and new projects will use the system default PDF."
-      confirm-label="Reset to default"
-      busy-label="Resetting..."
+      :title="t('Reset project PDF?')"
+      :message="t('The custom template will be removed and new projects will use the system default PDF.')"
+      :confirm-label="t('Reset to default')"
+      :busy-label="t('Resetting...')"
       :danger="true"
       :busy="resetting"
       :error="resetError"
@@ -153,14 +153,15 @@ import {
   getOrganizationPdfInfo,
   uploadOrganizationPdf,
 } from "../services/projectCreatorApi";
+import { t, formatNumber } from "../lib/l10n.mjs";
 
 // Contracts leads: it is the section reached most often, and it is where the
 // signing round-trip (?contractsOrg=…) lands after the Settings tab absorbed
 // the old Contracts tab.
 const SECTIONS = [
-  { key: "contracts", label: "Contract files" },
-  { key: "pdf", label: "Default project PDF" },
-  { key: "ocr", label: "OCR document types" },
+  { key: "contracts", label: () => t("Contract files") },
+  { key: "pdf", label: () => t("Default project PDF") },
+  { key: "ocr", label: () => t("OCR document types") },
 ];
 
 export default {
@@ -187,7 +188,7 @@ export default {
   },
   computed: {
     sections: function () {
-      return SECTIONS;
+      return SECTIONS.map((section) => ({ key: section.key, label: section.label() }));
     },
     busy: function () {
       return this.uploading || this.resetting || this.ocrLocked;
@@ -209,7 +210,7 @@ export default {
         this.currentFileName = (info && info.file_name) || "";
       } catch (error) {
         console.error("Failed to load organization PDF settings", error);
-        this.error = this.errorMessage(error, "Could not load the PDF template settings.");
+        this.error = this.errorMessage(error, t("Could not load the PDF template settings."));
       } finally {
         this.loading = false;
       }
@@ -226,7 +227,7 @@ export default {
     setFile(file) {
       if (!file) return;
       if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-        this.error = "Please select a valid PDF document (.pdf).";
+        this.error = t("Please select a valid PDF document (.pdf).");
         this.selectedFile = null;
         return;
       }
@@ -242,7 +243,7 @@ export default {
     async save() {
       const fileName = this.normalizedFileName();
       if (!fileName) {
-        this.error = "Enter a filename for the PDF template.";
+        this.error = t("Enter a filename for the PDF template.");
         return;
       }
       this.uploading = true;
@@ -255,7 +256,7 @@ export default {
         await this.load(true);
       } catch (error) {
         console.error("Failed to upload organization PDF", error);
-        this.error = this.errorMessage(error, "Could not upload the PDF template.");
+        this.error = this.errorMessage(error, t("Could not upload the PDF template."));
       } finally {
         this.uploading = false;
       }
@@ -271,7 +272,7 @@ export default {
         this.showResetConfirmation = false;
       } catch (error) {
         console.error("Failed to reset organization PDF", error);
-        this.resetError = this.errorMessage(error, "Could not reset the PDF template.");
+        this.resetError = this.errorMessage(error, t("Could not reset the PDF template."));
       } finally {
         this.resetting = false;
       }
@@ -293,9 +294,9 @@ export default {
     },
     formatFileSize(bytes) {
       if (!bytes) return "0 B";
-      const units = ["B", "KB", "MB", "GB"];
+      const units = t("B / KB / MB / GB").split(" / ");
       const unit = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-      return `${parseFloat((bytes / Math.pow(1024, unit)).toFixed(1))} ${units[unit]}`;
+      return `${formatNumber(bytes / Math.pow(1024, unit))} ${units[unit]}`;
     },
   },
 };

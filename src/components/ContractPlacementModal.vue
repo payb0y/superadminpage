@@ -2,19 +2,19 @@
   <dialog ref="dialog" class="placement iz-app" aria-labelledby="placement-title" @cancel.prevent="requestClose">
     <header class="placement__header iz-panel">
       <div class="placement__heading">
-        <button class="iz-btn iz-btn--icon" type="button" aria-label="Close signature placement" @click="requestClose">×</button>
+        <button class="iz-btn iz-btn--icon" type="button" :aria-label="t('Close signature placement')" @click="requestClose">×</button>
         <div>
-          <h2 id="placement-title" class="placement__title">Place signature fields</h2>
+          <h2 id="placement-title" class="placement__title">{{ t("Place signature fields") }}</h2>
           <p class="placement__subtitle">{{ contract.displayName }}</p>
         </div>
       </div>
       <div class="placement__toolbar">
-        <button class="iz-btn iz-btn--sm" type="button" :disabled="loading || rendering || scale <= 0.5" @click="setScale(scale - 0.1)">−</button>
+        <button class="iz-btn iz-btn--sm" type="button" :disabled="loading || rendering || scale <= 0.5" :aria-label="t('Zoom out')" @click="setScale(scale - 0.1)">{{ t("−") }}</button>
         <span class="placement__zoom">{{ Math.round(scale * 100) }}%</span>
-        <button class="iz-btn iz-btn--sm" type="button" :disabled="loading || rendering || scale >= 2" @click="setScale(scale + 0.1)">+</button>
-        <button class="iz-btn" type="button" :disabled="saving" @click="requestClose">Cancel</button>
+        <button class="iz-btn iz-btn--sm" type="button" :disabled="loading || rendering || scale >= 2" :aria-label="t('Zoom in')" @click="setScale(scale + 0.1)">{{ t("+") }}</button>
+        <button class="iz-btn" type="button" :disabled="saving" @click="requestClose">{{ t("Cancel") }}</button>
         <button class="iz-btn iz-btn--primary" type="button" :disabled="loading || saving || !dirty" @click="save">
-          {{ saving ? "Saving…" : "Save placement" }}
+          {{ saving ? t("Saving…") : t("Save placement") }}
         </button>
       </div>
     </header>
@@ -22,8 +22,8 @@
     <div class="placement__body">
       <aside class="placement__sidebar iz-panel">
         <div>
-          <h3 class="placement__sidebar-title">Signers</h3>
-          <p class="placement__help">Choose a signer, then click anywhere on the document.</p>
+          <h3 class="placement__sidebar-title">{{ t("Signers") }}</h3>
+          <p class="placement__help">{{ t("Choose a signer, then click anywhere on the document.") }}</p>
         </div>
         <button
           v-for="(signer, index) in signers"
@@ -41,17 +41,17 @@
           <span class="iz-badge iz-badge--muted">{{ signerFieldCount(signer.signRequestId) }}</span>
         </button>
         <p v-if="selectedSigner" class="placement__tip">
-          Click the PDF to place a field for {{ selectedSigner.displayName }}.
+          {{ t("Click the PDF to place a field for {name}.", { name: selectedSigner.displayName }) }}
         </p>
         <p v-if="validationMessage" class="placement__tip placement__tip--warning" role="status">{{ validationMessage }}</p>
         <p v-if="saveError" class="placement__tip placement__tip--error" role="alert">{{ saveError }}</p>
       </aside>
 
       <main ref="workspace" class="placement__workspace" @click="clearSelection">
-        <div v-if="loading" class="placement__state iz-empty">Loading document…</div>
+        <div v-if="loading" class="placement__state iz-empty">{{ t("Loading document…") }}</div>
         <div v-else-if="error" class="placement__state placement__tip--error" role="alert">
           <p>{{ error }}</p>
-          <button class="iz-btn iz-btn--sm" type="button" @click="load">Retry</button>
+          <button class="iz-btn iz-btn--sm" type="button" @click="load">{{ t("Retry") }}</button>
         </div>
         <div v-else class="placement__pages">
           <article
@@ -74,7 +74,7 @@
                 :style="fieldStyle(field)"
                 role="button"
                 tabindex="0"
-                :aria-label="'Signature field for ' + signerName(field.signRequestId)"
+                :aria-label="t('Signature field for {name}', { name: signerName(field.signRequestId) })"
                 @click.stop="selectedFieldId = field.localId"
                 @keydown.delete.prevent="removeField(field.localId)"
                 @keydown.backspace.prevent="removeField(field.localId)"
@@ -86,7 +86,7 @@
                   v-if="selectedFieldId === field.localId"
                   class="placement__delete iz-btn iz-btn--icon"
                   type="button"
-                  aria-label="Delete signature field"
+                  :aria-label="t('Delete signature field')"
                   @pointerdown.stop
                   @click.stop="removeField(field.localId)"
                 >×</button>
@@ -94,21 +94,21 @@
                   v-if="selectedFieldId === field.localId"
                   class="placement__resize"
                   type="button"
-                  aria-label="Resize signature field"
+                  :aria-label="t('Resize signature field')"
                   @pointerdown.stop.prevent="startResize($event, field)"
                 />
               </div>
             </div>
-            <p class="placement__page-number">Page {{ page.number }} of {{ pages.length }}</p>
+            <p class="placement__page-number">{{ t("Page {page} of {total}", { page: page.number, total: pages.length }) }}</p>
           </article>
         </div>
       </main>
     </div>
     <ConfirmDialog
       v-if="confirmClose"
-      title="Discard placement changes?"
-      message="Your unsaved signature fields will be lost."
-      confirm-label="Discard changes"
+      :title="t('Discard placement changes?')"
+      :message="t('Your unsaved signature fields will be lost.')"
+      :confirm-label="t('Discard changes')"
       :danger="true"
       :busy="false"
       error=""
@@ -124,6 +124,7 @@ import { generateFilePath } from "@nextcloud/router";
 import * as pdfjs from "pdfjs-dist";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import { clamp, resizeField, serializeField } from "../lib/placementGeometry.mjs";
+import { t, n } from "../lib/l10n.mjs";
 
 const emittedWorkerUrl = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url);
 const workerFilename = emittedWorkerUrl.pathname.split("/").pop();
@@ -208,9 +209,9 @@ export default {
       try {
         const response = await axios.get(this.dataUrl, { params: { format: "json" }, headers: this.headers });
         data = response.data && response.data.ocs ? response.data.ocs.data : response.data;
-        if (!data || !data.document || !data.document.contentUrl) throw new Error("The placement response did not include a PDF URL.");
+        if (!data || !data.document || !data.document.contentUrl) throw new Error(t("The placement response did not include a PDF URL."));
       } catch (error) {
-        this.failLoad("Could not load placement details.", error);
+        this.failLoad(t("Could not load placement details."), error);
         return;
       }
 
@@ -227,10 +228,10 @@ export default {
         pdfBytes = new Uint8Array(pdfResponse.data);
         const signature = new TextDecoder().decode(pdfBytes.slice(0, 5));
         if (!contentType.includes("application/pdf") || signature !== "%PDF-") {
-          throw new Error("The document endpoint did not return a PDF file.");
+          throw new Error(t("The document endpoint did not return a PDF file."));
         }
       } catch (error) {
-        this.failLoad("Could not download the contract PDF.", error);
+        this.failLoad(t("Could not download the contract PDF."), error);
         return;
       }
 
@@ -254,12 +255,12 @@ export default {
         await this.$nextTick();
         await this.renderPages();
       } catch (error) {
-        this.failLoad("The contract PDF could not be displayed.", error);
+        this.failLoad(t("The contract PDF could not be displayed."), error);
       }
     },
     failLoad(message, error) {
       this.loading = false;
-      this.error = message + " " + this.apiError(error, error && error.message ? error.message : "Please try again.");
+      this.error = message + " " + this.apiError(error, error && error.message ? error.message : t("Please try again."));
     },
     normalizeField(element) {
       const coordinates = element.coordinates || {};
@@ -427,22 +428,24 @@ export default {
     },
     signerName(id) {
       const signer = this.signers.find((item) => item.signRequestId === id);
-      return signer ? signer.displayName : "Signer";
+      return signer ? signer.displayName : t("Signer");
     },
     signerEmail(signer) {
       const method = (signer.identifyMethods || []).find((item) => item.method === "email");
-      return method ? method.value : "External signer";
+      return method ? method.value : t("External signer");
     },
     signerFieldCount(id) {
       const count = this.fields.filter((field) => field.signRequestId === id).length;
-      return count + (count === 1 ? " field" : " fields");
+      return n("%n field", "%n fields", count);
     },
     signerTone(index) {
       return ["placement-tone--one", "placement-tone--two", "placement-tone--three", "placement-tone--four", "placement-tone--five"][index % 5];
     },
     validate() {
       const missing = this.signers.filter((signer) => !this.fields.some((field) => field.signRequestId === signer.signRequestId));
-      this.validationMessage = missing.length ? "Place at least one field for " + missing.map((signer) => signer.displayName).join(", ") + "." : "";
+      this.validationMessage = missing.length
+        ? t("Place at least one field for {names}.", { names: missing.map((signer) => signer.displayName).join(", ") })
+        : "";
       return missing.length === 0;
     },
     async save() {
@@ -458,7 +461,7 @@ export default {
         this.$emit("saved");
         this.$emit("close");
       } catch (error) {
-        this.saveError = this.apiError(error, "Could not save signature fields.");
+        this.saveError = this.apiError(error, t("Could not save signature fields."));
       } finally {
         this.saving = false;
       }

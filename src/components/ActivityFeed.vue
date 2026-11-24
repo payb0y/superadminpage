@@ -4,7 +4,7 @@
     :class="['activity-feed', 'iz-panel', { 'iz-panel--flush': embedded }]"
   >
     <header v-if="!embedded" class="activity-feed__header iz-panel__header">
-      <h3 class="activity-feed__title iz-section-title">Activity</h3>
+      <h3 class="activity-feed__title iz-section-title">{{ t("Activity") }}</h3>
     </header>
 
     <div class="activity-feed__layout">
@@ -21,7 +21,7 @@
           </button>
         </div>
         <div v-else-if="filterProjectId" class="activity-feed__rail-hint">
-          Filtered by project — only project-anchored sources are shown.
+          {{ t("Filtered by project — only project-anchored sources are shown.") }}
         </div>
 
         <ul class="activity-feed__rail-list">
@@ -32,7 +32,7 @@
               @click="selectSource(null)"
             >
               <span class="activity-feed__rail-icon activity-feed__rail-icon--all"></span>
-              <span class="activity-feed__rail-label">All activity</span>
+              <span class="activity-feed__rail-label">{{ t("All activity") }}</span>
             </button>
           </li>
           <li v-for="src in railSources" :key="src.key">
@@ -45,7 +45,7 @@
                 class="activity-feed__rail-icon"
                 :class="'activity-feed__rail-icon--' + src.key"
               ></span>
-              <span class="activity-feed__rail-label">{{ src.label }}</span>
+              <span class="activity-feed__rail-label">{{ src.label() }}</span>
             </button>
           </li>
         </ul>
@@ -54,7 +54,7 @@
       <div class="activity-feed__main">
         <div class="activity-feed__toolbar">
           <label class="activity-feed__field">
-            <span class="activity-feed__field-label">From</span>
+            <span class="activity-feed__field-label">{{ t("From") }}</span>
             <input
               type="date"
               class="iz-input iz-input--sm activity-feed__input"
@@ -63,7 +63,7 @@
             />
           </label>
           <label class="activity-feed__field">
-            <span class="activity-feed__field-label">To</span>
+            <span class="activity-feed__field-label">{{ t("To") }}</span>
             <input
               type="date"
               class="iz-input iz-input--sm activity-feed__input"
@@ -72,13 +72,13 @@
             />
           </label>
           <label v-if="showProjectFilter" class="activity-feed__field">
-            <span class="activity-feed__field-label">Project</span>
+            <span class="activity-feed__field-label">{{ t("Project") }}</span>
             <select
               class="iz-input iz-input--sm activity-feed__input"
               :value="filterProjectId"
               @change="onProjectChange($event)"
             >
-              <option value="">All projects</option>
+              <option value="">{{ t("All projects") }}</option>
               <option
                 v-for="p in projectOptions"
                 :key="p.id"
@@ -89,13 +89,13 @@
             </select>
           </label>
           <label class="activity-feed__field">
-            <span class="activity-feed__field-label">Actor</span>
+            <span class="activity-feed__field-label">{{ t("Actor") }}</span>
             <select
               class="iz-input iz-input--sm activity-feed__input"
               :value="filterActor"
               @change="onActorChange($event)"
             >
-              <option value="">All actors</option>
+              <option value="">{{ t("All actors") }}</option>
               <option
                 v-for="m in actorOptions"
                 :key="m.uid"
@@ -106,11 +106,11 @@
             </select>
           </label>
           <label class="activity-feed__field activity-feed__field--grow">
-            <span class="activity-feed__field-label">Search</span>
+            <span class="activity-feed__field-label">{{ t("Search") }}</span>
             <input
               type="search"
               class="iz-input iz-input--sm activity-feed__input"
-              placeholder="match summary or actor"
+              :placeholder="t('match summary or actor')"
               :value="filterQ"
               @input="onTextInput('filterQ', $event)"
             />
@@ -120,18 +120,18 @@
             class="activity-feed__clear"
             @click="clearFilters"
           >
-            Clear filters
+            {{ t("Clear filters") }}
           </button>
         </div>
 
         <div v-if="loading && rows.length === 0" class="iz-state activity-feed__state">
-          Loading…
+          {{ t("Loading…") }}
         </div>
         <div v-else-if="error" class="activity-feed__state activity-feed__state--error">
           {{ error }}
         </div>
         <div v-else-if="rows.length === 0" class="iz-state activity-feed__state">
-          No activity matches the current filters.
+          {{ t("No activity matches the current filters.") }}
         </div>
 
         <ul v-else class="activity-feed__list">
@@ -141,7 +141,7 @@
               :class="'activity-feed__icon--' + row.source"
             ></span>
             <div class="activity-feed__row-body">
-              <div class="activity-feed__row-summary">{{ row.summary }}</div>
+              <div class="activity-feed__row-summary">{{ t("{summary}", { summary: row.summary }) }}</div>
               <div class="activity-feed__row-meta">
                 <span class="activity-feed__row-source">{{ sourceLabel(row.source) }}</span>
                 <span class="activity-feed__row-dot">·</span>
@@ -158,17 +158,17 @@
         <nav
           v-if="rows.length > 0 || currentPage > 1"
           class="iz-pagination activity-feed__pagination"
-          aria-label="Pagination"
+          :aria-label="t('Pagination')"
         >
           <label class="activity-feed__page-size">
-            <span class="activity-feed__page-size-label">Per page</span>
+            <span class="activity-feed__page-size-label">{{ t("Per page") }}</span>
             <select
               class="activity-feed__page-size-select"
               :value="pageSize"
               @change="onPageSizeChange"
             >
-              <option v-for="n in pageSizeOptions" :key="n" :value="n">
-                {{ n }}
+              <option v-for="size in pageSizeOptions" :key="size" :value="size">
+                {{ size }}
               </option>
             </select>
           </label>
@@ -179,7 +179,7 @@
               :disabled="loading || currentPage === 1"
               @click="setPage(currentPage - 1)"
             >
-              ‹ Prev
+              {{ t("‹ Prev") }}
             </button>
 
             <template v-for="(b, i) in pageButtons">
@@ -205,7 +205,7 @@
               :disabled="loading || !hasNext"
               @click="setPage(currentPage + 1)"
             >
-              Next ›
+              {{ t("Next ›") }}
             </button>
           </div>
         </nav>
@@ -217,19 +217,20 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
+import { t, n, locale } from "../lib/l10n.mjs";
 
 const SOURCES = [
-  { key: "deck", label: "Tasks" },
-  { key: "files", label: "Files" },
-  { key: "talk", label: "Calls" },
-  { key: "calendar", label: "Calendar" },
-  { key: "subscription", label: "Subscription" },
-  { key: "backup", label: "Backups" },
-  { key: "aho", label: "Hand-offs" },
-  { key: "member", label: "Members" },
-  { key: "project", label: "Projects" },
-  { key: "share", label: "Shares" },
-  { key: "auth", label: "Sessions" },
+  { key: "deck", label: () => t("Tasks") },
+  { key: "files", label: () => t("Files") },
+  { key: "talk", label: () => t("Calls") },
+  { key: "calendar", label: () => t("Calendar") },
+  { key: "subscription", label: () => t("Subscription") },
+  { key: "backup", label: () => t("Backups") },
+  { key: "aho", label: () => t("Hand-offs") },
+  { key: "member", label: () => t("Members") },
+  { key: "project", label: () => t("Projects") },
+  { key: "share", label: () => t("Shares") },
+  { key: "auth", label: () => t("Sessions") },
 ];
 
 const PROJECT_ANCHORED = ["deck", "talk", "files", "project"];
@@ -238,14 +239,14 @@ const PAGE_SIZE_OPTIONS = [5, 10, 25, 50, 100];
 
 function dateToUnixStart(yyyymmdd) {
   if (!yyyymmdd) return null;
-  const t = new Date(yyyymmdd + "T00:00:00").getTime();
-  return Number.isFinite(t) ? Math.floor(t / 1000) : null;
+  const ms = new Date(yyyymmdd + "T00:00:00").getTime();
+  return Number.isFinite(ms) ? Math.floor(ms / 1000) : null;
 }
 
 function dateToUnixEnd(yyyymmdd) {
   if (!yyyymmdd) return null;
-  const t = new Date(yyyymmdd + "T23:59:59").getTime();
-  return Number.isFinite(t) ? Math.floor(t / 1000) : null;
+  const ms = new Date(yyyymmdd + "T23:59:59").getTime();
+  return Number.isFinite(ms) ? Math.floor(ms / 1000) : null;
 }
 
 export default {
@@ -278,8 +279,8 @@ export default {
   computed: {
     streamOptions() {
       return [
-        { key: "in_project", label: "In this project" },
-        { key: "org_wide", label: "Org-wide" },
+        { key: "in_project", label: t("In this project") },
+        { key: "org_wide", label: t("Org-wide") },
       ];
     },
     effectiveProjectId() {
@@ -308,7 +309,7 @@ export default {
     projectOptions() {
       const out = (this.projects || [])
         .filter((p) => p && p.id)
-        .map((p) => ({ id: p.id, label: p.name || ("#" + p.id) }));
+        .map((p) => ({ id: p.id, label: p.name || t("#{id}", { id: p.id }) }));
       out.sort((a, b) => a.label.localeCompare(b.label));
       return out;
     },
@@ -391,7 +392,7 @@ export default {
   methods: {
     sourceLabel(key) {
       const s = SOURCES.find((x) => x.key === key);
-      return s ? s.label : key;
+      return s ? s.label() : key;
     },
     rowKey(row) {
       return [row.source, row.ts, row.target_id, row.action].join("|");
@@ -451,7 +452,7 @@ export default {
         this.rows = rows;
         this.hasNext = hasNext;
       } catch (e) {
-        this.error = "Failed to load activity.";
+        this.error = t("Failed to load activity.");
       } finally {
         this.loading = false;
       }
@@ -491,11 +492,11 @@ export default {
       if (!ts) return "";
       const now = Date.now() / 1000;
       const diff = now - ts;
-      if (diff < 60) return "just now";
-      if (diff < 3600) return Math.floor(diff / 60) + "m ago";
-      if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
-      if (diff < 604800) return Math.floor(diff / 86400) + "d ago";
-      return new Date(ts * 1000).toLocaleDateString();
+      if (diff < 60) return t("just now");
+      if (diff < 3600) return t("{n}m ago", { n: Math.floor(diff / 60) });
+      if (diff < 86400) return t("{n}h ago", { n: Math.floor(diff / 3600) });
+      if (diff < 604800) return n("%nd ago", "%nd ago", Math.floor(diff / 86400));
+      return new Date(ts * 1000).toLocaleDateString(locale());
     },
   },
 };

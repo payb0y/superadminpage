@@ -3,11 +3,12 @@
     <div class="kpi-card__header">
       <div class="kpi-card__icon" :style="{ backgroundColor: iconBgColor }">
         <!-- Callers with an icon outside this component's fixed set (e.g. the
-             alert cards) pass their own glyph; everything else keeps the
-             title-keyed default below. -->
+             alert cards) pass their own glyph; everything else picks a
+             default below by the `icon` key (projects, tasks, resources,
+             financial, timeline), never by the title, which is translated. -->
         <slot name="icon">
         <svg
-          v-if="title === 'Projects'"
+          v-if="icon === 'projects'"
           class="kpi-card__icon-svg"
           :style="{ color: iconColor }"
           xmlns="http://www.w3.org/2000/svg"
@@ -25,7 +26,7 @@
           />
         </svg>
         <svg
-          v-else-if="title === 'Tasks'"
+          v-else-if="icon === 'tasks'"
           class="kpi-card__icon-svg"
           :style="{ color: iconColor }"
           xmlns="http://www.w3.org/2000/svg"
@@ -42,7 +43,7 @@
           <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
         </svg>
         <svg
-          v-else-if="title === 'Resources'"
+          v-else-if="icon === 'resources'"
           class="kpi-card__icon-svg"
           :style="{ color: iconColor }"
           xmlns="http://www.w3.org/2000/svg"
@@ -60,7 +61,7 @@
           <line x1="12" y1="17" x2="12" y2="21" />
         </svg>
         <svg
-          v-else-if="title === 'Financial'"
+          v-else-if="icon === 'financial'"
           class="kpi-card__icon-svg"
           :style="{ color: iconColor }"
           xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +79,7 @@
           <line x1="8" y1="12" x2="16" y2="12" />
         </svg>
         <svg
-          v-else-if="title === 'Timeline'"
+          v-else-if="icon === 'timeline'"
           class="kpi-card__icon-svg"
           :style="{ color: iconColor }"
           xmlns="http://www.w3.org/2000/svg"

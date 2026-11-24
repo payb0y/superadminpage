@@ -2,16 +2,16 @@
   <div class="ho-panel">
     <!-- ── Initiate handover ─────────────────────────────────────────── -->
     <div class="ho-panel__card">
-      <div class="ho-panel__label">INITIATE HANDOVER</div>
+      <div class="ho-panel__label">{{ t("INITIATE HANDOVER") }}</div>
 
       <div v-if="notEnoughMembers" class="iz-state ho-panel__field-state">
-        Need at least two members to hand off.
+        {{ t("Need at least two members to hand off.") }}
       </div>
 
       <div class="ho-panel__initiate-grid">
         <div>
           <label class="ho-panel__field-label" for="ho-source">
-            Source member <span class="ho-panel__req">*</span>
+            {{ t("Source member") }} <span class="ho-panel__req">*</span>
           </label>
           <select
             id="ho-source"
@@ -20,7 +20,7 @@
             :disabled="saving || notEnoughMembers"
             @change="onSourceChange"
           >
-            <option value="">— pick a source —</option>
+            <option value="">{{ t("— pick a source —") }}</option>
             <option
               v-for="m in sortedMembers"
               :key="'src-' + m.userId"
@@ -31,7 +31,7 @@
         <div class="ho-panel__arrow" aria-hidden="true">→</div>
         <div>
           <label class="ho-panel__field-label" for="ho-target">
-            Target member <span class="ho-panel__req">*</span>
+            {{ t("Target member") }} <span class="ho-panel__req">*</span>
           </label>
           <select
             id="ho-target"
@@ -40,7 +40,7 @@
             :disabled="saving || notEnoughMembers"
             @change="clearDryRun"
           >
-            <option value="">— pick a target —</option>
+            <option value="">{{ t("— pick a target —") }}</option>
             <option
               v-for="m in availableTargets"
               :key="'tgt-' + m.userId"
@@ -51,7 +51,7 @@
       </div>
 
       <div class="iz-inset ho-panel__options">
-        <div class="ho-panel__label">OPTIONS</div>
+        <div class="ho-panel__label">{{ t("OPTIONS") }}</div>
         <label class="ho-panel__option">
           <input
             type="checkbox"
@@ -60,8 +60,8 @@
             @change="clearDryRun"
           />
           <span>
-            <strong>Dry run</strong>
-            <span class="ho-panel__hint"> — preview only, no changes applied</span>
+            <strong>{{ t("Dry run") }}</strong>
+            <span class="ho-panel__hint"> {{ t("— preview only, no changes applied") }}</span>
           </span>
         </label>
         <label class="ho-panel__option">
@@ -72,8 +72,8 @@
             @change="clearDryRun"
           />
           <span>
-            <strong>Remove source from groups</strong>
-            <span class="ho-panel__hint"> — after handover completes</span>
+            <strong>{{ t("Remove source from groups") }}</strong>
+            <span class="ho-panel__hint"> {{ t("— after handover completes") }}</span>
           </span>
         </label>
         <label class="ho-panel__option">
@@ -84,22 +84,20 @@
             @change="clearDryRun"
           />
           <span>
-            <strong>Remap Deck content</strong>
-            <span class="ho-panel__hint"> — transfer board/card ownership (default on)</span>
+            <strong>{{ t("Remap Deck content") }}</strong>
+            <span class="ho-panel__hint"> {{ t("— transfer board/card ownership (default on)") }}</span>
           </span>
         </label>
       </div>
 
       <div v-if="!form.dryRun" class="ho-panel__warning">
-        ⚠ This will reassign the source member's ownership across projects,
-        Deck boards, and files. Consider running with
-        <strong>Dry run</strong> first.
+        {{ t("⚠ This will reassign the source member's ownership across projects, Deck boards, and files. Consider running with Dry run first.") }}
       </div>
 
       <div v-if="dryRunResult" class="ho-panel__dry-result">
         <div class="ho-panel__dry-heading">
           <span aria-hidden="true">✓</span>
-          Dry run complete — no changes applied.
+          {{ t("Dry run complete — no changes applied.") }}
         </div>
         <pre class="ho-panel__dry-json">{{ dryRunResult }}</pre>
       </div>
@@ -112,7 +110,7 @@
           class="iz-btn iz-btn--ghost"
           :disabled="saving"
           @click="resetForm"
-        >Reset</button>
+        >{{ t("Reset") }}</button>
         <button
           type="button"
           class="iz-btn iz-btn--primary"
@@ -124,7 +122,7 @@
             class="iz-spinner"
             aria-hidden="true"
           ></span>
-          {{ form.dryRun ? "Preview" : "Start handover" }}
+          {{ form.dryRun ? t("Preview") : t("Start handover") }}
         </button>
       </div>
     </div>
@@ -132,42 +130,42 @@
     <!-- ── Recent jobs ───────────────────────────────────────────────── -->
     <div class="ho-panel__card">
       <div class="ho-panel__jobs-header">
-        <span class="ho-panel__label">RECENT JOBS</span>
+        <span class="ho-panel__label">{{ t("RECENT JOBS") }}</span>
         <div class="ho-panel__jobs-header-right">
           <span
             v-if="hasActiveJobs"
             class="ho-panel__live"
           >
-            <span class="ho-panel__live-dot"></span>Live
+            <span class="ho-panel__live-dot"></span>{{ t("Live") }}
           </span>
           <button
             type="button"
             class="ho-panel__refresh"
             :disabled="jobsLoading"
             @click="loadJobs"
-          >↻ Refresh</button>
+          >{{ t("↻ Refresh") }}</button>
         </div>
       </div>
 
       <div v-if="jobsError" class="ho-panel__field-error">{{ jobsError }}</div>
 
       <div v-if="jobsLoading && jobs.length === 0" class="iz-state ho-panel__field-state">
-        Loading jobs…
+        {{ t("Loading jobs…") }}
       </div>
 
       <div
         v-else-if="jobs.length === 0"
         class="ho-panel__empty"
       >
-        No handovers yet. Start one above.
+        {{ t("No handovers yet. Start one above.") }}
       </div>
 
       <div v-else class="ho-panel__jobs-table">
         <div class="ho-panel__jobs-row ho-panel__jobs-row--head">
-          <span>Source → Target</span>
-          <span>Status</span>
-          <span>Started</span>
-          <span>Ended</span>
+          <span>{{ t("Source → Target") }}</span>
+          <span>{{ t("Status") }}</span>
+          <span>{{ t("Started") }}</span>
+          <span>{{ t("Ended") }}</span>
           <span></span>
         </div>
         <template v-for="job in jobs">
@@ -206,14 +204,14 @@
                 type="button"
                 class="iz-btn iz-btn--sm"
                 @click="toggleExpandJob(job.id)"
-              >{{ expandedJobs[job.id] ? "Hide" : "Events" }}</button>
+              >{{ expandedJobs[job.id] ? t("Hide") : t("Events") }}</button>
               <button
                 v-if="isFailed(job)"
                 type="button"
                 class="iz-btn iz-btn--sm iz-btn--primary"
                 :disabled="saving"
                 @click="onRetryClick(job)"
-              >↻ Retry</button>
+              >{{ t("↻ Retry") }}</button>
             </span>
           </div>
           <div
@@ -221,11 +219,11 @@
             :key="'events-' + job.id"
             class="ho-panel__events"
           >
-            <div class="ho-panel__label">EVENTS</div>
+            <div class="ho-panel__label">{{ t("EVENTS") }}</div>
             <div
               v-if="eventsByJob[job.id] && eventsByJob[job.id].loading"
               class="iz-state ho-panel__field-state"
-            >Loading events…</div>
+            >{{ t("Loading events…") }}</div>
             <div
               v-else-if="eventsByJob[job.id] && eventsByJob[job.id].error"
               class="ho-panel__field-error"
@@ -235,7 +233,7 @@
                 type="button"
                 class="iz-btn iz-btn--sm iz-btn--accent"
                 @click="loadJobEvents(job.id, true)"
-              >Retry</button>
+              >{{ t("Retry") }}</button>
             </div>
             <div
               v-else-if="eventsByJob[job.id] && eventsByJob[job.id].events.length"
@@ -253,11 +251,11 @@
                 <span
                   :key="'ev-msg-' + job.id + '-' + i"
                   class="ho-panel__events-msg"
-                >{{ ev.message || ev.step || "—" }}</span>
+                >{{ t("{message}", { message: ev.message || ev.step || "—" }) }}</span>
               </template>
             </div>
             <div v-else class="iz-state ho-panel__field-state">
-              No events recorded for this job.
+              {{ t("No events recorded for this job.") }}
             </div>
           </div>
         </template>
@@ -268,19 +266,21 @@
         class="iz-pagination ho-panel__pagination"
       >
         <span class="ho-panel__pagination-info">
-          Showing {{ pageRange }} of {{ jobsTotal }} jobs
+          {{ t("Showing {range} of {total} jobs", { range: pageRange, total: jobsTotal }) }}
         </span>
         <div class="ho-panel__pagination-buttons">
           <button
             type="button"
             :disabled="jobsPage <= 1"
+            :aria-label="t('Previous page')"
             @click="setPage(jobsPage - 1)"
-          >‹</button>
+          >{{ t("‹") }}</button>
           <button
             type="button"
             :disabled="jobsPage >= totalPages"
+            :aria-label="t('Next page')"
             @click="setPage(jobsPage + 1)"
-          >›</button>
+          >{{ t("›") }}</button>
         </div>
       </div>
     </div>
@@ -296,12 +296,12 @@
     >
       <div class="iz-modal ho-panel__modal">
         <div class="iz-modal__header">
-          <span>Confirm with your password</span>
+          <span>{{ t("Confirm with your password") }}</span>
           <button
             type="button"
             class="iz-close"
             :disabled="saving"
-            aria-label="Close"
+            :aria-label="t('Close')"
             @click="closeConfirm"
           >×</button>
         </div>
@@ -311,8 +311,7 @@
           @submit.prevent="saveAction"
         >
           <p class="iz-modal__confirm-text">
-            {{ confirmActionLabel }} requires re-confirming your admin
-            password.
+            {{ confirmActionLabel }}
           </p>
           <input
             type="text"
@@ -330,7 +329,7 @@
             v-model="confirmPassword"
             class="ho-panel__modal-password"
             name="password"
-            placeholder="Your admin password"
+            :placeholder="t('Your admin password')"
             :disabled="saving"
             autocomplete="current-password"
           />
@@ -345,7 +344,7 @@
             class="iz-btn iz-btn--ghost"
             :disabled="saving"
             @click="closeConfirm"
-          >Cancel</button>
+          >{{ t("Cancel") }}</button>
           <button
             type="button"
             class="iz-btn iz-btn--primary"
@@ -357,7 +356,7 @@
               class="iz-spinner"
               aria-hidden="true"
             ></span>
-            Confirm &amp; {{ confirmVerb }}
+            {{ confirmVerb }}
           </button>
         </div>
       </div>
@@ -368,6 +367,7 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl, generateOcsUrl } from "@nextcloud/router";
+import { t, tc, locale } from "../lib/l10n.mjs";
 
 const ORG_OCS_HEADERS = {
   "OCS-APIRequest": "true",
@@ -380,6 +380,16 @@ function unwrapOcs(res) {
   if (d && d.ocs && d.ocs.data) return d.ocs.data;
   return d || {};
 }
+
+// Job status code -> label. "Cancelled" here is a cancelled job (Geannuleerd),
+// not a cancelled subscription, hence the context.
+const HANDOVER_STATUS_LABELS = {
+  queued: () => t("Queued"),
+  running: () => t("Running"),
+  succeeded: () => t("Succeeded"),
+  failed: () => t("Failed"),
+  cancelled: () => tc("Cancelled", "handover job"),
+};
 
 function safeUuid() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -472,17 +482,19 @@ export default {
       return !this.saving && this.confirmPassword.length > 0;
     },
     confirmActionLabel() {
-      if (this.confirmAction === "start") return "Starting a handover";
-      if (this.confirmAction && this.confirmAction.type === "retry") {
-        return "Retrying a handover job";
+      if (this.confirmAction === "start") {
+        return t("Starting a handover requires re-confirming your admin password.");
       }
-      return "This action";
+      if (this.confirmAction && this.confirmAction.type === "retry") {
+        return t("Retrying a handover job requires re-confirming your admin password.");
+      }
+      return t("This action requires re-confirming your admin password.");
     },
     confirmVerb() {
       if (this.confirmAction && this.confirmAction.type === "retry") {
-        return "retry";
+        return t("Confirm & retry");
       }
-      return "start";
+      return t("Confirm & start");
     },
     currentUserUid() {
       const oc = typeof window !== "undefined" ? window.OC : null;
@@ -528,10 +540,10 @@ export default {
   },
   methods: {
     memberLabel(m) {
-      const parts = [m.displayName || m.userId];
-      if (m.email) parts.push(m.email);
-      parts.push("uid: " + m.userId);
-      return parts.join(" · ");
+      const name = m.displayName || m.userId;
+      return m.email
+        ? t("{name} · {email} · uid: {uid}", { name, email: m.email, uid: m.userId })
+        : t("{name} · uid: {uid}", { name, uid: m.userId });
     },
     onSourceChange() {
       // If the new source equals the current target, clear target so the
@@ -594,7 +606,7 @@ export default {
       } catch (e) {
         this.jobsError = this.extractServerError(
           e,
-          "Couldn't load handover jobs.",
+          t("Couldn't load handover jobs."),
         );
       } finally {
         this.jobsLoading = false;
@@ -665,7 +677,7 @@ export default {
         this.$set(this.eventsByJob, jobId, {
           events: null,
           loading: false,
-          error: this.extractServerError(e, "Couldn't load events."),
+          error: this.extractServerError(e, t("Couldn't load events.")),
         });
       }
     },
@@ -741,7 +753,7 @@ export default {
       } catch (e) {
         this.startError = this.extractServerError(
           e,
-          "Dry run failed. Try again.",
+          t("Dry run failed. Try again."),
         );
       } finally {
         this.saving = false;
@@ -810,13 +822,13 @@ export default {
           (e && e.response && e.response.config && e.response.config.url) ||
           "";
         if (url.indexOf("/login/confirm") !== -1 && status === 403) {
-          this.saveError = "Wrong password. Try again.";
+          this.saveError = t("Wrong password. Try again.");
           this.confirmPassword = "";
           this.focusConfirmInput();
         } else {
           this.saveError = this.extractServerError(
             e,
-            "Couldn't complete the action. Try again.",
+            t("Couldn't complete the action. Try again."),
           );
         }
       } finally {
@@ -840,8 +852,7 @@ export default {
       return "queued";
     },
     statusLabel(job) {
-      const s = this.statusKey(job);
-      return s.charAt(0).toUpperCase() + s.slice(1);
+      return (HANDOVER_STATUS_LABELS[this.statusKey(job)] || HANDOVER_STATUS_LABELS.queued)();
     },
     isRunning(job) {
       return this.statusKey(job) === "running";
@@ -856,16 +867,16 @@ export default {
       return "neutral";
     },
     eventIconChar(ev) {
-      const t = this.eventIcon(ev);
-      if (t === "ok") return "✓";
-      if (t === "fail") return "✗";
+      const icon = this.eventIcon(ev);
+      if (icon === "ok") return "✓";
+      if (icon === "fail") return "✗";
       return "·";
     },
     formatDate(input) {
       if (!input) return "";
       const d = new Date(input);
       if (isNaN(d.getTime())) return "";
-      return d.toLocaleString(undefined, {
+      return d.toLocaleString(locale(), {
         month: "short",
         day: "2-digit",
         hour: "2-digit",
@@ -876,7 +887,7 @@ export default {
       if (!input) return "";
       const d = new Date(input);
       if (isNaN(d.getTime())) return "";
-      return d.toLocaleTimeString(undefined, {
+      return d.toLocaleTimeString(locale(), {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
@@ -884,7 +895,7 @@ export default {
     },
     extractServerError(err, fallback) {
       if (!err) return fallback;
-      if (!err.response) return "Couldn't reach the server. Try again.";
+      if (!err.response) return t("Couldn't reach the server. Try again.");
       const data = err.response.data;
       const ocsMsg =
         data && data.ocs && data.ocs.meta && data.ocs.meta.message;
@@ -892,7 +903,7 @@ export default {
       if (data && typeof data.message === "string" && data.message) {
         return data.message;
       }
-      return fallback + " (HTTP " + err.response.status + ")";
+      return t("{message} (HTTP {status})", { message: fallback, status: err.response.status });
     },
   },
 };

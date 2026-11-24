@@ -3,21 +3,20 @@
     <div class="externals-panel__toolbar">
       <span v-if="seatsLine" class="externals-panel__count">{{ seatsLine }}</span>
       <button class="iz-btn iz-btn--sm" type="button" :disabled="loading" @click="load">
-        {{ loading ? "Refreshing…" : "Refresh" }}
+        {{ loading ? t("Refreshing…") : t("Refresh") }}
       </button>
     </div>
 
     <p class="iz-inset">
-      External collaborators are clients, grid operators and subcontractors with access to one or more projects only.
-      Each takes one member seat. Invite them, change their end date or revoke them on the project's Members tab.
+      {{ t("External collaborators are clients, grid operators and subcontractors with access to one or more projects only. Each takes one member seat. Invite them, change their end date or revoke them on the project's Members tab.") }}
     </p>
 
     <div v-if="error" class="iz-error" role="alert">
       {{ error }}
-      <button class="iz-btn iz-btn--accent iz-btn--sm" type="button" @click="load">Try again</button>
+      <button class="iz-btn iz-btn--accent iz-btn--sm" type="button" @click="load">{{ t("Try again") }}</button>
     </div>
-    <p v-else-if="loading && !loaded" class="iz-state">Loading external collaborators…</p>
-    <div v-else-if="!externals.length" class="iz-empty">No external collaborators.</div>
+    <p v-else-if="loading && !loaded" class="iz-state">{{ t("Loading external collaborators…") }}</p>
+    <div v-else-if="!externals.length" class="iz-empty">{{ t("No external collaborators.") }}</div>
     <ul v-else class="externals-panel__list">
       <li v-for="external in externals" :key="external.userId" class="iz-row iz-row--card externals-panel__row">
         <span class="iz-identity__avatar iz-identity__avatar--sm iz-identity__avatar--soft" aria-hidden="true">
@@ -39,12 +38,12 @@
             >{{ project.projectName }} · {{ projectState(project) }}</a>
           </span>
         </div>
-        <span class="iz-badge" :class="status(external).tone">{{ status(external).label }}</span>
+        <span class="iz-badge" :class="status(external).tone">{{ status(external).label() }}</span>
       </li>
     </ul>
 
     <section v-if="loaded && !error && activity.length" class="externals-panel__activity">
-      <span class="iz-section-title">Activity</span>
+      <span class="iz-section-title">{{ t("Activity") }}</span>
       <ul class="externals-panel__log">
         <li v-for="entry in activity" :key="entry.id" class="externals-panel__entry">
           <time class="externals-panel__when" :datetime="entry.createdAt">{{ formatDateTime(entry.createdAt) }}</time>
@@ -58,17 +57,19 @@
 <script>
 import { generateUrl } from "@nextcloud/router";
 import { listExternalActivity, listExternalCollaborators } from "../services/organizationApi.js";
+import { t, n, locale } from "../lib/l10n.mjs";
 
 // Who outside the organization works on its projects. Read only: externals
 // are invited, moved and revoked on a project's Members tab in the project app.
 
+// Account status code → label (made at display time) and badge tone.
 const STATUS = {
-  invited: { label: "Invited", tone: "iz-badge--warning" },
-  active: { label: "Active", tone: "iz-badge--success" },
-  suspended: { label: "Suspended", tone: "iz-badge--danger" },
-  disabled: { label: "Disabled", tone: "iz-badge--muted" },
+  invited: { label: () => t("Invited"), tone: "iz-badge--warning" },
+  active: { label: () => t("Active"), tone: "iz-badge--success" },
+  suspended: { label: () => t("Suspended"), tone: "iz-badge--danger" },
+  disabled: { label: () => t("Disabled"), tone: "iz-badge--muted" },
 };
-const UNKNOWN_STATUS = { label: "Unknown", tone: "iz-badge--muted" };
+const UNKNOWN_STATUS = { label: () => t("Unknown"), tone: "iz-badge--muted" };
 
 export default {
   name: "ExternalCollaboratorsPanel",
@@ -94,9 +95,10 @@ export default {
     seatsLine: function () {
       if (!this.seats) return "";
       var used = this.seats.used;
-      var of = this.seats.max == null ? used + " seats used" : used + " of " + this.seats.max + " seats used";
-      var n = this.seats.externals;
-      return of + " · " + n + " by external collaborator" + (n === 1 ? "" : "s");
+      var seats = this.seats.max == null
+        ? t("{used} seats used", { used: used })
+        : t("{used} of {max} seats used", { used: used, max: this.seats.max });
+      return n("{seats} · %n by external collaborator", "{seats} · %n by external collaborators", this.seats.externals, { seats: seats });
     },
   },
   watch: {
@@ -129,7 +131,7 @@ export default {
         this.$emit("counted", this.externals.length);
       } catch (e) {
         if (token !== this.requestToken) return;
-        this.error = e && e.message ? e.message : "Couldn't load external collaborators.";
+        this.error = e && e.message ? e.message : t("Couldn't load external collaborators.");
       } finally {
         if (token === this.requestToken) this.loading = false;
       }
@@ -141,60 +143,81 @@ export default {
       return STATUS[external.accountStatus] || UNKNOWN_STATUS;
     },
     lastSeen: function (external) {
-      return external.lastSeenAt ? "last seen " + this.formatDateTime(external.lastSeenAt) : "never signed in";
+      return external.lastSeenAt
+        ? t("last seen {datetime}", { datetime: this.formatDateTime(external.lastSeenAt) })
+        : t("never signed in");
     },
     projectUrl: function (projectId) {
       return generateUrl("/apps/projectcreatoraio/new/projects/" + projectId + "/members");
     },
     projectState: function (project) {
-      if (project.status === "pending") return "invitation pending";
-      return project.expiresAt ? "until " + this.formatDate(project.expiresAt) : "active";
+      if (project.status === "pending") return t("invitation pending");
+      return project.expiresAt ? t("until {date}", { date: this.formatDate(project.expiresAt) }) : t("active");
     },
     describe: function (entry) {
-      var who = entry.displayName;
-      var by = entry.actorName ? " by " + entry.actorName : "";
-      var on = entry.projectName ? " " + entry.projectName : " the project";
+      // One whole sentence per action, with and without an actor, because
+      // the word order changes around "by {actor}" in Dutch.
       var details = entry.details || {};
+      var actor = entry.actorName || "";
+      var vars = {
+        name: entry.displayName,
+        project: entry.projectName || t("the project"),
+        actor: actor,
+      };
       switch (entry.action) {
         case "invited":
-          return who + " was invited to" + on + by;
+          return actor
+            ? t("{name} was invited to {project} by {actor}", vars)
+            : t("{name} was invited to {project}", vars);
         case "invite_resent":
-          return "The invitation of " + who + " to" + on + " was sent again" + by;
+          return actor
+            ? t("The invitation of {name} to {project} was sent again by {actor}", vars)
+            : t("The invitation of {name} to {project} was sent again", vars);
         case "accepted":
-          return who + " accepted the invitation to" + on + " and the terms";
+          return t("{name} accepted the invitation to {project} and the terms", vars);
         case "end_date_changed":
-          return "Access of " + who + " to" + on + " now ends " + (details.to ? this.formatDate(details.to) : "later") + by;
+          vars.date = details.to ? this.formatDate(details.to) : t("later");
+          return actor
+            ? t("Access of {name} to {project} now ends {date} by {actor}", vars)
+            : t("Access of {name} to {project} now ends {date}", vars);
         case "roles_changed":
-          return "Roles of " + who + " on" + on + " changed" + by;
+          return actor
+            ? t("Roles of {name} on {project} changed by {actor}", vars)
+            : t("Roles of {name} on {project} changed", vars);
         case "revoked":
-          return details.accepted
-            ? "Access of " + who + " to" + on + " was revoked" + by
-            : "The invitation of " + who + " to" + on + " was cancelled" + by;
+          if (details.accepted) {
+            return actor
+              ? t("Access of {name} to {project} was revoked by {actor}", vars)
+              : t("Access of {name} to {project} was revoked", vars);
+          }
+          return actor
+            ? t("The invitation of {name} to {project} was cancelled by {actor}", vars)
+            : t("The invitation of {name} to {project} was cancelled", vars);
         case "expired":
           return details.reason === "not_accepted"
-            ? "The invitation of " + who + " to" + on + " lapsed unaccepted"
-            : "Access of " + who + " to" + on + " ended on its end date";
+            ? t("The invitation of {name} to {project} lapsed unaccepted", vars)
+            : t("Access of {name} to {project} ended on its end date", vars);
         case "link_requested":
-          return who + " asked for a new invitation link to" + on;
+          return t("{name} asked for a new invitation link to {project}", vars);
         case "account_disabled":
-          return "The account of " + who + " was disabled after 30 days without access";
+          return t("The account of {name} was disabled after 30 days without access", vars);
         case "account_deleted":
-          return "The account of " + who + " was deleted";
+          return t("The account of {name} was deleted", vars);
         default:
-          return who + ": " + entry.action;
+          return t("{name}: {action}", { name: entry.displayName, action: entry.action });
       }
     },
     formatDate: function (input) {
       if (!input) return "";
       var d = new Date(input);
       if (isNaN(d.getTime())) return "";
-      return d.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
+      return d.toLocaleDateString(locale(), { day: "2-digit", month: "short", year: "numeric" });
     },
     formatDateTime: function (input) {
       if (!input) return "";
       var d = new Date(input);
       if (isNaN(d.getTime())) return "";
-      return d.toLocaleString(undefined, {
+      return d.toLocaleString(locale(), {
         day: "2-digit",
         month: "short",
         year: "numeric",

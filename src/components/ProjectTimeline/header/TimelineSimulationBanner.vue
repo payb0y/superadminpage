@@ -3,10 +3,10 @@
 		<div class="simulation-banner__left">
 			<div class="simulation-badge">
 				<FlaskOutline :size="16" class="flask-icon" />
-				<span class="badge-text">WHAT-IF / SCENARIO SIMULATION</span>
+				<span class="badge-text">{{ t('WHAT-IF / SCENARIO SIMULATION') }}</span>
 			</div>
 			<div class="simulation-title">
-				Scenario: <strong>{{ scenario?.description || 'Schedule impact scenario' }}</strong>
+				{{ titleParts[0] }}<strong>{{ scenario?.description || t('Schedule impact scenario') }}</strong>{{ titleParts[1] }}
 			</div>
 
 			<!-- Strategy Switcher (Options A to F) -->
@@ -22,32 +22,32 @@
 					@click="$emit('switch-strategy', opt.id)">
 					<span class="strategy-letter">{{ opt.letter }}</span>
 					<span class="strategy-label">{{ opt.shortTitle || opt.title }}</span>
-					<span v-if="opt.recommended" class="strategy-rec-dot" title="Recommended">★</span>
+					<span v-if="opt.recommended" class="strategy-rec-dot" :title="t('Recommended')">★</span>
 				</button>
 			</div>
 
 			<div class="simulation-flow">
 				<div class="flow-step flow-step--current">
-					<span class="step-label">Current impact:</span>
-					<span class="step-val">{{ scenario?.currentImpact || 'Impact calculated' }}</span>
+					<span class="step-label">{{ t('Current impact:') }}</span>
+					<span class="step-val">{{ scenario?.currentImpact || t('Impact calculated') }}</span>
 				</div>
 				<div class="flow-arrow">
 					<ArrowRight :size="16" />
 				</div>
 				<div class="flow-step flow-step--result">
-					<span class="step-label">Scenario result:</span>
-					<span class="step-val">{{ scenario?.scenarioResult || 'Result calculated' }}</span>
+					<span class="step-label">{{ t('Scenario result:') }}</span>
+					<span class="step-val">{{ scenario?.scenarioResult || t('Result calculated') }}</span>
 				</div>
 				<div class="flow-arrow">
 					<ArrowRight :size="16" />
 				</div>
 				<div class="flow-step flow-step--status" :class="scenarioStatusClass">
-					<span class="step-label">Scenario status:</span>
-					<span class="step-val">{{ scenario?.scenarioStatus || 'Simulated' }}</span>
+					<span class="step-label">{{ t('Scenario status:') }}</span>
+					<span class="step-val">{{ scenario?.scenarioStatus || t('Simulated') }}</span>
 				</div>
 			</div>
 			<div class="simulation-disclaimer">
-				This is only an in-memory simulation. Nothing is changed in the official project plan until applied.
+				{{ t('This is only an in-memory simulation. Nothing is changed in the official project plan until applied.') }}
 			</div>
 		</div>
 
@@ -60,14 +60,14 @@
 				<template #icon>
 					<Check :size="16" />
 				</template>
-				{{ applying ? 'Applying...' : 'Apply scenario' }}
+				{{ applying ? t('Applying...') : t('Apply scenario') }}
 			</NcButton>
 			<NcButton
 				type="secondary"
 				class="cancel-btn"
 				:disabled="applying"
 				@click="$emit('cancel')">
-				Cancel
+				{{ t('Cancel') }}
 			</NcButton>
 		</div>
 	</div>
@@ -78,6 +78,7 @@ import { NcButton } from '@nextcloud/vue'
 import ArrowRight from 'vue-material-design-icons/ArrowRight.vue'
 import Check from 'vue-material-design-icons/Check.vue'
 import FlaskOutline from 'vue-material-design-icons/FlaskOutline.vue'
+import { t } from '../../../lib/l10n.mjs'
 
 export default {
 	name: 'TimelineSimulationBanner',
@@ -106,6 +107,12 @@ export default {
 		},
 	},
 	computed: {
+		// The description stays in <strong>, so the translated sentence is
+		// split at its placeholder rather than filled in.
+		titleParts() {
+			const [before, after = ''] = t('Scenario: {description}').split('{description}')
+			return [before, after]
+		},
 		strategyOptions() {
 			if (Array.isArray(this.recoveryOptions) && this.recoveryOptions.length > 0) {
 				return this.recoveryOptions.map(opt => ({
@@ -114,12 +121,12 @@ export default {
 				}))
 			}
 			return [
-				{ id: 'shift_everything', letter: 'A', title: 'Shift everything', shortTitle: 'Shift all', description: 'All dependent tasks move the same amount.' },
-				{ id: 'use_float', letter: 'B', title: 'Use available float', shortTitle: 'Use float', description: 'Available float is used first before tasks move.' },
-				{ id: 'execute_in_parallel', letter: 'C', title: 'Execute in parallel', shortTitle: 'Parallel overlap', description: 'Start subsequent tasks with partial overlap.' },
-				{ id: 'accelerate', letter: 'D', title: 'Accelerate', shortTitle: 'Accelerate', recommended: true, description: 'Reduce duration by adding extra capacity.' },
-				{ id: 'keep_date', letter: 'E', title: 'Keep date, accept risk', shortTitle: 'Keep date', description: 'Target date unchanged, elevated schedule risk flagged.' },
-				{ id: 'new_baseline', letter: 'F', title: 'Create new baseline', shortTitle: 'New baseline', description: 'Current projected schedule becomes the new official baseline.' },
+				{ id: 'shift_everything', letter: 'A', title: t('Shift everything'), shortTitle: t('Shift all'), description: t('All dependent tasks move the same amount.') },
+				{ id: 'use_float', letter: 'B', title: t('Use available float'), shortTitle: t('Use float'), description: t('Available float is used first before tasks move.') },
+				{ id: 'execute_in_parallel', letter: 'C', title: t('Execute in parallel'), shortTitle: t('Parallel overlap'), description: t('Start subsequent tasks with partial overlap.') },
+				{ id: 'accelerate', letter: 'D', title: t('Accelerate'), shortTitle: t('Accelerate'), recommended: true, description: t('Reduce duration by adding extra capacity.') },
+				{ id: 'keep_date', letter: 'E', title: t('Keep date, accept risk'), shortTitle: t('Keep date'), description: t('Target date unchanged, elevated schedule risk flagged.') },
+				{ id: 'new_baseline', letter: 'F', title: t('Create new baseline'), shortTitle: t('New baseline'), description: t('Current projected schedule becomes the new official baseline.') },
 			]
 		},
 		scenarioStatusClass() {
@@ -136,12 +143,12 @@ export default {
 	methods: {
 		getShortTitle(id, title) {
 			const map = {
-				shift_everything: 'Shift all',
-				use_float: 'Use float',
-				execute_in_parallel: 'Parallel overlap',
-				accelerate: 'Accelerate',
-				keep_date: 'Keep date',
-				new_baseline: 'New baseline',
+				shift_everything: t('Shift all'),
+				use_float: t('Use float'),
+				execute_in_parallel: t('Parallel overlap'),
+				accelerate: t('Accelerate'),
+				keep_date: t('Keep date'),
+				new_baseline: t('New baseline'),
 			}
 			return map[id] || title
 		},

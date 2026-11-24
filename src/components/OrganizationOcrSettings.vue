@@ -3,7 +3,7 @@
     <p v-if="error" class="ocr-settings__error" role="alert">{{ error }}</p>
 
     <div v-if="loading" class="iz-empty ocr-settings__loading">
-      Loading OCR document types...
+      {{ t("Loading OCR document types...") }}
     </div>
 
     <div v-else class="ocr-settings__layout">
@@ -15,13 +15,13 @@
           @click="startCreate"
         >
           <span aria-hidden="true">+</span>
-          New document type
+          {{ t("New document type") }}
         </button>
 
         <div class="ocr-settings__type-list">
-          <span class="iz-label">Configured types</span>
+          <span class="iz-label">{{ t("Configured types") }}</span>
           <p v-if="documentTypes.length === 0" class="iz-empty ocr-settings__empty">
-            No document types defined yet.
+            {{ t("No document types defined yet.") }}
           </p>
           <template v-else>
             <button
@@ -35,12 +35,12 @@
             >
               <span class="ocr-settings__type-copy">
                 <strong>{{ documentType.name }}</strong>
-                <small>{{ fieldCount(documentType) }} fields</small>
+                <small>{{ t("{n} fields", { n: fieldCount(documentType) }) }}</small>
               </span>
               <span
                 class="ocr-settings__status"
                 :class="{ 'ocr-settings__status--active': documentType.is_active }"
-                :title="documentType.is_active ? 'Active' : 'Inactive'"
+                :title="documentType.is_active ? t('Active') : t('Inactive')"
               />
             </button>
           </template>
@@ -50,30 +50,30 @@
       <main class="ocr-settings__editor">
         <div class="ocr-settings__scroll">
           <div>
-            <h4 class="ocr-settings__title">{{ form.id ? "Edit document type" : "Create document type" }}</h4>
+            <h4 class="ocr-settings__title">{{ form.id ? t("Edit document type") : t("Create document type") }}</h4>
             <p class="ocr-settings__intro">
-              Define the fields OCR should extract from documents of this type.
+              {{ t("Define the fields OCR should extract from documents of this type.") }}
             </p>
           </div>
 
           <section class="ocr-settings__section">
             <div class="ocr-settings__section-heading">
               <div>
-                <h5>General information</h5>
-                <p>Name this schema and choose whether it is available in projects.</p>
+                <h5>{{ t("General information") }}</h5>
+                <p>{{ t("Name this schema and choose whether it is available in projects.") }}</p>
               </div>
               <label class="ocr-settings__active">
                 <input v-model="form.is_active" type="checkbox" :disabled="actionBusy" />
-                Active
+                {{ t("Active") }}
               </label>
             </div>
             <label class="ocr-settings__field">
-              <span class="iz-label">Document type name</span>
+              <span class="iz-label">{{ t("Document type name") }}</span>
               <input
                 v-model="form.name"
                 class="iz-input"
                 type="text"
-                placeholder="e.g. Invoice"
+                :placeholder="t('e.g. Invoice')"
                 :disabled="actionBusy"
               />
             </label>
@@ -82,20 +82,20 @@
           <section class="ocr-settings__section">
             <div class="ocr-settings__section-heading">
               <div>
-                <h5>Extraction fields</h5>
-                <p>Add every data point that OCR must extract from this document type.</p>
+                <h5>{{ t("Extraction fields") }}</h5>
+                <p>{{ t("Add every data point that OCR must extract from this document type.") }}</p>
               </div>
             </div>
 
             <div class="ocr-settings__fields">
               <div v-for="(field, index) in form.fields" :key="`field-${index}`" class="iz-panel ocr-settings__field-row">
                 <label class="ocr-settings__field">
-                  <span class="iz-label">Field name</span>
+                  <span class="iz-label">{{ t("Field name") }}</span>
                   <input
                     v-model="field.name"
                     class="iz-input"
                     type="text"
-                    placeholder="e.g. Total amount"
+                    :placeholder="t('e.g. Total amount')"
                     :disabled="actionBusy"
                   />
                 </label>
@@ -104,13 +104,13 @@
                   class="iz-btn iz-btn--ghost"
                   :disabled="actionBusy || form.fields.length === 1"
                   @click="removeField(index)"
-                >Remove</button>
+                >{{ t("Remove") }}</button>
               </div>
             </div>
 
             <button type="button" class="iz-btn" :disabled="actionBusy" @click="addField">
               <span aria-hidden="true">+</span>
-              Add another field
+              {{ t("Add another field") }}
             </button>
           </section>
         </div>
@@ -122,9 +122,9 @@
             class="iz-btn iz-btn--danger"
             :disabled="actionBusy"
             @click="showDeleteConfirmation = true"
-          >Delete type</button>
+          >{{ t("Delete type") }}</button>
           <span class="ocr-settings__actions-right">
-            <button type="button" class="iz-btn" :disabled="actionBusy" @click="resetForm">Reset</button>
+            <button type="button" class="iz-btn" :disabled="actionBusy" @click="resetForm">{{ t("Reset") }}</button>
             <button type="button" class="iz-btn iz-btn--primary" :disabled="actionBusy" @click="saveType">
               {{ saveLabel }}
             </button>
@@ -135,10 +135,10 @@
 
     <ConfirmDialog
       v-if="showDeleteConfirmation"
-      title="Delete OCR document type?"
-      :message="`The document type '${form.name}' will be permanently deleted.`"
-      confirm-label="Delete type"
-      busy-label="Deleting..."
+      :title="t('Delete OCR document type?')"
+      :message="t('The document type \'{name}\' will be permanently deleted.', { name: form.name })"
+      :confirm-label="t('Delete type')"
+      :busy-label="t('Deleting...')"
       :danger="true"
       :busy="deleting"
       :error="deleteError"
@@ -156,6 +156,7 @@ import {
   listOrganizationDocumentTypes,
   updateOrganizationDocumentType,
 } from "../services/projectCreatorApi";
+import { t } from "../lib/l10n.mjs";
 
 function emptyField() {
   return { name: "" };
@@ -197,8 +198,8 @@ export default {
       return this.actionBusy || this.showDeleteConfirmation;
     },
     saveLabel: function () {
-      if (this.saving) return "Saving...";
-      return this.form.id ? "Update type" : "Create type";
+      if (this.saving) return t("Saving...");
+      return this.form.id ? t("Update type") : t("Create type");
     },
   },
   watch: {
@@ -231,7 +232,7 @@ export default {
         this.startCreate();
       } catch (error) {
         console.error("Failed to load organization OCR document types", error);
-        this.error = this.errorMessage(error, "Could not load OCR document types.");
+        this.error = this.errorMessage(error, t("Could not load OCR document types."));
       } finally {
         this.loading = false;
       }
@@ -294,13 +295,13 @@ export default {
     async saveType() {
       const payload = this.buildPayload();
       if (!payload.name) {
-        this.error = "Enter a document type name.";
+        this.error = t("Enter a document type name.");
         return;
       }
       if (payload.fields.some(function (field) {
         return !field.name;
       })) {
-        this.error = "Enter a name for every extraction field.";
+        this.error = t("Enter a name for every extraction field.");
         return;
       }
 
@@ -314,7 +315,7 @@ export default {
         await this.loadDocumentTypes();
       } catch (error) {
         console.error("Failed to save organization OCR document type", error);
-        this.error = this.errorMessage(error, "Could not save the OCR document type.");
+        this.error = this.errorMessage(error, t("Could not save the OCR document type."));
       } finally {
         this.saving = false;
       }
@@ -330,7 +331,7 @@ export default {
         await this.loadDocumentTypes();
       } catch (error) {
         console.error("Failed to delete organization OCR document type", error);
-        this.deleteError = this.errorMessage(error, "Could not delete the OCR document type.");
+        this.deleteError = this.errorMessage(error, t("Could not delete the OCR document type."));
       } finally {
         this.deleting = false;
       }

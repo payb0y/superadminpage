@@ -1,21 +1,21 @@
 <template>
-  <section class="gap-details iz-card" aria-label="Planning gap details">
+  <section class="gap-details iz-card" :aria-label="t('Planning gap details')">
     <header class="gap-details__header">
       <div>
-        <strong>{{ gap.type === 'internal' ? 'Inside project' : 'Between projects' }}</strong>
+        <strong>{{ gap.type === 'internal' ? t('Inside project') : t('Between projects') }}</strong>
         <p>{{ gap.startDate }} – {{ gap.endDate }} · {{ gap.duration }}</p>
       </div>
-      <button type="button" class="iz-btn iz-btn--quiet iz-btn--sm" aria-label="Close gap details" @click="$emit('close')">Close</button>
+      <button type="button" class="iz-btn iz-btn--quiet iz-btn--sm" :aria-label="t('Close gap details')" @click="$emit('close')">{{ t('Close') }}</button>
     </header>
-    <p v-if="gap.teamName">Team: {{ gap.teamName }}</p>
+    <p v-if="gap.teamName">{{ t('Team: {team}', { team: gap.teamName }) }}</p>
     <div class="gap-details__anchors">
       <div v-for="(anchor, index) in [gap.before, gap.after]" :key="index">
-        <small>{{ index === 0 ? 'Before' : 'After' }}</small>
-        <button v-if="gap.type === 'between'" type="button" class="iz-btn iz-btn--quiet iz-btn--sm" @click="openProject(anchor)">{{ anchor.name }} → Project timeline</button>
+        <small>{{ index === 0 ? t('Before') : t('After') }}</small>
+        <button v-if="gap.type === 'between'" type="button" class="iz-btn iz-btn--quiet iz-btn--sm" @click="openProject(anchor)">{{ t('{project} → Project timeline', { project: anchor.name }) }}</button>
         <span v-else>{{ anchor.title }}</span>
       </div>
     </div>
-    <button v-if="gap.type === 'internal'" type="button" class="iz-btn iz-btn--quiet iz-btn--sm" @click="openProject({ id: gap.projectIds[0], name: gap.name })">Open project timeline →</button>
+    <button v-if="gap.type === 'internal'" type="button" class="iz-btn iz-btn--quiet iz-btn--sm" @click="openProject({ id: gap.projectIds[0], name: gap.name })">{{ t('Open project timeline →') }}</button>
   </section>
 </template>
 

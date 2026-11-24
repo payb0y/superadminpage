@@ -23,8 +23,20 @@
  *   multiplies by its px-per-day zoom, as the Planning tab does.
  */
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+import { t, n, locale, formatNumber } from "./l10n.mjs";
+
 const DAY_MS = 86400000;
+
+// Month and weekday names in the user's locale ("Mar"/"mrt", "Fri"/"vr"),
+// from Intl rather than a fixed English list. UTC, as every day here is.
+const monthName = (m) =>
+  new Intl.DateTimeFormat(locale(), { month: "short", timeZone: "UTC" }).format(
+    new Date(Date.UTC(2000, m, 1))
+  );
+const weekdayName = (day) =>
+  new Intl.DateTimeFormat(locale(), { weekday: "short", timeZone: "UTC" }).format(
+    new Date(day * DAY_MS)
+  );
 
 // A YYYY-MM-DD date (or the date part of an ISO string) as a UTC day number,
 // so differences are whole days in any time zone. Null for anything else.
@@ -40,9 +52,9 @@ function partsOf(day) {
 
 export function dateLabel(value) {
   const day = dayOf(value);
-  if (day === null) return "Not set";
+  if (day === null) return t("Not set");
   const p = partsOf(day);
-  return `${p.d} ${MONTHS[p.m]} ${p.y}`;
+  return t("{day} {month} {year}", { day: p.d, month: monthName(p.m), year: p.y });
 }
 
 // The Planning tab's two date formats: dd/mm/yy in the Gantt (formatDate),
@@ -50,26 +62,27 @@ export function dateLabel(value) {
 const pad2 = (n) => String(n).padStart(2, "0");
 export function shortDate(value) {
   const day = dayOf(value);
-  if (day === null) return "-";
+  if (day === null) return t("-");
   const p = partsOf(day);
-  return `${pad2(p.d)}/${pad2(p.m + 1)}/${String(p.y).slice(-2)}`;
+  return t("{dd}/{mm}/{yy}", { dd: pad2(p.d), mm: pad2(p.m + 1), yy: String(p.y).slice(-2) });
 }
 export function fullDate(value) {
   const day = dayOf(value);
   if (day === null) return "";
   const p = partsOf(day);
-  return `${pad2(p.d)}/${pad2(p.m + 1)}/${p.y}`;
+  return t("{dd}/{mm}/{yyyy}", { dd: pad2(p.d), mm: pad2(p.m + 1), yyyy: p.y });
 }
 
-const count = (n, one, many = one + "s") => `${n} ${n === 1 ? one : many}`;
-const signedWeeks = (weeks) => `${weeks > 0 ? "+" : ""}${count(weeks, "week")}`;
+const weeksCount = (weeks) => n("%n week", "%n weeks", weeks);
+const signedWeeks = (weeks) => `${weeks > 0 ? "+" : ""}${weeksCount(weeks)}`;
 
 // ── Overview: Initiation / Execution / Delivery ───────────────────────────
 
+// Keyed by projectcreatoraio's planningStatus code; the label is words only.
 const PLANNING_STATUS = {
-  on_track: ["success", "On track"],
-  attention_needed: ["warning", "Attention needed"],
-  behind_at_risk: ["danger", "Behind / at risk"],
+  on_track: ["success", () => t("On track")],
+  attention_needed: ["warning", () => t("Attention needed")],
+  behind_at_risk: ["danger", () => t("Behind / at risk")],
 };
 
 export function timelineOf(summary, now = Date.now()) {
@@ -85,47 +98,55 @@ export function timelineOf(summary, now = Date.now()) {
   const ended = s.actualEndDate || null;
   const floatDays = Number.isFinite(s.overallFloatDays) ? s.overallFloatDays : null;
   const floatWeeks = Number.isFinite(s.overallFloatWeeks) ? s.overallFloatWeeks : null;
-  const [tone, label] = PLANNING_STATUS[s.planningStatus] || PLANNING_STATUS.on_track;
-  let text = "No desired start yet, so there is no float to check.";
+  const [tone, labelOf] = PLANNING_STATUS[s.planningStatus] || PLANNING_STATUS.on_track;
+  const label = labelOf();
+  let text = t("No desired start yet, so there is no float to check.");
   if (desired && floatDays !== null) {
     if (floatDays < 0)
-      text = `Desired start is ${count(
-        -floatDays,
-        "day"
-      )} before the earliest possible start · float ${signedWeeks(
-        floatWeeks ?? Math.round((floatDays / 7) * 10) / 10
-      )}.`;
-    else if (floatDays === 0) text = "Desired start is the earliest possible start · no float.";
+      text = t("Desired start is {days} before the earliest possible start · float {weeks}.", {
+        days: n("%n day", "%n days", -floatDays),
+        weeks: signedWeeks(floatWeeks ?? Math.round((floatDays / 7) * 10) / 10),
+      });
+    else if (floatDays === 0) text = t("Desired start is the earliest possible start · no float.");
     else
-      text = `Float of ${signedWeeks(
-        floatWeeks ?? Math.round((floatDays / 7) * 10) / 10
-      )} before the desired start.`;
+      text = t("Float of {weeks} before the desired start.", {
+        weeks: signedWeeks(floatWeeks ?? Math.round((floatDays / 7) * 10) / 10),
+      });
   }
   const pendingWeeks = Number.isFinite(s.coordinationPendingPeriod?.weeks)
     ? s.coordinationPendingPeriod.weeks
     : null;
   const missing = Array.isArray(process.missingTitles) ? process.missingTitles.length : 0;
   let stepsNote = "";
-  if (!configured) stepsNote = "No process steps configured";
+  if (!configured) stepsNote = t("No process steps configured");
   else if (stepsDone)
-    stepsNote = process.date ? `Completed ${dateLabel(process.date)}` : "All steps done";
-  else if (missing) stepsNote = `${count(missing, "required card")} missing from the board`;
-  else if (pendingWeeks !== null) stepsNote = `${count(pendingWeeks, "week")} since the request`;
+    stepsNote = process.date
+      ? t("Completed {date}", { date: dateLabel(process.date) })
+      : t("All steps done");
+  else if (missing)
+    stepsNote = n(
+      "%n required card missing from the board",
+      "%n required cards missing from the board",
+      missing
+    );
+  else if (pendingWeeks !== null)
+    stepsNote = t("{weeks} since the request", { weeks: weeksCount(pendingWeeks) });
   const weeks = Number.isFinite(s.executionWeeks) ? s.executionWeeks : null;
   const planned = !ended && s.plannedEndDate ? s.plannedEndDate : null;
-  let endNote = "Set the actual start in Planning to plan it";
-  if (ended) endNote = "Work on site finished";
-  else if (planned) endNote = `${count(weeks ?? 0, "week")} on site from the actual start`;
-  else if (actual) endNote = "Set weeks on site in Planning to plan it";
+  let endNote = t("Set the actual start in Planning to plan it");
+  if (ended) endNote = t("Work on site finished");
+  else if (planned)
+    endNote = t("{weeks} on site from the actual start", { weeks: weeksCount(weeks ?? 0) });
+  else if (actual) endNote = t("Set weeks on site in Planning to plan it");
   const warnings = Array.isArray(s.handoverWarnings) ? s.handoverWarnings : [];
   const handoverNote = warnings.length
     ? warnings.join(" · ")
     : handover
-    ? "Handed to the execution team"
-    : "After the process steps";
+    ? t("Handed to the execution team")
+    : t("After the process steps");
   const preparation = Math.max(0, Number(s.requiredPreparationWeeks) || 0);
   return {
-    status: { tone, label: desired ? label : label + " (no target)", text },
+    status: { tone, label: desired ? label : t("{status} (no target)", { status: label }), text },
     // Which group the project is in: 0 Initiation until the handover, 1 Execution
     // until the actual start, 2 Delivery on site, 3 ended.
     stage: ended ? 3 : actual ? 2 : handover ? 1 : 0,
@@ -144,8 +165,8 @@ export function timelineOf(summary, now = Date.now()) {
     execution: {
       minimumStart: s.minimumStartDate || null,
       note: preparation
-        ? `${count(preparation, "week")} preparation after the process steps`
-        : "Right after the process steps",
+        ? t("{weeks} preparation after the process steps", { weeks: weeksCount(preparation) })
+        : t("Right after the process steps"),
       desired,
       actual,
     },
@@ -161,11 +182,13 @@ function overallOf(requestDate, ended, planned, today) {
   const end = ended || planned;
   const from = dayOf(requestDate),
     to = dayOf(end);
-  if (from === null) return { percent: null, text: "of the timeline · no request date yet" };
+  if (from === null) return { percent: null, text: t("of the timeline · no request date yet") };
   if (to === null)
     return {
       percent: null,
-      text: "of the timeline · no end date planned yet, so there is nothing to measure against",
+      text: t(
+        "of the timeline · no end date planned yet, so there is nothing to measure against"
+      ),
     };
   const percent = ended
     ? 100
@@ -174,9 +197,11 @@ function overallOf(requestDate, ended, planned, today) {
     : Math.min(100, Math.max(0, Math.round(((today - from) / (to - from)) * 100)));
   return {
     percent,
-    text: `of the timeline · ${dateLabel(requestDate)} → ${
-      ended ? "ended" : "planned end"
-    } ${dateLabel(end)}`,
+    text: t("of the timeline · {from} → {label} {end}", {
+      from: dateLabel(requestDate),
+      label: ended ? t("ended") : t("planned end"),
+      end: dateLabel(end),
+    }),
   };
 }
 
@@ -206,33 +231,37 @@ function isoWeekOf(day) {
 // "3w", "4.5w", or "5d" under a week — formatPhaseDuration / formatWeeks.
 function weeksBadge(days) {
   const weeks = days / 7;
-  if (weeks < 1) return `${days}d`;
-  return `${Math.abs(weeks - Math.round(weeks)) < 1e-9 ? Math.round(weeks) : weeks.toFixed(1)}w`;
+  if (weeks < 1) return t("{n}d", { n: days });
+  return t("{n}w", {
+    n: formatNumber(Math.abs(weeks - Math.round(weeks)) < 1e-9 ? Math.round(weeks) : Number(weeks.toFixed(1))),
+  });
 }
 function weeksText(days) {
   const weeks = days / 7;
   const fixed =
     Math.abs(weeks - Math.round(weeks)) < 1e-9 ? String(Math.round(weeks)) : weeks.toFixed(1);
-  return `${fixed} week${weeks === 1 ? "" : "s"}`;
+  // n() prints %n from the number, so hand it the rounded figure.
+  return n("%n week", "%n weeks", Number(fixed));
 }
 // A card's slip: whole weeks once it is a week or more — formatDelayBadge.
 function delayBadge(days) {
   const w = Math.round(days / 7);
-  return w >= 1 ? `${w}w` : `${days}d`;
+  return w >= 1 ? t("{n}w", { n: w }) : t("{n}d", { n: days });
 }
 
-// The Status column's words and tone — getStatusLabel / getStatusClass.
+// The Status column's words and tone — getStatusLabel / getStatusClass. The
+// tone is the stable key callers style and test on; the label is words only.
 const STATUS = {
-  behind_at_risk: ["At risk", "at-risk"],
-  attention_needed: ["Attention", "attention"],
-  completed: ["Done", "completed"],
-  not_started: ["Not started", "not-started"],
-  on_track: ["On track", "on-track"],
+  behind_at_risk: [() => t("At risk"), "at-risk"],
+  attention_needed: [() => t("Attention"), "attention"],
+  completed: [() => t("Done"), "completed"],
+  not_started: [() => t("Not started"), "not-started"],
+  on_track: [() => t("On track"), "on-track"],
 };
 function statusOf(status, isDone = false) {
-  if (isDone) return { label: "Done", tone: "completed" };
-  const [label, tone] = STATUS[status] || STATUS.on_track;
-  return { label, tone };
+  if (isDone) return { label: t("Done"), tone: "completed" };
+  const [labelOf, tone] = STATUS[status] || STATUS.on_track;
+  return { label: labelOf(), tone };
 }
 
 // System items the System Planning row already draws, and the Planning tab
@@ -257,7 +286,7 @@ function headerOf(start, end) {
     const p = partsOf(from);
     months.push({
       key: `${p.y}-${p.m}`,
-      label: multiYear ? MONTHS[p.m] : `${MONTHS[p.m]} ${p.y}`,
+      label: multiYear ? monthName(p.m) : t("{month} {year}", { month: monthName(p.m), year: p.y }),
       offset: off(from),
       days: to - from + 1,
     });
@@ -280,8 +309,15 @@ function headerOf(start, end) {
     const ps = partsOf(sunday);
     weeks.push({
       key: `${isoYear}-W${isoWeek}`,
-      label: `W${isoWeek}`,
-      tooltip: `Week ${isoWeek} · ${pm.d} ${MONTHS[pm.m]} – ${ps.d} ${MONTHS[ps.m]} ${ps.y}`,
+      label: t("W{week}", { week: isoWeek }),
+      tooltip: t("Week {week} · {startDay} {startMonth} – {endDay} {endMonth} {year}", {
+        week: isoWeek,
+        startDay: pm.d,
+        startMonth: monthName(pm.m),
+        endDay: ps.d,
+        endMonth: monthName(ps.m),
+        year: ps.y,
+      }),
       offset: off(cursor),
       days: span,
     });
@@ -378,9 +414,9 @@ export function ganttOf(summary, items = [], now = Date.now()) {
   let start;
   let end;
   if (min === null || max === null) {
-    const t = partsOf(today);
-    start = Date.UTC(t.y, t.m, 1) / DAY_MS;
-    end = Date.UTC(t.y, t.m + 6, 0) / DAY_MS;
+    const now = partsOf(today);
+    start = Date.UTC(now.y, now.m, 1) / DAY_MS;
+    end = Date.UTC(now.y, now.m + 6, 0) / DAY_MS;
   } else {
     min = Math.min(min, today);
     max = Math.max(max, today);
@@ -410,10 +446,12 @@ export function ganttOf(summary, items = [], now = Date.now()) {
       bars.push({
         key: "deck",
         tone: "deck",
-        label: `Deck tasks (${sp.deckTasks.weeks} weeks)`,
-        title: `Deck tasks (${sp.deckTasks.weeks} weeks): ${fullDate(
-          sp.deckTasks.startDate
-        )} - ${fullDate(sp.deckTasks.endDate)}`,
+        label: t("Deck tasks ({n} weeks)", { n: sp.deckTasks.weeks }),
+        title: t("Deck tasks ({n} weeks): {start} - {end}", {
+          n: sp.deckTasks.weeks,
+          start: fullDate(sp.deckTasks.startDate),
+          end: fullDate(sp.deckTasks.endDate),
+        }),
         ...upTo(deckFrom, deckTo),
       });
     }
@@ -423,10 +461,12 @@ export function ganttOf(summary, items = [], now = Date.now()) {
       bars.push({
         key: "prep",
         tone: "prep",
-        label: `Preparation (${sp.preparation.weeks} weeks)`,
-        title: `Preparation (${sp.preparation.weeks} weeks): ${fullDate(
-          sp.preparation.startDate
-        )} - ${fullDate(sp.preparation.endDate)}`,
+        label: t("Preparation ({n} weeks)", { n: sp.preparation.weeks }),
+        title: t("Preparation ({n} weeks): {start} - {end}", {
+          n: sp.preparation.weeks,
+          start: fullDate(sp.preparation.startDate),
+          end: fullDate(sp.preparation.endDate),
+        }),
         ...upTo(prepFrom, prepTo),
       });
     }
@@ -440,20 +480,24 @@ export function ganttOf(summary, items = [], now = Date.now()) {
       bars.push({
         key: "float",
         tone: positive ? "float" : "behind",
-        label: !known ? "" : positive ? `Float (${fw}w)` : `Behind (${Math.abs(fw)}w)`,
+        label: !known
+          ? ""
+          : positive
+          ? t("Float ({n}w)", { n: fw })
+          : t("Behind ({n}w)", { n: Math.abs(fw) }),
         title: !known
           ? ""
           : positive
-          ? `Available Float: +${fw} week(s)`
-          : `Negative Float: ${fw} week(s) behind schedule`,
+          ? t("Available Float: +{n} week(s)", { n: fw })
+          : t("Negative Float: {n} week(s) behind schedule", { n: fw }),
         offset: off(positive ? minimum : desired),
         days: Math.abs(desired - minimum),
       });
     }
     const markers = [
-      ["min-start", "Minimum start", sp.minimumStart?.date],
-      ["desired-start", "Desired start", sp.desiredStart?.date],
-      ["actual-start", "Actual start", sp.actualStart?.date],
+      ["min-start", t("Minimum start"), sp.minimumStart?.date],
+      ["desired-start", t("Desired start"), sp.desiredStart?.date],
+      ["actual-start", t("Actual start"), sp.actualStart?.date],
     ]
       .filter(([, , date]) => dayOf(date) !== null)
       .map(([key, label, date]) => ({
@@ -464,10 +508,11 @@ export function ganttOf(summary, items = [], now = Date.now()) {
       }));
     system = {
       status: statusOf(sp.float?.status || "on_track"),
-      duration: `${deckWeeks + prepWeeks}w`,
-      dates: `${shortDate(sp.deckTasks?.startDate || sp.requestDate)} – ${shortDate(
-        sp.desiredStart?.date || sp.minimumStart?.date
-      )}`,
+      duration: t("{n}w", { n: deckWeeks + prepWeeks }),
+      dates: t("{start} – {end}", {
+        start: shortDate(sp.deckTasks?.startDate || sp.requestDate),
+        end: shortDate(sp.desiredStart?.date || sp.minimumStart?.date),
+      }),
       bars,
       markers,
       legend: {
@@ -494,7 +539,10 @@ export function ganttOf(summary, items = [], now = Date.now()) {
         const delayDays = Math.max(0, Number(task.delayDays) || 0);
         const status = statusOf(task.status, done);
         const plannedEnd = dayOf(task.plannedEndDate);
-        const dates = `${shortDate(task.startDate)} – ${shortDate(task.endDate)}`;
+        const dates = t("{start} – {end}", {
+          start: shortDate(task.startDate),
+          end: shortDate(task.endDate),
+        });
         return {
           id: String(task.id),
           deckCardId: task.deckCardId ? String(task.deckCardId) : null,
@@ -511,9 +559,16 @@ export function ganttOf(summary, items = [], now = Date.now()) {
             plannedEnd !== null && task.plannedEndDate !== task.endDate
               ? through(a, plannedEnd)
               : null,
-          title: `${task.label}: ${dates} (${task.durationDays}d) • ${status.label}${
-            delayDays > 0 ? ` • Delayed by +${delayBadge(delayDays)}` : ""
-          }`,
+          title: t("{label}: {dates} ({n}d) • {status}{delay}", {
+            label: task.label,
+            dates,
+            n: task.durationDays,
+            status: status.label,
+            delay:
+              delayDays > 0
+                ? " " + t("• Delayed by +{delay}", { delay: delayBadge(delayDays) })
+                : "",
+          }),
           ...through(a, b),
         };
       })
@@ -527,14 +582,17 @@ export function ganttOf(summary, items = [], now = Date.now()) {
       scheduled,
       duration: scheduled ? weeksBadge(Math.max(1, to - from + 1)) : "",
       dates: scheduled
-        ? `${shortDate(phase.startDate)} – ${shortDate(phase.endDate)}`
-        : "No tasks scheduled",
+        ? t("{start} – {end}", { start: shortDate(phase.startDate), end: shortDate(phase.endDate) })
+        : t("No tasks scheduled"),
       bar: scheduled ? through(from, to) : null,
       milestone:
         milestoneDay !== null
           ? {
               label: String(phase.milestone.label || ""),
-              title: `Milestone: ${phase.milestone.label} (${shortDate(isoOf(milestoneDay))})`,
+              title: t("Milestone: {label} ({date})", {
+                label: phase.milestone.label,
+                date: shortDate(isoOf(milestoneDay)),
+              }),
               offset: off(milestoneDay),
             }
           : null,
@@ -550,22 +608,29 @@ export function ganttOf(summary, items = [], now = Date.now()) {
     const b = itemEnd(item, a);
     const days = milestone ? 1 : Math.max(1, b - a + 1);
     const untilStart = a - today;
-    const hint = untilStart > 0 ? `Starts in ${weeksText(untilStart)}` : "";
+    const hint = untilStart > 0 ? t("Starts in {weeks}", { weeks: weeksText(untilStart) }) : "";
     const startText = shortDate(item.startDate);
-    const endText = ongoing ? "Ongoing" : shortDate(item.endDate);
-    const span = milestone ? startText : `${startText} – ${endText}`;
-    const daysText = `${weeksText(days)} (${days} day${days === 1 ? "" : "s"})`;
-    const title = milestone
-      ? `${item.label}: ${startText}${hint ? ` (${hint})` : ""}`
-      : `${item.label}: ${startText} - ${endText} (${daysText})${hint ? ` (${hint})` : ""}`;
+    const endText = ongoing ? t("Ongoing") : shortDate(item.endDate);
+    const span = milestone ? startText : t("{start} – {end}", { start: startText, end: endText });
+    const daysText = n("{weeks} (%n day)", "{weeks} (%n days)", days, { weeks: weeksText(days) });
+    const vars = { label: item.label, start: startText, end: endText, duration: daysText, hint };
+    let title;
+    if (milestone)
+      title = hint
+        ? t("{label}: {start} ({hint})", vars)
+        : t("{label}: {date}", { label: item.label, date: startText });
+    else
+      title = hint
+        ? t("{label}: {start} - {end} ({duration}) ({hint})", vars)
+        : t("{label}: {start} - {end} ({duration})", vars);
     return {
       id: String(item.id),
       label: String(item.label || ""),
       milestone,
       ongoing,
       color: safeColor(item.color) || (milestone ? "#0f172a" : "#3b82f6"),
-      badge: milestone ? "Milestone" : weeksBadge(days),
-      dates: hint ? `${span} • ${hint}` : span,
+      badge: milestone ? t("Milestone") : weeksBadge(days),
+      dates: hint ? t("{span} • {hint}", { span, hint }) : span,
       title,
       status: statusOf(item.status || "on_track"),
       offset: off(a),
@@ -576,11 +641,11 @@ export function ganttOf(summary, items = [], now = Date.now()) {
   // Full-height guide lines for the System Planning dates — guideMarkers.
   const guides = sp
     ? [
-        ["min-start", "Min start", sp.minimumStart?.date],
-        ["desired-start", "Desired start", sp.desiredStart?.date],
-        ["actual-start", "Actual start", sp.actualStart?.date],
-        ["handover", "Handover", sp.actualHandover?.date],
-        ["end", sp.actualEnd?.date ? "End" : "End (planned)", endDate],
+        ["min-start", t("Min start"), sp.minimumStart?.date],
+        ["desired-start", t("Desired start"), sp.desiredStart?.date],
+        ["actual-start", t("Actual start"), sp.actualStart?.date],
+        ["handover", t("Handover"), sp.actualHandover?.date],
+        ["end", sp.actualEnd?.date ? t("End") : t("End (planned)"), endDate],
       ]
         .filter(([, , date]) => dayOf(date) !== null)
         .map(([key, label, date]) => ({
@@ -720,23 +785,26 @@ export function dependencyPaths(dependencies, rows, { dayWidth, hasSystem }) {
 
 // "Today", "in 3w 2d", "5d ago" — the hover guide's relative date.
 export function relativeDays(days) {
-  if (days === 0) return "Today";
+  if (days === 0) return t("Today");
   const abs = Math.abs(days);
   const w = Math.floor(abs / 7);
   const rest = abs % 7;
   const parts = [];
-  if (w) parts.push(`${w}w`);
-  if (rest || !w) parts.push(`${rest}d`);
-  return days > 0 ? `in ${parts.join(" ")}` : `${parts.join(" ")} ago`;
+  if (w) parts.push(t("{n}w", { n: w }));
+  if (rest || !w) parts.push(t("{n}d", { n: rest }));
+  const duration = parts.join(" ");
+  return days > 0 ? t("in {duration}", { duration }) : t("{duration} ago", { duration });
 }
 
 // The hover guide's chip: "Fri, 23 Oct 2026".
 export function hoverDateLabel(day) {
   const d = new Date(day * DAY_MS);
-  const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  return `${names[d.getUTCDay()]}, ${d.getUTCDate()} ${
-    MONTHS[d.getUTCMonth()]
-  } ${d.getUTCFullYear()}`;
+  return t("{weekday}, {day} {month} {year}", {
+    weekday: weekdayName(day),
+    day: d.getUTCDate(),
+    month: monthName(d.getUTCMonth()),
+    year: d.getUTCFullYear(),
+  });
 }
 
 export { isoWeekOf };

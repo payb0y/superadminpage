@@ -4,10 +4,10 @@
     <header class="detail-planning__header">
       <div class="detail-planning__title-group">
         <div class="detail-planning__brand-row">
-          <span class="detail-planning__brand">In Zicht</span>
-          <h2 class="detail-planning__title">Project Timeline – {{ project.name }}</h2>
+          <span class="detail-planning__brand">{{ t('In Zicht') }}</span>
+          <h2 class="detail-planning__title">{{ t('Project Timeline – {project}', { project: project.name }) }}</h2>
         </div>
-        <p class="detail-planning__subtitle">Initiation Phase · From intake to handover</p>
+        <p class="detail-planning__subtitle">{{ t('Initiation Phase · From intake to handover') }}</p>
       </div>
 
       <div class="detail-planning__header-actions">
@@ -19,10 +19,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="detail-planning__btn-icon">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          Back to Planning Overview
+          {{ t('Back to Planning Overview') }}
         </button>
         <span class="detail-planning__last-updated">
-          Last updated {{ lastUpdatedText }}
+          {{ t('Last updated {time}', { time: lastUpdatedText }) }}
         </span>
       </div>
     </header>
@@ -37,7 +37,7 @@
           <h3 class="detail-planning__project-name">{{ project.name }}</h3>
           <p class="detail-planning__project-city">{{ projectCity }}</p>
           <div class="detail-planning__badges">
-            <span class="iz-badge iz-badge--accent">Initiation Phase</span>
+            <span class="iz-badge iz-badge--accent">{{ t('Initiation Phase') }}</span>
             <span class="iz-badge" :class="statusBadgeClass">{{ statusBadgeText }}</span>
           </div>
         </div>
@@ -46,49 +46,49 @@
       <div class="detail-planning__kpis-strip">
         <!-- 1. Readiness -->
         <div class="detail-planning__kpi-tile">
-          <span class="detail-planning__kpi-label">Readiness</span>
-          <strong class="detail-planning__kpi-val">{{ project.completionPct == null ? '—' : project.completionPct + '%' }}</strong>
+          <span class="detail-planning__kpi-label">{{ t('Readiness') }}</span>
+          <strong class="detail-planning__kpi-val">{{ project.completionPct == null ? '—' : t('{pct}%', { pct: project.completionPct }) }}</strong>
           <span class="iz-badge iz-badge--sm" :class="bucketBadgeClass">{{ bucketBadgeLabel }}</span>
         </div>
 
         <!-- 2. Expected 100% -->
         <div class="detail-planning__kpi-tile">
-          <span class="detail-planning__kpi-label">Expected 100%</span>
+          <span class="detail-planning__kpi-label">{{ t('Expected 100%') }}</span>
           <strong class="detail-planning__kpi-val">{{ formatWeekShort(project.expected100Week) || '—' }}</strong>
-          <small class="detail-planning__kpi-sub">{{ project.expected100Countdown || 'On schedule' }}</small>
+          <small class="detail-planning__kpi-sub">{{ project.expected100Countdown || t('On schedule') }}</small>
         </div>
 
         <!-- 3. Start Work Preparation -->
         <div class="detail-planning__kpi-tile">
-          <span class="detail-planning__kpi-label">Start Work Prep</span>
+          <span class="detail-planning__kpi-label">{{ t('Start Work Prep') }}</span>
           <strong class="detail-planning__kpi-val">{{ formatWeekShort(project.startPrepWeek) || '—' }}</strong>
           <small class="detail-planning__kpi-sub">{{ project.startPrepCountdown || '—' }}</small>
         </div>
 
         <!-- 4. Min. Execution Start -->
         <div class="detail-planning__kpi-tile">
-          <span class="detail-planning__kpi-label">Min. Execution Start</span>
+          <span class="detail-planning__kpi-label">{{ t('Min. Execution Start') }}</span>
           <strong class="detail-planning__kpi-val">{{ formatWeekShort(project.minExecutionStartWeek) || '—' }}</strong>
           <small class="detail-planning__kpi-sub">{{ project.minExecutionStartCountdown || '—' }}</small>
         </div>
 
         <!-- 5. Desired Week (Client) -->
         <div class="detail-planning__kpi-tile">
-          <span class="detail-planning__kpi-label">Desired Week (Client)</span>
+          <span class="detail-planning__kpi-label">{{ t('Desired Week (Client)') }}</span>
           <strong class="detail-planning__kpi-val">{{ formatWeekShort(project.desiredStartWeek) || '—' }}</strong>
           <small class="detail-planning__kpi-sub">{{ project.desiredCountdown || '—' }}</small>
         </div>
 
         <!-- 6. Actual Start Week -->
         <div class="detail-planning__kpi-tile">
-          <span class="detail-planning__kpi-label">Actual Start</span>
+          <span class="detail-planning__kpi-label">{{ t('Actual Start') }}</span>
           <strong class="detail-planning__kpi-val">{{ formatWeekShort(project.actualStartWeek) || '—' }}</strong>
           <small class="detail-planning__kpi-sub">{{ formatActualDateSub(project.actualStartDate) }}</small>
         </div>
 
         <!-- 7. Planning Gap -->
         <div class="detail-planning__kpi-tile detail-planning__kpi-tile--gap" :class="{ 'detail-planning__kpi-tile--has-gap': hasGap }">
-          <span class="detail-planning__kpi-label">Planning Gap</span>
+          <span class="detail-planning__kpi-label">{{ t('Planning Gap') }}</span>
           <strong class="detail-planning__kpi-val detail-planning__kpi-val--gap">
             {{ gapSummaryText }}
           </strong>
@@ -101,17 +101,17 @@
             class="iz-btn iz-btn--secondary iz-btn--sm"
             @click="actionsMenuOpen = !actionsMenuOpen"
           >
-            Actions
+            {{ t('Actions') }}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="detail-planning__btn-chevron">
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
           <div v-if="actionsMenuOpen" class="detail-planning__actions-menu iz-card" @click="actionsMenuOpen = false">
             <button v-if="project.boardId" type="button" @click="openDeckBoard">
-              Open Deck Board ↗
+              {{ t('Open Deck Board ↗') }}
             </button>
             <button type="button" @click="openProjectsApp">
-              Open in Projects App ↗
+              {{ t('Open in Projects App ↗') }}
             </button>
           </div>
         </div>
@@ -131,6 +131,20 @@
 <script>
 import { generateUrl } from "@nextcloud/router";
 import GanttChart from "./ProjectTimeline/GanttChart.vue";
+import { t, locale } from "../lib/l10n.mjs";
+
+// projectcreatoraio's bucket keys; its bucketLabel is English data, so the
+// label is chosen here from the key.
+function bucketLabelOf(bucket) {
+  switch (bucket) {
+    case "0-24": return "0–24%";
+    case "25-49": return "25–49%";
+    case "50-74": return "50–74%";
+    case "75-99": return t("75–99% / Upcoming");
+    case "100": return t("100% ready for handover");
+    default: return "";
+  }
+}
 
 export default {
   name: "ProjectDetailPlanning",
@@ -159,9 +173,8 @@ export default {
   },
   computed: {
     lastUpdatedText() {
-      var h = String(this.lastUpdated.getHours()).padStart(2, "0");
-      var m = String(this.lastUpdated.getMinutes()).padStart(2, "0");
-      return "today at " + h + ":" + m;
+      var time = this.lastUpdated.toLocaleTimeString(locale(), { hour: "2-digit", minute: "2-digit" });
+      return t("today at {time}", { time: time });
     },
     projectInitials() {
       return String(this.project.name || "P")
@@ -174,12 +187,12 @@ export default {
         .toUpperCase();
     },
     projectCity() {
-      return this.project.city || this.project.address || "Location specified in project";
+      return this.project.city || this.project.address || t("Location specified in project");
     },
     statusBadgeText() {
-      if (this.project.isCompleted) return "100% Ready";
-      if (this.project.bucket === "75-99") return "Upcoming";
-      return this.project.bucketLabel || "In Progress";
+      if (this.project.isCompleted) return t("100% Ready");
+      if (this.project.bucket === "75-99") return t("Upcoming");
+      return bucketLabelOf(this.project.bucket) || this.project.bucketLabel || t("In Progress");
     },
     statusBadgeClass() {
       if (this.project.isCompleted) return "iz-badge--success";
@@ -192,29 +205,29 @@ export default {
       return "";
     },
     bucketBadgeLabel() {
-      if (this.project.completionPct >= 100) return "100% Handover ready";
-      if (this.project.completionPct >= 75) return "75-99% Upcoming";
-      return this.project.bucketLabel || "In progress";
+      if (this.project.completionPct >= 100) return t("100% Handover ready");
+      if (this.project.completionPct >= 75) return t("75-99% Upcoming");
+      return bucketLabelOf(this.project.bucket) || this.project.bucketLabel || t("In progress");
     },
     hasGap() {
       return !!(this.project.planningGap && this.project.planningGap.hasGap);
     },
     gapSummaryText() {
-      return this.hasGap ? this.project.planningGap.display : "No planning gap";
+      return this.hasGap ? this.project.planningGap.display : t("No planning gap");
     },
   },
   methods: {
     formatWeekShort(weekStr) {
       if (!weekStr || weekStr === "—") return "";
       var match = String(weekStr).match(/W(\d+)/i);
-      return match ? "W" + match[1] : weekStr;
+      return match ? t("W{week}", { week: match[1] }) : weekStr;
     },
     formatActualDateSub(dateStr) {
-      if (!dateStr || dateStr === "—") return "Not set";
+      if (!dateStr || dateStr === "—") return t("Not set");
       try {
         var d = new Date(dateStr);
         if (!isNaN(d.getTime())) {
-          return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+          return d.toLocaleDateString(locale(), { day: "numeric", month: "short", year: "numeric" });
         }
       } catch (e) {}
       return String(dateStr);

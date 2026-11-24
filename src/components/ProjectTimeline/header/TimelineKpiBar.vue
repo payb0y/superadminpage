@@ -3,17 +3,17 @@
 		<!-- Top Status Badges Row -->
 		<div class="timeline-kpi-bar__status-row">
 			<div class="timeline-kpi-bar__title-tag">
-				<span class="tag-label">PROJECT TIMELINE</span>
+				<span class="tag-label">{{ t('PROJECT TIMELINE') }}</span>
 			</div>
 
 			<div class="timeline-kpi-bar__badges">
 				<div class="status-pill" :class="statusPillClass">
 					<span class="status-dot"></span>
-					<span class="status-text">PLANNING STATUS: {{ planningStatusLabel }}</span>
+					<span class="status-text">{{ t('PLANNING STATUS: {status}', { status: planningStatusLabel }) }}</span>
 				</div>
 
 				<div v-if="floatLabel" class="float-pill" :class="floatPillClass">
-					<span class="float-text">OVERALL FLOAT: {{ floatLabel }}</span>
+					<span class="float-text">{{ t('OVERALL FLOAT: {float}', { float: floatLabel }) }}</span>
 				</div>
 			</div>
 		</div>
@@ -29,9 +29,9 @@
 						<Calendar :size="18" />
 					</div>
 					<div class="kpi-card__content">
-						<div class="kpi-card__label">REQUEST DATE</div>
+						<div class="kpi-card__label">{{ t('REQUEST DATE') }}</div>
 						<div class="kpi-card__value">{{ formatDisplayDate(kpis.requestDate) || '—' }}</div>
-						<div class="kpi-card__subtext">Project kickoff</div>
+						<div class="kpi-card__subtext">{{ t('Project kickoff') }}</div>
 					</div>
 				</div>
 
@@ -47,7 +47,7 @@
 					</div>
 					<div class="kpi-card__content">
 						<div class="kpi-card__header-line">
-							<span class="kpi-card__label">PROCESS STEPS</span>
+							<span class="kpi-card__label">{{ t('PROCESS STEPS') }}</span>
 							<span class="kpi-process-pill" :class="processPillClass">
 								{{ processStatusLabel }}
 							</span>
@@ -58,28 +58,28 @@
 								<span class="process-counter-count">{{ processDoneCount }}</span>
 								<span class="process-counter-divider">/</span>
 								<span class="process-counter-total">{{ processTotalRequired }}</span>
-								<span class="process-counter-suffix">done</span>
+								<span class="process-counter-suffix">{{ t('done') }}</span>
 							</div>
 							<span
 								v-if="hasMissingTitles"
 								class="process-missing-chip"
-								:title="'Missing required checklist cards:\n• ' + missingTitlesList.join('\n• ')">
-								Missing {{ missingTitlesList.length }}
+								:title="t('Missing required checklist cards:\n• {titles}', { titles: missingTitlesList.join('\n• ') })">
+								{{ t('Missing {n}', { n: missingTitlesList.length }) }}
 							</span>
 						</div>
 
 						<div class="kpi-card__subtext process-subtext" :title="processSubtextTitle">
 							<template v-if="processStatus === 'complete'">
-								All steps complete
+								{{ t('All steps complete') }}
 							</template>
 							<template v-else-if="coordinationDurationText">
-								{{ coordinationDurationText }} pending
+								{{ t('{duration} pending', { duration: coordinationDurationText }) }}
 							</template>
 							<template v-else-if="processRemainingCount > 0">
-								{{ processRemainingCount }} remaining to complete
+								{{ t('{n} remaining to complete', { n: processRemainingCount }) }}
 							</template>
 							<template v-else>
-								Readiness checklist
+								{{ t('Readiness checklist') }}
 							</template>
 						</div>
 					</div>
@@ -95,10 +95,10 @@
 						<Calendar v-else :size="18" />
 					</div>
 					<div class="kpi-card__content">
-						<div class="kpi-card__label">PROCESS COMPLETION DATE</div>
-						<div class="kpi-card__value">{{ formatDisplayDate(processCompletedDate) || 'Pending' }}</div>
+						<div class="kpi-card__label">{{ t('PROCESS COMPLETION DATE') }}</div>
+						<div class="kpi-card__value">{{ formatDisplayDate(processCompletedDate) || t('Pending') }}</div>
 						<div class="kpi-card__subtext">
-							{{ processStatus === 'complete' ? 'All required steps done' : 'Awaiting completion' }}
+							{{ processStatus === 'complete' ? t('All required steps done') : t('Awaiting completion') }}
 						</div>
 					</div>
 				</div>
@@ -118,7 +118,7 @@
 						<CalendarEdit :size="18" />
 					</div>
 					<div class="kpi-card__content">
-						<div class="kpi-card__label">REQUIRED PREPARATION TIME</div>
+						<div class="kpi-card__label">{{ t('REQUIRED PREPARATION TIME') }}</div>
 
 						<div class="prep-input-row">
 							<div class="prep-input-wrap">
@@ -132,7 +132,7 @@
 									:disabled="!canEdit || saving"
 									@keydown.enter.prevent="savePrepWeeks"
 									@keydown.esc.prevent="resetPrepWeeks" />
-								<label for="prep-weeks-kpi-input" class="prep-unit-suffix">Weeks</label>
+								<label for="prep-weeks-kpi-input" class="prep-unit-suffix">{{ t('Weeks') }}</label>
 							</div>
 
 							<transition name="fade">
@@ -141,18 +141,18 @@
 									type="primary"
 									size="small"
 									class="prep-save-btn"
-									title="Save preparation weeks"
+									:title="t('Save preparation weeks')"
 									:disabled="saving || localPrepWeeks === null || localPrepWeeks < 0"
 									@click="savePrepWeeks">
-									{{ saving ? '...' : 'Save' }}
+									{{ saving ? t('...') : t('Save') }}
 								</NcButton>
 							</transition>
 						</div>
 
 						<div
 							class="kpi-card__subtext kpi-card__subtext--breakdown"
-							:title="'Minimum Duration: ' + (kpis.minimumDurationWeeks ?? 0) + 'w (Initiation: ' + (kpis.deckTasksWeeks ?? 0) + 'w + Prep: ' + (kpis.preparationWeeks ?? 0) + 'w)'">
-							Min. Duration: <strong>{{ kpis.minimumDurationWeeks ?? 0 }}w</strong> (Initiation: {{ kpis.deckTasksWeeks ?? 0 }}w + Prep: {{ kpis.preparationWeeks ?? 0 }}w)
+							:title="t('Minimum Duration: {min}w (Initiation: {init}w + Prep: {prep}w)', durationVars)">
+							{{ minDurationParts[0] }}<strong>{{ kpis.minimumDurationWeeks ?? 0 }}</strong>{{ minDurationParts[1] }}
 						</div>
 					</div>
 				</div>
@@ -166,9 +166,9 @@
 						<RhombusMedium :size="18" />
 					</div>
 					<div class="kpi-card__content">
-						<div class="kpi-card__label">MINIMUM START DATE</div>
+						<div class="kpi-card__label">{{ t('MINIMUM START DATE') }}</div>
 						<div class="kpi-card__value">{{ formatDisplayDate(kpis.minimumStartDate) || '—' }}</div>
-						<div class="kpi-card__subtext">Earliest execution</div>
+						<div class="kpi-card__subtext">{{ t('Earliest execution') }}</div>
 					</div>
 				</div>
 
@@ -182,14 +182,14 @@
 					</div>
 					<div class="kpi-card__content">
 						<div class="kpi-card__header-line">
-							<span class="kpi-card__label">START DATES</span>
+							<span class="kpi-card__label">{{ t('START DATES') }}</span>
 						</div>
 
 						<div class="start-date-rows">
 							<!-- Desired Start Date Sub-row -->
 							<div class="start-date-inline-row">
 								<div class="start-date-inline-left">
-									<span class="subrow-title">DESIRED</span>
+									<span class="subrow-title">{{ t('DESIRED') }}</span>
 								</div>
 
 								<div class="start-date-inline-right">
@@ -200,14 +200,14 @@
 										class="kpi-native-date-hidden"
 										:value="isoDateOnly(kpis.desiredStartDate)"
 										:disabled="!canEdit || saving"
-										aria-label="Select desired start date"
+										:aria-label="t('Select desired start date')"
 										@change="onDesiredDateChange" />
 
 									<div v-if="kpis.desiredStartDate" class="desired-date-row">
 										<span
 											class="kpi-card__value kpi-card__value--compact"
 											:class="{ 'kpi-card__value--clickable': canEdit && !saving }"
-											:title="canEdit ? 'Click to change desired start date' : ''"
+											:title="canEdit ? t('Click to change desired start date') : ''"
 											@click="openDesiredCalendar">
 											{{ formatDisplayDate(kpis.desiredStartDate) }}
 										</span>
@@ -216,7 +216,7 @@
 											type="tertiary"
 											size="small"
 											class="kpi-card__mini-btn"
-											title="Change desired start date"
+											:title="t('Change desired start date')"
 											:disabled="saving"
 											@click="openDesiredCalendar">
 											<template #icon>
@@ -228,7 +228,7 @@
 											type="tertiary"
 											size="small"
 											class="kpi-card__mini-btn kpi-card__mini-btn--clear"
-											title="Clear desired start date"
+											:title="t('Clear desired start date')"
 											:disabled="saving"
 											@click.stop="clearDesiredDate">
 											<template #icon>
@@ -247,22 +247,22 @@
 										<span
 											class="kpi-card__placeholder"
 											:class="{ 'kpi-card__value--clickable': canEdit && !saving }"
-											:title="canEdit ? 'Click to set desired start date' : ''"
+											:title="canEdit ? t('Click to set desired start date') : ''"
 											@click="openDesiredCalendar">
-											Not set
+											{{ t('Not set') }}
 										</span>
 										<NcButton
 											v-if="canEdit"
 											type="tertiary"
 											size="small"
 											class="set-date-btn"
-											title="Set desired start date"
+											:title="t('Set desired start date')"
 											:disabled="saving"
 											@click="openDesiredCalendar">
 											<template #icon>
 												<Plus :size="12" />
 											</template>
-											Set
+											{{ t('Set') }}
 										</NcButton>
 									</div>
 								</div>
@@ -271,7 +271,7 @@
 							<!-- Actual Start Date Sub-row -->
 							<div class="start-date-inline-row">
 								<div class="start-date-inline-left">
-									<span class="subrow-title">ACTUAL</span>
+									<span class="subrow-title">{{ t('ACTUAL') }}</span>
 								</div>
 
 								<div class="start-date-inline-right">
@@ -282,14 +282,14 @@
 										class="kpi-native-date-hidden"
 										:value="isoDateOnly(kpis.actualStartDate)"
 										:disabled="!canEdit || saving"
-										aria-label="Select actual start date"
+										:aria-label="t('Select actual start date')"
 										@change="onActualDateChange" />
 
 									<div v-if="kpis.actualStartDate" class="desired-date-row">
 										<span
 											class="kpi-card__value kpi-card__value--compact"
 											:class="{ 'kpi-card__value--clickable': canEdit && !saving }"
-											:title="canEdit ? 'Click to change actual start date' : ''"
+											:title="canEdit ? t('Click to change actual start date') : ''"
 											@click="openActualCalendar">
 											{{ formatDisplayDate(kpis.actualStartDate) }}
 										</span>
@@ -298,7 +298,7 @@
 											type="tertiary"
 											size="small"
 											class="kpi-card__mini-btn"
-											title="Change actual start date"
+											:title="t('Change actual start date')"
 											:disabled="saving"
 											@click="openActualCalendar">
 											<template #icon>
@@ -310,7 +310,7 @@
 											type="tertiary"
 											size="small"
 											class="kpi-card__mini-btn kpi-card__mini-btn--clear"
-											title="Clear actual start date"
+											:title="t('Clear actual start date')"
 											:disabled="saving"
 											@click.stop="clearActualDate">
 											<template #icon>
@@ -322,22 +322,22 @@
 										<span
 											class="kpi-card__placeholder"
 											:class="{ 'kpi-card__value--clickable': canEdit && !saving }"
-											:title="canEdit ? 'Click to set actual start date' : ''"
+											:title="canEdit ? t('Click to set actual start date') : ''"
 											@click="openActualCalendar">
-											Not set
+											{{ t('Not set') }}
 										</span>
 										<NcButton
 											v-if="canEdit"
 											type="tertiary"
 											size="small"
 											class="set-date-btn"
-											title="Set actual start date"
+											:title="t('Set actual start date')"
 											:disabled="saving"
 											@click="openActualCalendar">
 											<template #icon>
 												<Plus :size="12" />
 											</template>
-											Set
+											{{ t('Set') }}
 										</NcButton>
 									</div>
 								</div>
@@ -362,6 +362,7 @@ import Plus from 'vue-material-design-icons/Plus.vue'
 import Close from 'vue-material-design-icons/Close.vue'
 import CheckboxMarkedCircleOutline from 'vue-material-design-icons/CheckboxMarkedCircleOutline.vue'
 import AlertCircleOutline from 'vue-material-design-icons/AlertCircleOutline.vue'
+import { t, n } from '../../../lib/l10n.mjs'
 
 export default {
 	name: 'TimelineKpiBar',
@@ -461,11 +462,11 @@ export default {
 		},
 		processStatusLabel() {
 			const status = this.processStatus
-			if (status === 'complete') return 'READY'
-			if (status === 'incomplete') return 'IN PROGRESS'
-			if (status === 'missing_cards') return 'INITIAL'
-			if (status === 'not_configured') return 'N/A'
-			return 'PENDING'
+			if (status === 'complete') return t('READY')
+			if (status === 'incomplete') return t('IN PROGRESS')
+			if (status === 'missing_cards') return t('INITIAL')
+			if (status === 'not_configured') return t('N/A')
+			return t('PENDING')
 		},
 		processPillClass() {
 			const status = this.processStatus
@@ -489,29 +490,29 @@ export default {
 			const weeks = Number(period.weeks)
 			if (!Number.isFinite(weeks) || weeks <= 0) return ''
 			const rounded = Math.round(weeks * 10) / 10
-			return `${rounded} ${rounded === 1 ? 'week' : 'weeks'}`
+			return n('%n week', '%n weeks', rounded)
 		},
 		processSubtextTitle() {
 			if (this.processStatus === 'complete') {
-				return 'All required process steps completed'
+				return t('All required process steps completed')
 			}
 			if (this.hasMissingTitles) {
-				return 'Missing required cards:\n• ' + this.missingTitlesList.join('\n• ')
+				return t('Missing required cards:\n• {titles}', { titles: this.missingTitlesList.join('\n• ') })
 			}
-			return `${this.processDoneCount} of ${this.processTotalRequired} checklist cards completed`
+			return t('{done} of {total} checklist cards completed', { done: this.processDoneCount, total: this.processTotalRequired })
 		},
 		planningStatusLabel() {
 			const status = this.kpis.planningStatus
 			if (status === 'behind_at_risk') {
-				return 'BEHIND / AT RISK'
+				return t('BEHIND / AT RISK')
 			}
 			if (status === 'attention_needed') {
-				return 'ATTENTION NEEDED'
+				return t('ATTENTION NEEDED')
 			}
 			if (!this.kpis.desiredStartDate) {
-				return 'ON TRACK (NO TARGET)'
+				return t('ON TRACK (NO TARGET)')
 			}
-			return 'ON TRACK'
+			return t('ON TRACK')
 		},
 		statusPillClass() {
 			const status = this.kpis.planningStatus
@@ -528,9 +529,8 @@ export default {
 			if (float === null || float === undefined) {
 				return null
 			}
-			const prefix = float > 0 ? '+' : ''
-			const unit = Math.abs(float) === 1 ? 'WEEK' : 'WEEKS'
-			return `${prefix}${float} ${unit}`
+			const sign = float > 0 ? '+' : (float < 0 ? '-' : '')
+			return n('{sign}%n WEEK', '{sign}%n WEEKS', Math.abs(float), { sign })
 		},
 		floatPillClass() {
 			const float = this.kpis.overallFloatWeeks
@@ -548,12 +548,9 @@ export default {
 				return ''
 			}
 			if (float > 0) {
-				return `+${float}w`
+				return '+' + t('{n}w', { n: float })
 			}
-			if (float === 0) {
-				return '0w'
-			}
-			return `${float}w`
+			return t('{n}w', { n: float })
 		},
 		floatTooltip() {
 			const float = this.kpis.overallFloatWeeks
@@ -561,12 +558,26 @@ export default {
 				return ''
 			}
 			if (float > 0) {
-				return `+${float} week${Math.abs(float) === 1 ? '' : 's'} float`
+				return n('+%n week float', '+%n weeks float', float)
 			}
 			if (float === 0) {
-				return '0 float'
+				return t('0 float')
 			}
-			return `${Math.abs(float)} week${Math.abs(float) === 1 ? '' : 's'} behind schedule`
+			return n('%n week behind schedule', '%n weeks behind schedule', Math.abs(float))
+		},
+		durationVars() {
+			return {
+				min: this.kpis.minimumDurationWeeks ?? 0,
+				init: this.kpis.deckTasksWeeks ?? 0,
+				prep: this.kpis.preparationWeeks ?? 0,
+			}
+		},
+		// The minimum stays in <strong>: fill everything but {min}, then
+		// split the translated sentence there.
+		minDurationParts() {
+			const { init, prep } = this.durationVars
+			const [before, after = ''] = t('Min. Duration: {min}w (Initiation: {init}w + Prep: {prep}w)', { init, prep }).split('{min}')
+			return [before, after]
 		},
 		floatChipClass() {
 			const float = this.kpis.overallFloatWeeks
@@ -650,7 +661,7 @@ export default {
 			}
 			const parts = isoDate.split('T')[0].split('-')
 			if (parts.length === 3) {
-				return `${parts[2]}/${parts[1]}/${parts[0]}`
+				return t('{day}/{month}/{year}', { day: parts[2], month: parts[1], year: parts[0] })
 			}
 			return isoDate
 		},

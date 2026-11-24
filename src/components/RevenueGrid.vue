@@ -4,12 +4,12 @@
       class="revenue-grid__scroll"
       tabindex="0"
       role="region"
-      aria-label="Revenue by organization and month, scrollable"
+      :aria-label="t('Revenue by organization and month, scrollable')"
     >
       <table class="revenue-grid__table">
         <thead>
           <tr>
-            <th class="revenue-grid__rowh" scope="col">Organization</th>
+            <th class="revenue-grid__rowh" scope="col">{{ t('Organization') }}</th>
             <template v-for="(month, i) in months">
               <th
                 :key="'h-' + month.key"
@@ -21,7 +21,7 @@
                 :key="'hd-' + month.key"
                 class="revenue-grid__divider-h"
                 scope="col"
-              ><span>NOW</span></th>
+              ><span>{{ t('NOW') }}</span></th>
             </template>
           </tr>
         </thead>
@@ -33,7 +33,7 @@
                 <button
                   type="button"
                   class="revenue-grid__name-btn"
-                  :aria-label="'Open ' + org.name + ' in Organizations'"
+                  :aria-label="t('Open {name} in Organizations', { name: org.name })"
                   @click="$emit('open-org', org.id)"
                 >{{ org.name }}</button>
                 <span class="iz-badge" :class="statusTone(org.status)">{{ statusLabel(org.status) }}</span>
@@ -58,7 +58,7 @@
 
         <tfoot>
           <tr>
-            <th class="revenue-grid__rowh" scope="row">{{ hasFuture ? "Recorded / committed" : "Monthly MRR" }}</th>
+            <th class="revenue-grid__rowh" scope="row">{{ hasFuture ? t("Recorded / committed") : t("Monthly MRR") }}</th>
             <template v-for="(month, i) in months">
               <th
                 :key="'f-' + month.key"
@@ -71,7 +71,7 @@
                 v-if="i === nowIndex && hasFuture"
                 :key="'fd-' + month.key"
                 class="revenue-grid__divider-h"
-              ><span>NOW</span></th>
+              ><span>{{ t('NOW') }}</span></th>
             </template>
           </tr>
         </tfoot>
@@ -85,22 +85,24 @@
         <span>{{ moneyShort(maxValue) }}</span>
       </span>
       <span class="revenue-grid__legend-item">
-        <span class="revenue-grid__swatch revenue-grid__swatch--recorded"></span>recorded
+        <span class="revenue-grid__swatch revenue-grid__swatch--recorded"></span>{{ t('recorded') }}
       </span>
       <span v-if="hasFuture" class="revenue-grid__legend-item">
-        <span class="revenue-grid__swatch revenue-grid__swatch--future"></span>committed if renewed
+        <span class="revenue-grid__swatch revenue-grid__swatch--future"></span>{{ t('committed if renewed') }}
       </span>
       <span v-if="hasFuture" class="revenue-grid__legend-item">
-        <span class="revenue-grid__swatch revenue-grid__swatch--renew"></span>renewal lands this month
+        <span class="revenue-grid__swatch revenue-grid__swatch--renew"></span>{{ t('renewal lands this month') }}
       </span>
       <span class="revenue-grid__legend-item">
-        <span class="revenue-grid__swatch revenue-grid__swatch--zero"></span>no revenue
+        <span class="revenue-grid__swatch revenue-grid__swatch--zero"></span>{{ t('no revenue') }}
       </span>
     </div>
   </div>
 </template>
 
 <script>
+import { t, locale } from "../lib/l10n.mjs";
+
 // Explicit status → badge table. A table keeps an unexpected status falling back
 // to a real class instead of resolving to nothing, same as badgeTone() in
 // AlertsPanel — never build the class name by concatenation.
@@ -112,12 +114,14 @@ const STATUS_BADGES = {
   none: "iz-badge--muted",
 };
 
+// Subscription status code → label, made at display time so it follows the
+// user's language.
 const STATUS_LABELS = {
-  active: "Active",
-  paused: "Paused",
-  cancelled: "Cancelled",
-  expired: "Expired",
-  none: "No plan",
+  active: () => t("Active"),
+  paused: () => t("Paused"),
+  cancelled: () => t("Cancelled"),
+  expired: () => t("Expired"),
+  none: () => t("No plan"),
 };
 
 export default {
@@ -152,17 +156,17 @@ export default {
     monthLabel(month) {
       return month.year === this.baseYear
         ? month.label
-        : month.label + " '" + String(month.year).slice(2);
+        : t("{month} '{yy}", { month: month.label, yy: String(month.year).slice(2) });
     },
     statusTone(status) {
       return STATUS_BADGES[status] || "iz-badge--muted";
     },
     statusLabel(status) {
-      return STATUS_LABELS[status] || status;
+      return STATUS_LABELS[status] ? STATUS_LABELS[status]() : status;
     },
     money(value) {
       try {
-        return new Intl.NumberFormat(undefined, {
+        return new Intl.NumberFormat(locale(), {
           style: "currency",
           currency: this.currency || "EUR",
         }).format(value || 0);
@@ -173,7 +177,7 @@ export default {
     },
     moneyShort(value) {
       try {
-        return new Intl.NumberFormat(undefined, {
+        return new Intl.NumberFormat(locale(), {
           style: "currency",
           currency: this.currency || "EUR",
           maximumFractionDigits: 0,
@@ -211,15 +215,17 @@ export default {
     },
     cellTitle(org, month, i) {
       const value = org.series[i];
-      const when = month.label + " " + month.year;
+      const vars = { org: org.name, month: month.label, year: month.year };
       // The renewal note belongs on the cell whether or not it carries revenue —
       // a free plan renews too, and gating it on value hid it entirely.
-      const renews = org.renewIndex === i ? " · renews this month" : "";
+      vars.renews = org.renewIndex === i ? " " + t("· renews this month") : "";
       if (value === 0) {
-        return org.name + " · " + when + " · no revenue" + renews;
+        return t("{org} · {month} {year} · no revenue{renews}", vars);
       }
-      const kind = month.isFuture ? " committed" : " recorded";
-      return org.name + " · " + when + " · " + this.money(value) + kind + renews;
+      vars.amount = this.money(value);
+      return month.isFuture
+        ? t("{org} · {month} {year} · {amount} committed{renews}", vars)
+        : t("{org} · {month} {year} · {amount} recorded{renews}", vars);
     },
   },
 };

@@ -3,30 +3,30 @@
     <form class="iz-modal signature-modal" @submit.prevent="$emit('submit')">
       <header class="iz-modal__header">
         <div>
-          <h3 class="signature-modal__title">Request signatures</h3>
-          <p class="signature-modal__subtitle">Add external signers. Invitations are sent only after field placement and review.</p>
+          <h3 class="signature-modal__title">{{ t('Request signatures') }}</h3>
+          <p class="signature-modal__subtitle">{{ t('Add external signers. Invitations are sent only after field placement and review.') }}</p>
         </div>
-        <button class="iz-close iz-close--sm" type="button" aria-label="Close" :disabled="busy" @click="close">&times;</button>
+        <button class="iz-close iz-close--sm" type="button" :aria-label="t('Close')" :disabled="busy" @click="close">&times;</button>
       </header>
       <div class="iz-modal__body signature-modal__body">
         <div v-for="(signer, index) in signers" :key="index" class="signature-modal__signer">
           <span class="iz-badge iz-badge--muted">{{ index + 1 }}</span>
           <label class="signature-modal__field">
-            <span class="iz-label">Name</span>
+            <span class="iz-label">{{ t('Name') }}</span>
             <input v-model.trim="signer.displayName" class="iz-input" type="text" maxlength="255" required />
           </label>
           <label class="signature-modal__field">
-            <span class="iz-label">Email</span>
+            <span class="iz-label">{{ t('Email') }}</span>
             <input v-model.trim="signer.email" class="iz-input" type="email" maxlength="255" required />
           </label>
-          <button v-if="signers.length > 1" class="iz-btn iz-btn--icon iz-btn--danger" type="button" aria-label="Remove signer" @click="remove(index)">&times;</button>
+          <button v-if="signers.length > 1" class="iz-btn iz-btn--icon iz-btn--danger" type="button" :aria-label="t('Remove signer')" @click="remove(index)">&times;</button>
         </div>
-        <button class="iz-btn" type="button" @click="add">Add another signer</button>
+        <button class="iz-btn" type="button" @click="add">{{ t('Add another signer') }}</button>
         <p v-if="error" class="signature-modal__error" role="alert">{{ error }}</p>
       </div>
       <footer class="iz-modal__footer">
-        <button class="iz-btn" type="button" :disabled="busy" @click="close">Cancel</button>
-        <button class="iz-btn iz-btn--primary" type="submit" :disabled="busy">{{ busy ? "Creating draft…" : "Continue to placement" }}</button>
+        <button class="iz-btn" type="button" :disabled="busy" @click="close">{{ t('Cancel') }}</button>
+        <button class="iz-btn iz-btn--primary" type="submit" :disabled="busy">{{ busy ? t("Creating draft…") : t("Continue to placement") }}</button>
       </footer>
     </form>
   </div>

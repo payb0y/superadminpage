@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\SuperAdminPage\Service;
 
 use OCP\IDBConnection;
+use OCP\IL10N;
 
 class PlatformService {
 
@@ -31,9 +32,11 @@ class PlatformService {
     public const DORMANT_DAYS = 30;
 
     private IDBConnection $db;
+    private IL10N $l;
 
-    public function __construct(IDBConnection $db) {
+    public function __construct(IDBConnection $db, IL10N $l) {
         $this->db = $db;
+        $this->l = $l;
     }
 
     public function getOverview(): array {
@@ -348,7 +351,7 @@ class PlatformService {
         }
         return [
             'count'   => $cnt,
-            'label'   => 'Failed backups (7d)',
+            'label'   => $this->l->t('Failed backups (7d)'),
             'tone'    => $cnt > 0 ? 'danger' : 'success',
         ];
     }
@@ -368,7 +371,7 @@ class PlatformService {
         }
         return [
             'count' => $cnt,
-            'label' => 'AHO jobs pending/failed',
+            'label' => $this->l->t('AHO jobs pending/failed'),
             'tone'  => $cnt > 0 ? 'warning' : 'success',
         ];
     }
@@ -388,7 +391,7 @@ class PlatformService {
      * dialects' date arithmetic.
      */
     private function checkBackgroundJobs(): array {
-        $label = 'Cron last ran';
+        $label = $this->l->t('Cron last ran');
         try {
             $stmt = $this->db->prepare(
                 "SELECT MAX(last_run) AS last_run, COUNT(*) AS total FROM *PREFIX*jobs"
@@ -397,7 +400,7 @@ class PlatformService {
             $row = $stmt->fetch();
         } catch (\Throwable $e) {
             return ['count' => '?', 'label' => $label, 'tone' => 'warning',
-                    'detail' => 'could not read the job table'];
+                    'detail' => $this->l->t('could not read the job table')];
         }
 
         $total = (int)($row['total'] ?? 0);
@@ -405,11 +408,11 @@ class PlatformService {
 
         if ($total === 0) {
             return ['count' => '—', 'label' => $label, 'tone' => 'success',
-                    'detail' => 'no background jobs registered'];
+                    'detail' => $this->l->t('no background jobs registered')];
         }
         if ($lastRun <= 0) {
-            return ['count' => 'never', 'label' => $label, 'tone' => 'danger',
-                    'detail' => $total . ' jobs registered, none has ever run'];
+            return ['count' => $this->l->t('never'), 'label' => $label, 'tone' => 'danger',
+                    'detail' => $this->l->t('%s jobs registered, none has ever run', [$total])];
         }
 
         $elapsed = max(0, time() - $lastRun);
@@ -425,22 +428,45 @@ class PlatformService {
             'count'  => $this->humaniseElapsed($elapsed),
             'label'  => $label,
             'tone'   => $tone,
-            'detail' => date('j M H:i', $lastRun) . ' · ' . $total . ' jobs scheduled',
+            'detail' => $this->l->t('%1$s · %2$s jobs scheduled', [$this->formatRunTime($lastRun), $total]),
         ];
     }
 
     /** Compact elapsed time for a card that has room for about three glyphs. */
     private function humaniseElapsed(int $seconds): string {
         if ($seconds < 60) {
-            return 'now';
+            return $this->l->t('now');
         }
         if ($seconds < 3600) {
-            return (int)floor($seconds / 60) . 'm';
+            return $this->l->t('%sm', [(int)floor($seconds / 60)]);
         }
         if ($seconds < 86400) {
-            return (int)floor($seconds / 3600) . 'h';
+            return $this->l->t('%sh', [(int)floor($seconds / 3600)]);
         }
-        return (int)floor($seconds / 86400) . 'd';
+        return $this->l->t('%sd', [(int)floor($seconds / 86400)]);
+    }
+
+    /**
+     * "3 Mar 14:05" in the user's own locale. date('j M') always prints English
+     * month names; IntlDateFormatter uses the locale Nextcloud resolved for this
+     * user, with date() as the fallback when the intl extension is missing.
+     */
+    private function formatRunTime(int $epoch): string {
+        if (class_exists(\IntlDateFormatter::class)) {
+            $fmt = new \IntlDateFormatter(
+                $this->l->getLocaleCode() ?: $this->l->getLanguageCode(),
+                \IntlDateFormatter::NONE,
+                \IntlDateFormatter::NONE,
+                date_default_timezone_get(),
+                null,
+                'd MMM HH:mm'
+            );
+            $out = $fmt->format($epoch);
+            if (is_string($out) && $out !== '') {
+                return $out;
+            }
+        }
+        return date('j M H:i', $epoch);
     }
 
     private function countStaleProjects(int $days): array {
@@ -460,7 +486,7 @@ class PlatformService {
         }
         return [
             'count' => $cnt,
-            'label' => "Stale projects (>{$days}d)",
+            'label' => $this->l->t('Stale projects (>%sd)', [$days]),
             'tone'  => $cnt > 0 ? 'warning' : 'success',
         ];
     }
@@ -484,7 +510,7 @@ class PlatformService {
         }
         return [
             'count' => $cnt,
-            'label' => 'Orgs without active plan',
+            'label' => $this->l->t('Orgs without active plan'),
             'tone'  => $cnt > 0 ? 'warning' : 'success',
         ];
     }

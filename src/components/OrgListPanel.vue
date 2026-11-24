@@ -2,7 +2,7 @@
   <section class="org-list" :data-build="buildMarker">
     <header class="org-list__header iz-panel__header">
       <h2 class="org-list__title">
-        Organizations
+        {{ t("Organizations") }}
         <span class="org-list__count">{{ orgs.length }}</span>
       </h2>
       <div class="org-list__header-controls">
@@ -10,36 +10,36 @@
           type="button"
           class="iz-btn iz-btn--primary org-list__create-btn"
           @click="openCreate"
-        >+ Create organization</button>
+        >{{ t("+ Create organization") }}</button>
         <div class="org-list__sort">
-          <label class="org-list__sort-label" :for="sortSelectId">Sort</label>
+          <label class="org-list__sort-label" :for="sortSelectId">{{ t("Sort") }}</label>
           <select
             :id="sortSelectId"
             v-model="sortBy"
             class="iz-select iz-select--sm org-list__sort-select"
           >
-            <option value="planDesc">Plan: high → low</option>
-            <option value="planAsc">Plan: low → high</option>
-            <option value="membersDesc">Members ↓</option>
-            <option value="projectsDesc">Projects ↓</option>
-            <option value="tasksDesc">Tasks total ↓</option>
-            <option value="doneDesc">Tasks done ↓</option>
-            <option value="overdueDesc">Tasks overdue ↓</option>
-            <option value="openDesc">Tasks open ↓</option>
-            <option value="storageDesc">Storage used ↓</option>
+            <option value="planDesc">{{ t("Plan: high → low") }}</option>
+            <option value="planAsc">{{ t("Plan: low → high") }}</option>
+            <option value="membersDesc">{{ t("Members ↓") }}</option>
+            <option value="projectsDesc">{{ t("Projects ↓") }}</option>
+            <option value="tasksDesc">{{ t("Tasks total ↓") }}</option>
+            <option value="doneDesc">{{ t("Tasks done ↓") }}</option>
+            <option value="overdueDesc">{{ t("Tasks overdue ↓") }}</option>
+            <option value="openDesc">{{ t("Tasks open ↓") }}</option>
+            <option value="storageDesc">{{ t("Storage used ↓") }}</option>
           </select>
         </div>
         <div
           class="iz-segment org-list__view-toggle"
           role="group"
-          aria-label="Organization view mode"
+          :aria-label="t('Organization view mode')"
         >
           <button
             type="button"
             class="iz-btn iz-btn--sm"
             :class="{ 'iz-btn--active': viewMode === 'grid' }"
             :aria-pressed="viewMode === 'grid'"
-            title="Grid view"
+            :title="t('Grid view')"
             @click="viewMode = 'grid'"
           >
           <svg
@@ -58,14 +58,14 @@
             <rect x="3" y="14" width="7" height="7" />
             <rect x="14" y="14" width="7" height="7" />
           </svg>
-          Grid
+          {{ t("Grid") }}
         </button>
         <button
           type="button"
           class="iz-btn iz-btn--sm"
           :class="{ 'iz-btn--active': viewMode === 'table' }"
           :aria-pressed="viewMode === 'table'"
-          title="Table view"
+          :title="t('Table view')"
           @click="viewMode = 'table'"
         >
           <svg
@@ -83,7 +83,7 @@
             <line x1="3" y1="12" x2="21" y2="12" />
             <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
-          Table
+          {{ t("Table") }}
         </button>
         </div>
       </div>
@@ -99,15 +99,15 @@
         data-1p-ignore
         data-bwignore
         data-lpignore="true"
-        placeholder="Search organizations…"
+        :placeholder="t('Search organizations…')"
       />
       <button
         v-if="attentionFilter"
         type="button"
         class="iz-chip iz-chip--active org-list__attention-chip"
-        :title="'Showing only organizations with ' + attentionLabel + ' — click to clear'"
+        :title="t('Showing only organizations with {filter} — click to clear', { filter: attentionLabel })"
         @click="attentionFilter = null; currentPage = 1;"
-      >{{ attentionLabel }} ✕</button>
+      >{{ t("{filter} ✕", { filter: attentionLabel }) }}</button>
       <div class="org-list__filter-group">
         <span
           v-for="opt in statusOptions"
@@ -125,7 +125,7 @@
     </div>
 
     <div v-if="filteredOrgs.length === 0" class="iz-empty">
-      No organizations match your filters.
+      {{ t("No organizations match your filters.") }}
     </div>
 
     <div v-else-if="viewMode === 'grid'" class="org-list__grid">
@@ -140,17 +140,17 @@
 
     <div v-else class="org-list__grid-table" role="table">
       <div class="org-list__header-row" role="row">
-        <div class="org-list__th" role="columnheader">Name</div>
-        <div class="org-list__th" role="columnheader">Status</div>
-        <div class="org-list__th org-list__th--plan" role="columnheader">Plan</div>
-        <div class="org-list__th org-list__th--num" role="columnheader">Members</div>
-        <div class="org-list__th org-list__th--num" role="columnheader">Projects</div>
-        <div class="org-list__th org-list__th--num" role="columnheader">Tasks</div>
-        <div class="org-list__th org-list__th--num" role="columnheader">Done</div>
-        <div class="org-list__th org-list__th--num" role="columnheader">Overdue</div>
-        <div class="org-list__th org-list__th--num" role="columnheader">Open</div>
-        <div class="org-list__th org-list__th--num org-list__th--storage" role="columnheader">Storage</div>
-        <div class="org-list__th org-list__th--expand" role="columnheader" aria-label="Expand"></div>
+        <div class="org-list__th" role="columnheader">{{ t("Name") }}</div>
+        <div class="org-list__th" role="columnheader">{{ t("Status") }}</div>
+        <div class="org-list__th org-list__th--plan" role="columnheader">{{ t("Plan") }}</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">{{ t("Members") }}</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">{{ t("Projects") }}</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">{{ t("Tasks") }}</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">{{ t("Done") }}</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">{{ t("Overdue") }}</div>
+        <div class="org-list__th org-list__th--num" role="columnheader">{{ t("Open") }}</div>
+        <div class="org-list__th org-list__th--num org-list__th--storage" role="columnheader">{{ t("Storage") }}</div>
+        <div class="org-list__th org-list__th--expand" role="columnheader" :aria-label="t('Expand')"></div>
       </div>
 
       <div
@@ -182,7 +182,7 @@
           </div>
           <div class="org-list__cell org-list__cell--plan" role="cell">
             <span class="iz-pill iz-pill--accent">
-              {{ org.planName || "No plan" }}
+              {{ org.planName || t("No plan") }}
             </span>
           </div>
           <div class="org-list__cell org-list__cell--num" role="cell">
@@ -260,7 +260,7 @@
             class="org-list__detail-state"
           >
             <div class="iz-spinner"></div>
-            <span>Loading organization…</span>
+            <span>{{ t("Loading organization…") }}</span>
           </div>
 
           <div
@@ -273,7 +273,7 @@
               class="iz-btn iz-btn--sm"
               @click="loadDetail(org.id)"
             >
-              Retry
+              {{ t("Retry") }}
             </button>
           </div>
 
@@ -294,9 +294,11 @@
       class="org-list__pagination-bar"
     >
       <div class="org-list__page-summary">
-        Showing
-        <strong>{{ rangeStart }}</strong>–<strong>{{ rangeEnd }}</strong>
-        of <strong>{{ filteredOrgs.length }}</strong>
+        <component
+          :is="part.strong ? 'strong' : 'span'"
+          v-for="(part, i) in pageSummaryParts"
+          :key="'summary-' + i"
+        >{{ part.text }}</component>
       </div>
 
       <div v-if="totalPages > 1" class="iz-pagination org-list__pagination">
@@ -304,7 +306,7 @@
           type="button"
           class="iz-btn iz-btn--sm org-list__page-btn"
           :disabled="currentPage === 1"
-          aria-label="First page"
+          :aria-label="t('First page')"
           @click="currentPage = 1"
         >
           «
@@ -313,7 +315,7 @@
           type="button"
           class="iz-btn iz-btn--sm org-list__page-btn"
           :disabled="currentPage <= 1"
-          aria-label="Previous page"
+          :aria-label="t('Previous page')"
           @click="currentPage--"
         >
           ‹
@@ -342,7 +344,7 @@
           type="button"
           class="iz-btn iz-btn--sm org-list__page-btn"
           :disabled="currentPage >= totalPages"
-          aria-label="Next page"
+          :aria-label="t('Next page')"
           @click="currentPage++"
         >
           ›
@@ -351,7 +353,7 @@
           type="button"
           class="iz-btn iz-btn--sm org-list__page-btn"
           :disabled="currentPage === totalPages"
-          aria-label="Last page"
+          :aria-label="t('Last page')"
           @click="currentPage = totalPages"
         >
           »
@@ -359,18 +361,18 @@
       </div>
 
       <div class="org-list__page-size">
-        <label :for="pageSizeId">Per page</label>
+        <label :for="pageSizeId">{{ t("Per page") }}</label>
         <select
           :id="pageSizeId"
           v-model.number="pageSize"
           class="iz-select iz-select--sm"
         >
           <option
-            v-for="n in pageSizeOptions"
-            :key="n"
-            :value="n"
+            v-for="size in pageSizeOptions"
+            :key="size"
+            :value="size"
           >
-            {{ n }}
+            {{ size }}
           </option>
         </select>
       </div>
@@ -390,6 +392,7 @@ import { generateUrl } from "@nextcloud/router";
 import OrgCard from "./OrgCard.vue";
 import OrgDetailView from "./OrgDetailView.vue";
 import CreateOrgModal from "./CreateOrgModal.vue";
+import { t, formatNumber } from "../lib/l10n.mjs";
 
 const VIEW_MODE_STORAGE_KEY = "superadminpage.orgListView";
 const SORT_STORAGE_KEY = "superadminpage.orgListSort";
@@ -413,14 +416,16 @@ function defaultPageSize(viewMode) {
   return viewMode === "table" ? 20 : 9;
 }
 
+// An organization without a plan arrives with a null planName; the "No plan"
+// pill is made at display time, so nothing here compares displayed text.
 function planBucket(planName) {
-  if (!planName || planName === "No plan") return "No plan";
+  if (!planName) return null;
   return STANDARD_PLANS.indexOf(planName) === -1 ? "Custom" : planName;
 }
 
 function planRank(planName) {
   const bucket = planBucket(planName);
-  if (bucket === "No plan") return NO_PLAN_RANK;
+  if (bucket === null) return NO_PLAN_RANK;
   return PLAN_TIER_RANK[bucket];
 }
 
@@ -443,17 +448,30 @@ const ATTENTION_TESTS = {
 };
 
 const ATTENTION_LABELS = {
-  noAdmin: "no admin",
-  noProjects: "no projects",
-  noPlan: "no active plan",
-  atCap: "at plan cap",
-  nearCap: "near plan cap",
-  overdueTasks: "overdue tasks",
-  staleProjects: "a stale project",
-  dormant: "no login in 30 days",
-  neverUsed: "no login ever",
-  storageHigh: "storage over 80%",
+  noAdmin: () => t("no admin"),
+  noProjects: () => t("no projects"),
+  noPlan: () => t("no active plan"),
+  atCap: () => t("at plan cap"),
+  nearCap: () => t("near plan cap"),
+  overdueTasks: () => t("overdue tasks"),
+  staleProjects: () => t("a stale project"),
+  dormant: () => t("no login in 30 days"),
+  neverUsed: () => t("no login ever"),
+  storageHigh: () => t("storage over 80%"),
 };
+
+// Subscription status code → label, made at display time.
+const STATUS_LABELS = {
+  active: () => t("Active"),
+  paused: () => t("Paused"),
+  cancelled: () => t("Cancelled"),
+  expired: () => t("Expired"),
+};
+
+// Stand-ins for the numbers in "Showing {start}–{end} of {total}", so the
+// translated sentence can be cut around them and the numbers set in bold
+// without v-html.
+const SUMMARY_MARKS = ["\u0001", "\u0002", "\u0003"];
 
 // Mirrors PlatformService::DORMANT_DAYS. Evaluated per call rather than once at
 // module load, so a long-lived tab does not keep filtering against the cutoff
@@ -497,11 +515,11 @@ export default {
       currentPage: 1,
       pageSize: defaultPageSize(viewMode),
       statusOptions: [
-        { value: "all", label: "All" },
-        { value: "active", label: "Active" },
-        { value: "paused", label: "Paused" },
-        { value: "cancelled", label: "Cancelled" },
-        { value: "none", label: "No plan" },
+        { value: "all", label: t("All") },
+        { value: "active", label: t("Active") },
+        { value: "paused", label: t("Paused") },
+        { value: "cancelled", label: t("Cancelled") },
+        { value: "none", label: t("No plan") },
       ],
       sortBy: this.readSortBy(),
       viewMode,
@@ -527,7 +545,8 @@ export default {
       return PAGE_SIZE_OPTIONS[this.viewMode] || PAGE_SIZE_OPTIONS.grid;
     },
     attentionLabel() {
-      return ATTENTION_LABELS[this.attentionFilter] || this.attentionFilter || "";
+      const label = ATTENTION_LABELS[this.attentionFilter];
+      return label ? label() : this.attentionFilter || "";
     },
     filteredOrgs() {
       const q = (this.searchQuery || "").toLowerCase();
@@ -601,6 +620,18 @@ export default {
         this.currentPage * this.pageSize,
         this.sortedOrgs.length,
       );
+    },
+    pageSummaryParts() {
+      const values = [this.rangeStart, this.rangeEnd, this.filteredOrgs.length];
+      const text = t("Showing {start}–{end} of {total}", {
+        start: SUMMARY_MARKS[0],
+        end: SUMMARY_MARKS[1],
+        total: SUMMARY_MARKS[2],
+      });
+      return text.split(/([\u0001-\u0003])/).filter(Boolean).map((piece) => {
+        const i = SUMMARY_MARKS.indexOf(piece);
+        return i === -1 ? { text: piece, strong: false } : { text: String(values[i]), strong: true };
+      });
     },
     visiblePages() {
       const total = this.totalPages;
@@ -753,8 +784,8 @@ export default {
     },
     statusLabel(org) {
       const s = org.subscriptionStatus;
-      if (!s || s === "none") return "No subscription";
-      return s.charAt(0).toUpperCase() + s.slice(1);
+      if (!s || s === "none") return t("No subscription");
+      return STATUS_LABELS[s] ? STATUS_LABELS[s]() : s;
     },
     storageDisplay(org) {
       const storage = org.storage || {};
@@ -769,12 +800,13 @@ export default {
       return Math.min(100, Math.max(0, Number(org.storage && org.storage.percentage) || 0));
     },
     formatBytes(value) {
+      const [B, KB, MB, GB] = t("B / KB / MB / GB").split(" / ");
       const bytes = Number(value) || 0;
-      if (bytes <= 0) return "0 B";
-      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + " KB";
+      if (bytes <= 0) return "0 " + B;
+      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + " " + KB;
       if (bytes < 1024 * 1024 * 1024)
-        return Math.round(bytes / (1024 * 1024)) + " MB";
-      return (bytes / (1024 * 1024 * 1024)).toFixed(1) + " GB";
+        return Math.round(bytes / (1024 * 1024)) + " " + MB;
+      return formatNumber(bytes / (1024 * 1024 * 1024)) + " " + GB;
     },
     toggleExpand(org) {
       const isOpen = !!this.expanded[org.id];
@@ -826,7 +858,10 @@ export default {
         this.$set(
           this.detailError,
           orgId,
-          (e && e.message) || "Failed to load organization",
+          // The server's own message is translated; axios's e.message is
+          // always English, so it is not shown.
+          (e && e.response && e.response.data && e.response.data.message)
+            || t("Failed to load organization"),
         );
       } finally {
         if (isFirstLoad) {

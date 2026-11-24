@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\SuperAdminPage\Service;
 
 use OCP\IDBConnection;
+use OCP\IL10N;
 
 /**
  * Financial view across all organizations: contracted revenue, the per-org
@@ -55,8 +56,11 @@ class FinancialsService {
     /** Plan ids referenced by history that no longer exist in oc_plans. */
     private array $missingPlanIds = [];
 
-    public function __construct(IDBConnection $db) {
+    private IL10N $l;
+
+    public function __construct(IDBConnection $db, IL10N $l) {
         $this->db = $db;
+        $this->l = $l;
     }
 
     public function getFinancials(): array {
@@ -141,7 +145,7 @@ class FinancialsService {
             $end = $cursor->modify('last day of this month')->setTime(23, 59, 59);
             $out[] = [
                 'key'      => $cursor->format('Y-m'),
-                'label'    => $cursor->format('M'),
+                'label'    => $this->monthLabel($cursor),
                 'year'     => (int)$cursor->format('Y'),
                 'startsAt' => $cursor->format('Y-m-d H:i:s'),
                 'endsAt'   => $end->format('Y-m-d H:i:s'),
@@ -223,7 +227,7 @@ class FinancialsService {
                 'subId'       => $row['sub_id'] !== null ? (int)$row['sub_id'] : null,
                 'status'      => (string)($row['sub_status'] ?? 'none'),
                 'planId'      => $row['plan_id'] !== null ? (int)$row['plan_id'] : null,
-                'planName'    => (string)($row['plan_name'] ?? 'No plan'),
+                'planName'    => (string)($row['plan_name'] ?? $this->l->t('No plan')),
                 'price'       => (float)($row['plan_price'] ?? 0),
                 'currency'    => (string)($row['currency'] ?? 'EUR'),
                 'startedAt'   => $row['started_at'] ?? null,
@@ -361,11 +365,11 @@ class FinancialsService {
      */
     private function planLabelFor(array $sub, array $plans): string {
         if ($sub['subId'] === null || $sub['planId'] === null) {
-            return 'No plan';
+            return $this->l->t('No plan');
         }
         if (!isset($plans[$sub['planId']])) {
             $this->missingPlanIds[$sub['planId']] = true;
-            return 'Deleted plan';
+            return $this->l->t('Deleted plan');
         }
         return $plans[$sub['planId']]['name'];
     }
@@ -672,11 +676,11 @@ class FinancialsService {
         // had never had one.
         $planLabel = function (?int $planId) use ($plans): string {
             if ($planId === null) {
-                return 'No plan';
+                return $this->l->t('No plan');
             }
             if (!isset($plans[$planId])) {
                 $this->missingPlanIds[$planId] = true;
-                return 'Deleted plan';
+                return $this->l->t('Deleted plan');
             }
             return $plans[$planId]['name'];
         };
@@ -714,10 +718,10 @@ class FinancialsService {
                 $planChanged = $h['prevPlanId'] !== $h['newPlanId'];
                 $fromLabel = $planChanged
                     ? $planLabel($h['prevPlanId'])
-                    : (string)($h['prevStatus'] ?? 'none');
+                    : $this->statusLabel((string)($h['prevStatus'] ?? 'none'));
                 $toLabel = $planChanged
                     ? $planLabel($h['newPlanId'])
-                    : $h['newStatus'];
+                    : $this->statusLabel((string)$h['newStatus']);
 
                 $out[] = [
                     'orgId'       => $org['id'],
@@ -735,5 +739,44 @@ class FinancialsService {
 
         usort($out, static fn (array $a, array $b): int => strcmp((string)$b['at'], (string)$a['at']));
         return array_slice($out, 0, self::MAX_EVENTS);
+    }
+
+    /**
+     * Display text for a subscription status code in the audit trail's
+     * from → to. Only the text is translated; an unknown code shows as is.
+     */
+    private function statusLabel(string $status): string {
+        switch ($status) {
+            case 'none':      return $this->l->t('none');
+            case 'active':    return $this->l->t('Active');
+            case 'trial':     return $this->l->t('Trial');
+            case 'paused':    return $this->l->t('Paused');
+            case 'cancelled': return $this->l->t('Cancelled');
+            case 'expired':   return $this->l->t('Expired');
+            default:          return $status;
+        }
+    }
+
+    /**
+     * Short month name in the user's locale ("Mar", "mrt."). DateTime::format('M')
+     * is always English; IntlDateFormatter follows the locale Nextcloud resolved
+     * for this user, with format('M') as the fallback when intl is missing.
+     */
+    private function monthLabel(\DateTimeImmutable $month): string {
+        if (class_exists(\IntlDateFormatter::class)) {
+            $fmt = new \IntlDateFormatter(
+                $this->l->getLocaleCode() ?: $this->l->getLanguageCode(),
+                \IntlDateFormatter::NONE,
+                \IntlDateFormatter::NONE,
+                $month->getTimezone(),
+                null,
+                'MMM'
+            );
+            $out = $fmt->format($month);
+            if (is_string($out) && $out !== '') {
+                return $out;
+            }
+        }
+        return $month->format('M');
     }
 }

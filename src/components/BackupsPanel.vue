@@ -5,8 +5,8 @@
         v-model.trim="filters.q"
         class="iz-input backups-panel__search"
         type="search"
-        placeholder="Search archive or job ID"
-        aria-label="Search backup jobs"
+        :placeholder="t('Search archive or job ID')"
+        :aria-label="t('Search backup jobs')"
         @keyup.enter="applyFilters"
       />
       <button
@@ -14,22 +14,22 @@
         class="iz-btn"
         :disabled="loading"
         @click="applyFilters"
-      >Refresh</button>
+      >{{ t("Refresh") }}</button>
       <span class="backups-panel__toolbar-spacer"></span>
       <select
         v-model="createType"
         class="iz-select backups-panel__type-select"
-        aria-label="Backup type to create"
+        :aria-label="t('Backup type to create')"
       >
-        <option value="full">Full backup</option>
-        <option value="incremental">Incremental backup</option>
+        <option value="full">{{ t("Full backup") }}</option>
+        <option value="incremental">{{ t("Incremental backup") }}</option>
       </select>
       <button
         type="button"
         class="iz-btn iz-btn--primary"
         :disabled="busy"
         @click="askPassword({ type: 'create' })"
-      >New backup</button>
+      >{{ t("New backup") }}</button>
     </div>
 
     <div class="backups-panel__filters">
@@ -45,12 +45,12 @@
 
       <div class="backups-panel__filter-group">
         <span
-          v-for="t in typeOptions"
-          :key="'tf-' + t.value"
+          v-for="opt in typeOptions"
+          :key="'tf-' + opt.value"
           class="iz-chip"
-          :class="[chipTone(t.value), { 'iz-chip--active': filters.backupType === t.value }]"
-          @click="setFilter('backupType', t.value)"
-        >{{ t.label }}</span>
+          :class="[chipTone(opt.value), { 'iz-chip--active': filters.backupType === opt.value }]"
+          @click="setFilter('backupType', opt.value)"
+        >{{ opt.label }}</span>
       </div>
 
       <div class="backups-panel__filter-group">
@@ -67,7 +67,7 @@
     <div v-if="error" class="iz-error" role="alert">{{ error }}</div>
     <div v-if="actionError" class="iz-error" role="alert">{{ actionError }}</div>
 
-    <p v-if="loading" class="iz-state">Loading backup jobs…</p>
+    <p v-if="loading" class="iz-state">{{ t("Loading backup jobs…") }}</p>
     <div v-else-if="!jobs.length" class="iz-empty">{{ emptyMessage }}</div>
 
     <div v-else class="backups-panel__rows">
@@ -87,9 +87,9 @@
           @keydown.space.prevent="toggleJob(row)"
         >
           <div class="backups-panel__identity">
-            <strong>Backup #{{ row.jobId }}</strong>
+            <strong>{{ t("Backup #{id}", { id: row.jobId }) }}</strong>
             <span class="backups-panel__meta">
-              {{ typeLabel(row.backupType) }} · {{ triggerLabel(row.triggerSource) }} · {{ formatDate(row.createdAt) }}
+              {{ t("{type} · {trigger} · {date}", { type: typeLabel(row.backupType), trigger: triggerLabel(row.triggerSource), date: formatDate(row.createdAt) }) }}
             </span>
           </div>
 
@@ -116,20 +116,20 @@
               class="iz-btn iz-btn--sm"
               :disabled="busy"
               @click.stop="askPassword({ type: 'dryRun', row: row })"
-            >Dry-run rollback</button>
+            >{{ t("Dry-run rollback") }}</button>
             <button
               v-if="row.status === 'completed'"
               type="button"
               class="iz-btn iz-btn--primary iz-btn--sm"
               :disabled="!!downloadBlockedReason(row) || busy"
-              :title="downloadBlockedReason(row) || 'Download archive'"
+              :title="downloadBlockedReason(row) || t('Download archive')"
               @click.stop="askPassword({ type: 'download', row: row })"
-            >Download</button>
+            >{{ t("Download") }}</button>
             <button
               type="button"
               class="iz-btn iz-btn--icon iz-btn--sm"
               :disabled="busy"
-              :aria-label="'Delete backup #' + row.jobId"
+              :aria-label="t('Delete backup #{id}', { id: row.jobId })"
               @click.stop="askDestructive({ type: 'delete', row: row })"
             >&times;</button>
             <svg
@@ -152,7 +152,7 @@
         </div>
 
         <div v-if="openJobId === row.jobId" class="iz-row__detail backups-panel__detail">
-          <p v-if="detailLoading && !detail" class="iz-state">Loading job detail…</p>
+          <p v-if="detailLoading && !detail" class="iz-state">{{ t("Loading job detail…") }}</p>
           <div v-if="detailError" class="iz-error" role="alert">{{ detailError }}</div>
 
           <template v-if="detail">
@@ -160,48 +160,48 @@
 
             <dl class="backups-panel__facts">
               <div>
-                <dt class="iz-label">Requested by</dt>
-                <dd>{{ detail.requestedByUid === '__system__' ? 'Scheduler' : detail.requestedByUid }}</dd>
+                <dt class="iz-label">{{ t("Requested by") }}</dt>
+                <dd>{{ detail.requestedByUid === '__system__' ? t('Scheduler') : detail.requestedByUid }}</dd>
               </div>
               <div>
-                <dt class="iz-label">Started</dt>
+                <dt class="iz-label">{{ t("Started") }}</dt>
                 <dd>{{ formatDate(detail.startedAt) }}</dd>
               </div>
               <div>
-                <dt class="iz-label">Finished</dt>
+                <dt class="iz-label">{{ t("Finished") }}</dt>
                 <dd>{{ formatDate(detail.finishedAt) }}</dd>
               </div>
               <div>
-                <dt class="iz-label">Duration</dt>
+                <dt class="iz-label">{{ t("Duration") }}</dt>
                 <dd>{{ formatDuration(detail.startedAt, detail.finishedAt) }}</dd>
               </div>
               <div>
-                <dt class="iz-label">Expires</dt>
+                <dt class="iz-label">{{ t("Expires") }}</dt>
                 <dd :class="expiryClass(detail)">{{ formatDate(detail.expiresAt) }}</dd>
               </div>
               <div>
-                <dt class="iz-label">Archive</dt>
+                <dt class="iz-label">{{ t("Archive") }}</dt>
                 <dd>
                   <span v-if="detail.artifactName" class="backups-panel__archive">{{ detail.artifactName }}</span>
-                  <template v-else>Not available</template>
+                  <template v-else>{{ t("Not available") }}</template>
                   <template v-if="detail.artifactSize"> · {{ formatSize(detail.artifactSize) }}</template>
                 </dd>
               </div>
             </dl>
 
             <section v-if="summaryCounts.length" class="backups-panel__section">
-              <span class="iz-section-title">Contents</span>
+              <span class="iz-section-title">{{ t("Contents") }}</span>
               <div class="backups-panel__chips">
                 <span
                   v-for="entry in summaryCounts"
                   :key="entry[0]"
                   class="iz-badge iz-badge--muted"
-                >{{ humanKey(entry[0]) }}: {{ entry[1] }}</span>
+                >{{ t("{item}: {count}", { item: humanKey(entry[0]), count: entry[1] }) }}</span>
               </div>
             </section>
 
             <section v-if="detail.steps && detail.steps.length" class="backups-panel__section">
-              <span class="iz-section-title">Steps</span>
+              <span class="iz-section-title">{{ t("Steps") }}</span>
               <div class="backups-panel__timeline">
                 <div
                   v-for="step in detail.steps"
@@ -219,15 +219,15 @@
             </section>
 
             <section class="backups-panel__section">
-              <span class="iz-section-title">Activity log</span>
-              <div v-if="!events.length" class="iz-empty">No events recorded.</div>
+              <span class="iz-section-title">{{ t("Activity log") }}</span>
+              <div v-if="!events.length" class="iz-empty">{{ t("No events recorded.") }}</div>
               <div v-else class="backups-panel__timeline">
                 <div
                   v-for="event in events"
                   :key="event.id"
                   class="backups-panel__timeline-row"
                 >
-                  <span class="iz-badge" :class="eventTone(event.level)">{{ event.level }}</span>
+                  <span class="iz-badge" :class="eventTone(event.level)">{{ levelLabel(event.level) }}</span>
                   <strong>{{ event.message }}</strong>
                   <span class="backups-panel__meta">{{ formatDate(event.createdAt) }}</span>
                 </div>
@@ -239,25 +239,25 @@
     </div>
 
     <div v-if="jobs.length" class="backups-panel__paging">
-      <span class="backups-panel__paging-total">{{ total }} {{ total === 1 ? 'job' : 'jobs' }}</span>
+      <span class="backups-panel__paging-total">{{ n("%n job", "%n jobs", total) }}</span>
       <button
         type="button"
         class="iz-btn iz-btn--sm"
         :disabled="offset === 0 || loading"
         @click="previousPage"
-      >Previous</button>
+      >{{ t("Previous") }}</button>
       <button
         type="button"
         class="iz-btn iz-btn--sm"
         :disabled="!hasMore || loading"
         @click="nextPage"
-      >Next</button>
+      >{{ t("Next") }}</button>
     </div>
 
     <!-- Rollbacks appear once this organization has any: starting a dry run
          from a row above brings the section into view on the next refresh. -->
     <section v-if="rollbacks.length" class="backups-panel__section">
-      <h4 class="iz-panel__title">Rollback jobs</h4>
+      <h4 class="iz-panel__title">{{ t("Rollback jobs") }}</h4>
       <div class="backups-panel__rows">
         <article
           v-for="row in rollbacks"
@@ -275,12 +275,12 @@
             @keydown.space.prevent="toggleRollback(row)"
           >
             <div class="backups-panel__identity">
-              <strong>Rollback #{{ row.jobId }}</strong>
-              <span class="backups-panel__meta">From backup #{{ row.sourceBackupJobId }} · {{ formatDate(row.createdAt) }}</span>
+              <strong>{{ t("Rollback #{id}", { id: row.jobId }) }}</strong>
+              <span class="backups-panel__meta">{{ t("From backup #{id} · {date}", { id: row.sourceBackupJobId, date: formatDate(row.createdAt) }) }}</span>
             </div>
             <div class="iz-row__actions">
               <span class="iz-badge" :class="row.mode === 'apply' ? 'iz-badge--warning' : 'iz-badge--muted'">
-                {{ row.mode === 'apply' ? 'Apply' : 'Dry run' }}
+                {{ row.mode === 'apply' ? t('Apply') : t('Dry run') }}
               </span>
               <span class="iz-pill" :class="statusTone(row.status)">
                 <span class="iz-dot" aria-hidden="true"></span>
@@ -292,7 +292,7 @@
                 class="iz-btn iz-btn--danger iz-btn--sm"
                 :disabled="busy"
                 @click.stop="askDestructive({ type: 'apply', row: row })"
-              >Apply rollback</button>
+              >{{ t("Apply rollback") }}</button>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="14"
@@ -313,7 +313,7 @@
           </div>
 
           <div v-if="openRollbackId === row.jobId" class="iz-row__detail backups-panel__detail">
-            <p v-if="rollbackDetailLoading && !rollbackDetail" class="iz-state">Loading rollback detail…</p>
+            <p v-if="rollbackDetailLoading && !rollbackDetail" class="iz-state">{{ t("Loading rollback detail…") }}</p>
             <div v-if="rollbackDetailError" class="iz-error" role="alert">{{ rollbackDetailError }}</div>
 
             <template v-if="rollbackDetail">
@@ -321,7 +321,7 @@
 
               <section v-if="rollbackDetail.result" class="backups-panel__section">
                 <span class="iz-pill" :class="rollbackDetail.result.canApply ? 'iz-pill--success' : 'iz-pill--danger'">
-                  {{ rollbackDetail.result.canApply ? 'Validation passed' : 'Validation blocked' }}
+                  {{ rollbackDetail.result.canApply ? t('Validation passed') : t('Validation blocked') }}
                 </span>
                 <ul
                   v-if="rollbackDetail.result.validationErrors && rollbackDetail.result.validationErrors.length"
@@ -334,12 +334,12 @@
                     v-for="entry in rollbackImpact"
                     :key="entry[0]"
                     class="iz-badge iz-badge--muted"
-                  >{{ humanKey(entry[0]) }}: {{ entry[1] }}</span>
+                  >{{ t("{item}: {count}", { item: humanKey(entry[0]), count: entry[1] }) }}</span>
                 </div>
               </section>
 
               <section v-if="rollbackDetail.steps && rollbackDetail.steps.length" class="backups-panel__section">
-                <span class="iz-section-title">Steps</span>
+                <span class="iz-section-title">{{ t("Steps") }}</span>
                 <div class="backups-panel__timeline">
                   <div
                     v-for="step in rollbackDetail.steps"
@@ -357,15 +357,15 @@
               </section>
 
               <section class="backups-panel__section">
-                <span class="iz-section-title">Activity log</span>
-                <div v-if="!rollbackEvents.length" class="iz-empty">No events recorded.</div>
+                <span class="iz-section-title">{{ t("Activity log") }}</span>
+                <div v-if="!rollbackEvents.length" class="iz-empty">{{ t("No events recorded.") }}</div>
                 <div v-else class="backups-panel__timeline">
                   <div
                     v-for="event in rollbackEvents"
                     :key="event.id"
                     class="backups-panel__timeline-row"
                   >
-                    <span class="iz-badge" :class="eventTone(event.level)">{{ event.level }}</span>
+                    <span class="iz-badge" :class="eventTone(event.level)">{{ levelLabel(event.level) }}</span>
                     <strong>{{ event.message }}</strong>
                     <span class="backups-panel__meta">{{ formatDate(event.createdAt) }}</span>
                   </div>
@@ -381,7 +381,7 @@
       v-if="destructiveAction"
       :title="destructiveTitle"
       :message="destructiveMessage"
-      :confirm-label="destructiveAction.type === 'delete' ? 'Delete backup' : 'Continue to password'"
+      :confirm-label="destructiveAction.type === 'delete' ? t('Delete backup') : t('Continue to password')"
       :danger="true"
       @confirm="confirmDestructive"
       @cancel="destructiveAction = null"
@@ -392,14 +392,14 @@
         class="iz-modal backups-panel__password"
         role="dialog"
         aria-modal="true"
-        aria-label="Confirm administrator password"
+        :aria-label="t('Confirm administrator password')"
       >
         <header class="iz-modal__header">
-          <h3 class="backups-panel__modal-title">Confirm administrator password</h3>
+          <h3 class="backups-panel__modal-title">{{ t("Confirm administrator password") }}</h3>
           <button
             type="button"
             class="iz-close iz-close--sm"
-            aria-label="Close"
+            :aria-label="t('Close')"
             :disabled="busy"
             @click="closePassword"
           >&times;</button>
@@ -413,13 +413,13 @@
             type="password"
             name="password"
             autocomplete="current-password"
-            placeholder="Your admin password"
+            :placeholder="t('Your admin password')"
             :disabled="busy"
           />
           <div v-if="passwordError" class="iz-error" role="alert">{{ passwordError }}</div>
         </form>
         <footer class="iz-modal__footer">
-          <button type="button" class="iz-btn" :disabled="busy" @click="closePassword">Cancel</button>
+          <button type="button" class="iz-btn" :disabled="busy" @click="closePassword">{{ t("Cancel") }}</button>
           <button
             type="button"
             class="iz-btn"
@@ -428,7 +428,7 @@
             @click="runPasswordAction"
           >
             <span v-if="busy" class="iz-spinner"></span>
-            {{ busy ? 'Working…' : 'Confirm' }}
+            {{ busy ? t('Working…') : t('Confirm') }}
           </button>
         </footer>
       </div>
@@ -440,8 +440,50 @@
 import axios from "@nextcloud/axios";
 import { generateOcsUrl, generateUrl } from "@nextcloud/router";
 import ConfirmDialog from "./ConfirmDialog.vue";
+import { t, formatNumber, locale } from "../lib/l10n.mjs";
 
 const PAGE_SIZE = 20;
+
+// Status code -> label. Codes stay the logic; only the label is translated.
+const STATUS_LABELS = {
+  queued: () => t("Queued"),
+  running: () => t("Running"),
+  completed: () => t("Completed"),
+  failed: () => t("Failed"),
+  expired: () => t("Expired"),
+  deleted: () => t("Deleted"),
+  skipped: () => t("Skipped"),
+};
+
+// Event level code -> label.
+const LEVEL_LABELS = {
+  error: () => t("error"),
+  warning: () => t("warning"),
+  info: () => t("info"),
+};
+
+// The organization app's backup summary counts, rollback impact and step
+// keys (OrganizationBackupService / OrganizationRollbackService).
+const KEY_LABELS = {
+  members: () => t("Members"),
+  subscriptions: () => t("Subscriptions"),
+  projects: () => t("Projects"),
+  files: () => t("Files"),
+  deckBoards: () => t("Deck boards"),
+  deletedFiles: () => t("Deleted files"),
+  projectFiles: () => t("Project files"),
+  projectNotesPublic: () => t("Public project notes"),
+  projectNotesPrivate: () => t("Private project notes"),
+  collect_db: () => t("Collect database"),
+  export_deck: () => t("Export Deck"),
+  export_files: () => t("Export files"),
+  finalize: () => t("Finalize"),
+  validate_source: () => t("Validate source"),
+  dry_run_preview: () => t("Dry-run preview"),
+  snapshot_pre_restore: () => t("Pre-restore snapshot"),
+  restore_db: () => t("Restore database"),
+  restore_files: () => t("Restore files"),
+};
 const OCS_HEADERS = { "OCS-APIRequest": "true", Accept: "application/json" };
 
 // Job list, detail, and rollback polls all run only while something is
@@ -504,27 +546,27 @@ export default {
   computed: {
     statusOptions() {
       return [
-        { label: "All", value: "" },
-        { label: "Queued", value: "queued" },
-        { label: "Running", value: "running" },
-        { label: "Completed", value: "completed" },
-        { label: "Failed", value: "failed" },
-        { label: "Expired", value: "expired" },
-        { label: "Deleted", value: "deleted" },
+        { label: t("All"), value: "" },
+        { label: t("Queued"), value: "queued" },
+        { label: t("Running"), value: "running" },
+        { label: t("Completed"), value: "completed" },
+        { label: t("Failed"), value: "failed" },
+        { label: t("Expired"), value: "expired" },
+        { label: t("Deleted"), value: "deleted" },
       ];
     },
     typeOptions() {
       return [
-        { label: "All types", value: "" },
-        { label: "Full", value: "full" },
-        { label: "Incremental", value: "incremental" },
+        { label: t("All types"), value: "" },
+        { label: t("Full"), value: "full" },
+        { label: t("Incremental"), value: "incremental" },
       ];
     },
     triggerOptions() {
       return [
-        { label: "All triggers", value: "" },
-        { label: "Scheduled", value: "scheduled" },
-        { label: "Manual", value: "manual" },
+        { label: t("All triggers"), value: "" },
+        { label: t("Scheduled"), value: "scheduled" },
+        { label: t("Manual"), value: "manual" },
       ];
     },
     hasFilters() {
@@ -533,8 +575,8 @@ export default {
     },
     emptyMessage() {
       return this.hasFilters
-        ? "No backup jobs match your filters."
-        : "No backup jobs for this organization yet.";
+        ? t("No backup jobs match your filters.")
+        : t("No backup jobs for this organization yet.");
     },
     summaryCounts() {
       return Object.entries((((this.detail || {}).result || {}).summary || {}).counts || {});
@@ -543,26 +585,26 @@ export default {
       return Object.entries(((this.rollbackDetail || {}).result || {}).impact || {});
     },
     destructiveTitle() {
-      if (!this.destructiveAction) return "Confirm action";
+      if (!this.destructiveAction) return t("Confirm action");
       return this.destructiveAction.type === "delete"
-        ? "Delete backup #" + this.destructiveAction.row.jobId + "?"
-        : "Apply rollback?";
+        ? t("Delete backup #{id}?", { id: this.destructiveAction.row.jobId })
+        : t("Apply rollback?");
     },
     destructiveMessage() {
       return this.destructiveAction && this.destructiveAction.type === "delete"
-        ? "The archive will be permanently removed. This cannot be undone."
-        : "This restores organization data from the selected backup. A safety snapshot is created first, but the operation changes live data.";
+        ? t("The archive will be permanently removed. This cannot be undone.")
+        : t("This restores organization data from the selected backup. A safety snapshot is created first, but the operation changes live data.");
     },
     passwordPrompt() {
-      const labels = {
-        create: "Creating a backup",
-        download: "Downloading this archive",
-        delete: "Deleting this backup",
-        dryRun: "Starting a rollback dry run",
-        apply: "Applying this rollback",
+      const prompts = {
+        create: () => t("Creating a backup requires re-confirming your password."),
+        download: () => t("Downloading this archive requires re-confirming your password."),
+        delete: () => t("Deleting this backup requires re-confirming your password."),
+        dryRun: () => t("Starting a rollback dry run requires re-confirming your password."),
+        apply: () => t("Applying this rollback requires re-confirming your password."),
       };
-      return (labels[this.passwordAction && this.passwordAction.type] || "This action")
-        + " requires re-confirming your password.";
+      const prompt = prompts[this.passwordAction && this.passwordAction.type];
+      return prompt ? prompt() : t("This action requires re-confirming your password.");
     },
   },
   mounted() {
@@ -616,7 +658,7 @@ export default {
         if (this.jobs.some((job) => this.isActive(job.status))) this.startListPolling();
         else this.stopListPolling();
       } catch (e) {
-        this.error = this.describe(e, "Could not load backup jobs.");
+        this.error = this.describe(e, t("Could not load backup jobs."));
       } finally {
         if (!silent) this.loading = false;
       }
@@ -674,7 +716,7 @@ export default {
         this.events = values[1].events || [];
       } catch (e) {
         if (requestId === this.detailRequestId) {
-          this.detailError = this.describe(e, "Could not load backup details.");
+          this.detailError = this.describe(e, t("Could not load backup details."));
         }
       } finally {
         if (requestId === this.detailRequestId) this.detailLoading = false;
@@ -689,7 +731,7 @@ export default {
         if (this.rollbacks.some((job) => this.isActive(job.status))) this.startRollbackPolling();
         else this.stopRollbackPolling();
       } catch (e) {
-        if (!silent) this.actionError = this.describe(e, "Could not load rollback jobs.");
+        if (!silent) this.actionError = this.describe(e, t("Could not load rollback jobs."));
       }
     },
     async toggleRollback(row) {
@@ -719,7 +761,7 @@ export default {
         this.rollbackEvents = values[1].events || [];
       } catch (e) {
         if (requestId === this.rollbackRequestId) {
-          this.rollbackDetailError = this.describe(e, "Could not load rollback details.");
+          this.rollbackDetailError = this.describe(e, t("Could not load rollback details."));
         }
       } finally {
         if (requestId === this.rollbackRequestId) this.rollbackDetailLoading = false;
@@ -863,11 +905,11 @@ export default {
       } catch (e) {
         const url = e && e.response && e.response.config && e.response.config.url;
         if (url && url.indexOf("/login/confirm") !== -1 && e.response.status === 403) {
-          this.passwordError = "Wrong password. Try again.";
+          this.passwordError = t("Wrong password. Try again.");
           this.password = "";
           this.$nextTick(() => this.$refs.passwordInput && this.$refs.passwordInput.focus());
         } else {
-          this.passwordError = this.describe(e, "Could not complete the action.");
+          this.passwordError = this.describe(e, t("Could not complete the action."));
         }
       } finally {
         this.busy = false;
@@ -888,8 +930,8 @@ export default {
         && row.result.canApply === true;
     },
     downloadBlockedReason(row) {
-      if (!row.artifactName) return "No archive was produced.";
-      if (this.isExpired(row.expiresAt)) return "The archive has expired.";
+      if (!row.artifactName) return t("No archive was produced.");
+      if (this.isExpired(row.expiresAt)) return t("The archive has expired.");
       return "";
     },
     isActive(status) {
@@ -898,15 +940,8 @@ export default {
 
     // ── Labels and tones (explicit maps, neutral fallback) ────────────────
     statusLabel(status) {
-      return {
-        queued: "Queued",
-        running: "Running",
-        completed: "Completed",
-        failed: "Failed",
-        expired: "Expired",
-        deleted: "Deleted",
-        skipped: "Skipped",
-      }[status] || status || "Unknown";
+      const label = STATUS_LABELS[status];
+      return label ? label() : (status || t("Unknown"));
     },
     statusTone(status) {
       return {
@@ -941,12 +976,20 @@ export default {
       }[value] || "iz-chip--muted";
     },
     typeLabel(type) {
-      return type === "incremental" ? "Incremental" : "Full";
+      return type === "incremental" ? t("Incremental") : t("Full");
     },
     triggerLabel(source) {
-      return source === "scheduled" ? "Scheduled" : "Manual";
+      return source === "scheduled" ? t("Scheduled") : t("Manual");
     },
+    levelLabel(level) {
+      const label = LEVEL_LABELS[level];
+      return label ? label() : level;
+    },
+    // Backend keys (summary counts, rollback impact, step keys) to a label.
+    // An unknown key falls back to a readable form of the key itself.
     humanKey(key) {
+      const label = KEY_LABELS[key];
+      if (label) return label();
       const value = String(key || "").replace(/([A-Z])/g, " $1").replace(/_/g, " ").trim();
       return value.charAt(0).toUpperCase() + value.slice(1);
     },
@@ -956,10 +999,10 @@ export default {
     // with the column gone it rides in the row summary as a badge.
     expiryNote(row) {
       if (!row.expiresAt || row.status !== "completed") return "";
-      if (this.isExpired(row.expiresAt)) return "Archive expired";
+      if (this.isExpired(row.expiresAt)) return t("Archive expired");
       const hours = this.hoursUntil(row.expiresAt);
       if (hours === null || hours >= 24) return "";
-      return hours < 1 ? "Expires within the hour" : "Expires in " + Math.round(hours) + "h";
+      return hours < 1 ? t("Expires within the hour") : t("Expires in {n}h", { n: Math.round(hours) });
     },
     expiryTone(row) {
       return this.isExpired(row.expiresAt) ? "iz-badge--muted" : "iz-badge--warning";
@@ -992,7 +1035,7 @@ export default {
     formatDate(value) {
       const ms = this.parseDate(value);
       if (ms === null) return value ? String(value) : "—";
-      return new Date(ms).toLocaleString("en-GB", {
+      return new Date(ms).toLocaleString(locale(), {
         day: "2-digit",
         month: "short",
         hour: "2-digit",
@@ -1005,17 +1048,17 @@ export default {
       if (start === null || end === null) return "—";
       const seconds = Math.round((end - start) / 1000);
       if (seconds < 0) return "—";
-      if (seconds < 60) return seconds + "s";
+      if (seconds < 60) return t("{s}s", { s: seconds });
       const minutes = Math.floor(seconds / 60);
-      if (minutes < 60) return minutes + "m " + (seconds % 60) + "s";
-      return Math.floor(minutes / 60) + "h " + (minutes % 60) + "m";
+      if (minutes < 60) return t("{m}m {s}s", { m: minutes, s: seconds % 60 });
+      return t("{h}h {m}m", { h: Math.floor(minutes / 60), m: minutes % 60 });
     },
     formatSize(bytes) {
       const value = Number(bytes || 0);
       if (value < 1024) return value + " B";
-      if (value < 1048576) return (value / 1024).toFixed(1) + " KB";
-      if (value < 1073741824) return (value / 1048576).toFixed(1) + " MB";
-      return (value / 1073741824).toFixed(2) + " GB";
+      if (value < 1048576) return formatNumber(value / 1024) + " KB";
+      if (value < 1073741824) return formatNumber(value / 1048576) + " MB";
+      return formatNumber(value / 1073741824, 2) + " GB";
     },
     describe(e, fallback) {
       const data = e && e.response && e.response.data;

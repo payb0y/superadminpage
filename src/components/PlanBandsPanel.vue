@@ -1,7 +1,7 @@
 <template>
   <div class="plan-bands">
     <div v-if="!plans.length" class="iz-empty">
-      No plans have been created yet, so there is nothing to band.
+      {{ t('No plans have been created yet, so there is nothing to band.') }}
     </div>
 
     <template v-else>
@@ -9,7 +9,7 @@
         <table class="iz-table plan-bands__table">
           <thead>
             <tr>
-              <th scope="col">Plan</th>
+              <th scope="col">{{ t('Plan') }}</th>
               <th
                 v-for="band in bands"
                 :key="'h-' + band"
@@ -19,7 +19,7 @@
                 <span class="plan-bands__sw" :class="bandClass(band)"></span>
                 <span>{{ bandLabel(band) }}</span>
               </th>
-              <th scope="col" class="plan-bands__num">MRR</th>
+              <th scope="col" class="plan-bands__num">{{ t('MRR') }}</th>
             </tr>
           </thead>
 
@@ -57,8 +57,8 @@
           <tfoot>
             <tr>
               <th scope="row" class="plan-bands__plan">
-                <span class="plan-bands__plan-name">All plans</span>
-                <span class="plan-bands__plan-caps">{{ totalActive }} active</span>
+                <span class="plan-bands__plan-name">{{ t('All plans') }}</span>
+                <span class="plan-bands__plan-caps">{{ t('{n} active', { n: totalActive }) }}</span>
               </th>
               <td
                 v-for="band in bands"
@@ -83,28 +83,27 @@
       </div>
 
       <p class="plan-bands__hint">
-        Counts are active subscriptions. Pick a cell to filter the organizations below;
-        pick it again to clear.
+        {{ t('Counts are active subscriptions. Pick a cell to filter the organizations below; pick it again to clear.') }}
       </p>
 
       <p v-if="unmeasured" class="plan-bands__note">
-        {{ unmeasured }} active {{ unmeasured === 1 ? "subscription is" : "subscriptions are" }}
-        on a plan that caps neither members nor projects, so
-        {{ unmeasured === 1 ? "it has" : "they have" }} no usage to band and
-        {{ unmeasured === 1 ? "is" : "are" }} not counted above.
+        {{ n('%n active subscription is on a plan that caps neither members nor projects, so it has no usage to band and is not counted above.', '%n active subscriptions are on a plan that caps neither members nor projects, so they have no usage to band and are not counted above.', unmeasured) }}
       </p>
     </template>
   </div>
 </template>
 
 <script>
+import { t, n, locale } from "../lib/l10n.mjs";
+
 // Explicit tables, never a class or label assembled from the band key — an
 // unexpected key falls back to something real instead of resolving to nothing.
+// Labels are built at call time so they follow the user's language.
 const BAND_LABELS = {
-  low: "under 50%",
-  mid: "50–79%",
-  high: "80–99%",
-  cap: "at or over cap",
+  low: () => t("under 50%"),
+  mid: () => t("50–79%"),
+  high: () => t("80–99%"),
+  cap: () => t("at or over cap"),
 };
 
 const BAND_CLASSES = {
@@ -149,7 +148,7 @@ export default {
   },
   methods: {
     bandLabel(band) {
-      return BAND_LABELS[band] || band;
+      return BAND_LABELS[band] ? BAND_LABELS[band]() : band;
     },
     bandClass(band) {
       return BAND_CLASSES[band] || "plan-bands__band--neutral";
@@ -192,39 +191,45 @@ export default {
     // opposite — a plan that allows nobody.
     planCaps(plan) {
       return [
-        this.moneyIn(plan.price, plan.currency) + " / mo",
-        plan.maxMembers > 0 ? this.plural(plan.maxMembers, "member") : "no member limit",
-        plan.maxProjects > 0 ? this.plural(plan.maxProjects, "project") : "no project limit",
+        t("{price} / mo", { price: this.moneyIn(plan.price, plan.currency) }),
+        plan.maxMembers > 0 ? n("%n member", "%n members", plan.maxMembers) : t("no member limit"),
+        plan.maxProjects > 0 ? n("%n project", "%n projects", plan.maxProjects) : t("no project limit"),
       ].join(" · ");
-    },
-    plural(n, word) {
-      return n + " " + word + (n === 1 ? "" : "s");
     },
     cellLabel(plan, band) {
       const count = plan.bands[band] || 0;
+      const vars = { plan: plan.name, band: this.bandLabel(band) };
       if (!count) {
-        return "No " + plan.name + " subscription is " + this.bandLabel(band);
+        return t("No {plan} subscription is {band}", vars);
       }
-      return (
-        count +
-        " " +
-        plan.name +
-        (count === 1 ? " subscription " : " subscriptions ") +
-        this.bandLabel(band) +
-        (this.isSelected(plan.id, band) ? " — clear this filter" : " — filter the table to these")
+      if (this.isSelected(plan.id, band)) {
+        return t("{label} — clear this filter", {
+          label: n("%n {plan} subscription {band}", "%n {plan} subscriptions {band}", count, vars),
+        });
+      }
+      return n(
+        "%n {plan} subscription {band} — filter the table to these",
+        "%n {plan} subscriptions {band} — filter the table to these",
+        count,
+        vars
       );
     },
     totalLabel(band) {
       const count = this.bandTotal(band);
+      const vars = { band: this.bandLabel(band) };
       if (!count) {
-        return "No subscription on any plan is " + this.bandLabel(band);
+        return t("No subscription on any plan is {band}", vars);
       }
-      return (
-        count +
-        (count === 1 ? " subscription " : " subscriptions ") +
-        this.bandLabel(band) +
-        ", across every plan" +
-        (this.isSelected(null, band) ? " — clear this filter" : " — filter the table to these")
+      if (this.isSelected(null, band)) {
+        return t("{label} — clear this filter", {
+          label: n("%n subscription {band}, across every plan", "%n subscriptions {band}, across every plan", count, vars),
+        });
+      }
+      return n(
+        "%n subscription {band}, across every plan — filter the table to these",
+        "%n subscriptions {band}, across every plan — filter the table to these",
+        count,
+        vars
       );
     },
     // Picking the cell that is already picked clears the filter, so the grid is
@@ -241,7 +246,7 @@ export default {
     },
     moneyIn(value, currency) {
       try {
-        return new Intl.NumberFormat(undefined, {
+        return new Intl.NumberFormat(locale(), {
           style: "currency",
           currency: currency || this.currency || "EUR",
         }).format(value || 0);

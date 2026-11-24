@@ -39,7 +39,7 @@
       <div class="platform-kpi-strip__metrics">
         <button
           v-for="metric in card.metrics"
-          :key="metric.label"
+          :key="metric.filter"
           type="button"
           class="kpi-link platform-kpi-strip__metric"
           :class="metricClass(metric)"
@@ -59,6 +59,7 @@
 
 <script>
 import KpiCard from "./KpiCard.vue";
+import { t } from "../lib/l10n.mjs";
 
 // Tone per card, as an explicit table rather than a class assembled from data.
 const TONE = {
@@ -129,96 +130,96 @@ export default {
       return [
         {
           key: "governance",
-          title: "Governance",
+          title: t("Governance"),
           color: this.attention.noAdmin || this.noPlan ? TONE.bad : TONE.clear,
-          foot: "nobody can administer these",
+          foot: t("nobody can administer these"),
           metrics: [
             {
               value: this.attention.noAdmin || 0,
-              label: "no admin",
+              label: t("no admin"),
               filter: "noAdmin",
               tone: "bad",
-              hint: "Organizations with no member holding the admin role",
+              hint: t("Organizations with no member holding the admin role"),
             },
             {
               value: this.noPlan,
-              label: "no plan",
+              label: t("no plan"),
               filter: "noPlan",
               tone: "bad",
-              hint: "Organizations without an active subscription",
+              hint: t("Organizations without an active subscription"),
             },
           ],
         },
         {
           key: "adoption",
-          title: "Adoption",
+          title: t("Adoption"),
           color: this.attention.noProjects || this.staleOrgs ? TONE.warn : TONE.clear,
-          foot: "onboarded but not started",
+          foot: t("onboarded but not started"),
           metrics: [
             {
               value: this.attention.noProjects || 0,
-              label: "no projects",
+              label: t("no projects"),
               filter: "noProjects",
               tone: "warn",
-              hint: "Organizations that have never created a project",
+              hint: t("Organizations that have never created a project"),
             },
             {
               value: this.staleOrgs,
-              label: "stale >30d",
+              label: t("stale >30d"),
               filter: "staleProjects",
               tone: "warn",
-              hint: "Organizations with a project idle for more than 30 days",
+              hint: t("Organizations with a project idle for more than 30 days"),
             },
           ],
         },
         {
           key: "capacity",
-          title: "Capacity",
+          title: t("Capacity"),
           color: this.capacityColor,
-          foot: "members, projects and storage",
+          foot: t("members, projects and storage"),
           metrics: [
             {
               value: this.capacity.atCap,
-              label: "at cap",
+              label: t("at cap"),
               filter: "atCap",
               tone: "bad",
-              hint: "Active organizations at or over a limit their plan sells",
+              hint: t("Active organizations at or over a limit their plan sells"),
             },
             {
               value: this.capacity.nearCap,
-              label: "80–99%",
+              label: t("80–99%"),
               filter: "nearCap",
               tone: "warn",
-              hint: "Active organizations approaching a member or project limit",
+              hint: t("Active organizations approaching a member or project limit"),
             },
             {
               value: this.storageHigh,
-              label: "storage 80%+",
+              label: t("storage 80%+"),
               filter: "storageHigh",
               tone: "warn",
-              hint: "Organizations using more than 80% of their storage entitlement",
+              hint: t("Organizations using more than 80% of their storage entitlement"),
             },
           ],
         },
         {
           key: "retention",
-          title: "Retention",
+          title: t("Retention"),
           color: this.retention.never ? TONE.bad : this.retention.dormant ? TONE.warn : TONE.clear,
-          foot: "last login by any member",
+          foot: t("last login by any member"),
           metrics: [
             {
               value: this.retention.dormant,
-              label: "dormant >30d",
+              label: t("dormant >30d"),
               filter: "dormant",
               tone: "warn",
-              hint: "Organizations whose most recent member login was over 30 days ago",
+              hint: t("Organizations whose most recent member login was over 30 days ago"),
             },
             {
               value: this.retention.never,
-              label: "never used",
+              label: t("never used"),
               filter: "neverUsed",
               tone: "bad",
-              hint: "Organizations no member has ever signed into",
+              hint: t("Organizations no member has ever signed into"),
             },
           ],
         },

@@ -1,6 +1,6 @@
 <template>
   <div class="task-browser iz-stack iz-stack--tight">
-    <div v-if="loading" class="iz-empty">Loading tasks…</div>
+    <div v-if="loading" class="iz-empty">{{ t('Loading tasks…') }}</div>
     <div v-else-if="error" class="iz-error">
       {{ error }}
     </div>
@@ -8,66 +8,66 @@
     <template v-else>
       <div class="task-browser__filters">
         <div class="task-browser__filter">
-          <label class="iz-label">Search</label>
+          <label class="iz-label">{{ t('Search') }}</label>
           <input
             v-model="filterName"
             type="text"
             class="iz-input"
-            placeholder="Task name…"
+            :placeholder="t('Task name…')"
           />
         </div>
         <div class="task-browser__filter">
-          <label class="iz-label">Status</label>
+          <label class="iz-label">{{ t('Status') }}</label>
           <select v-model="filterStatus" class="iz-select">
-            <option value="">All</option>
-            <option value="open">Open</option>
-            <option value="done">Done</option>
-            <option value="archived">Archived</option>
+            <option value="">{{ t('All') }}</option>
+            <option value="open">{{ t('Open') }}</option>
+            <option value="done">{{ t('Done') }}</option>
+            <option value="archived">{{ t('Archived') }}</option>
           </select>
         </div>
         <div class="task-browser__filter">
-          <label class="iz-label">Stack</label>
+          <label class="iz-label">{{ t('Stack') }}</label>
           <select v-model="filterStack" class="iz-select">
-            <option value="">All</option>
+            <option value="">{{ t('All') }}</option>
             <option v-for="s in stackOptions" :key="s" :value="s">
               {{ s }}
             </option>
           </select>
         </div>
         <div class="task-browser__filter">
-          <label class="iz-label">Label</label>
+          <label class="iz-label">{{ t('Label') }}</label>
           <select v-model="filterLabel" class="iz-select">
-            <option value="">All</option>
+            <option value="">{{ t('All') }}</option>
             <option v-for="l in labelOptions" :key="l" :value="l">
               {{ l }}
             </option>
           </select>
         </div>
         <div class="task-browser__filter">
-          <label class="iz-label">Assignee</label>
+          <label class="iz-label">{{ t('Assignee') }}</label>
           <select v-model="filterAssignee" class="iz-select">
-            <option value="">All</option>
+            <option value="">{{ t('All') }}</option>
             <option v-for="a in assigneeOptions" :key="a" :value="a">
               {{ a }}
             </option>
           </select>
         </div>
         <div class="task-browser__filter">
-          <label class="iz-label">Due</label>
+          <label class="iz-label">{{ t('Due') }}</label>
           <select v-model="filterDue" class="iz-select">
-            <option value="">All</option>
-            <option value="overdue">Overdue</option>
-            <option value="today">Today</option>
-            <option value="tomorrow">Tomorrow</option>
-            <option value="nextSevenDays">Next 7 Days</option>
-            <option value="later">Later</option>
-            <option value="nodue">No Due Date</option>
+            <option value="">{{ t('All') }}</option>
+            <option value="overdue">{{ t('Overdue') }}</option>
+            <option value="today">{{ t('Today') }}</option>
+            <option value="tomorrow">{{ t('Tomorrow') }}</option>
+            <option value="nextSevenDays">{{ t('Next 7 Days') }}</option>
+            <option value="later">{{ t('Later') }}</option>
+            <option value="nodue">{{ t('No Due Date') }}</option>
           </select>
         </div>
       </div>
 
       <div class="task-browser__count">
-        {{ filteredTasks.length }} of {{ tasks.length }} tasks
+        {{ t('{shown} of {total} tasks', { shown: filteredTasks.length, total: tasks.length }) }}
       </div>
 
       <div class="iz-table-wrap">
@@ -79,26 +79,26 @@
                 :class="{ 'iz-table__sort--active': sortKey === 'title' }"
                 @click="toggleSort('title')"
               >
-                Task
+                {{ t('Task') }}
                 <span class="task-browser__sort-arrow">{{ sortArrow('title') }}</span>
               </th>
-              <th>Stack</th>
+              <th>{{ t('Stack') }}</th>
               <th
                 class="iz-table__sort"
                 :class="{ 'iz-table__sort--active': sortKey === 'status' }"
                 @click="toggleSort('status')"
               >
-                Status
+                {{ t('Status') }}
                 <span class="task-browser__sort-arrow">{{ sortArrow('status') }}</span>
               </th>
-              <th>Labels</th>
-              <th>Assignees</th>
+              <th>{{ t('Labels') }}</th>
+              <th>{{ t('Assignees') }}</th>
               <th
                 class="iz-table__sort"
                 :class="{ 'iz-table__sort--active': sortKey === 'due' }"
                 @click="toggleSort('due')"
               >
-                Due Date
+                {{ t('Due Date') }}
                 <span class="task-browser__sort-arrow">{{ sortArrow('due') }}</span>
               </th>
               <th
@@ -106,7 +106,7 @@
                 :class="{ 'iz-table__sort--active': sortKey === 'age' }"
                 @click="toggleSort('age')"
               >
-                Opened
+                {{ t('Opened') }}
                 <span class="task-browser__sort-arrow">{{ sortArrow('age') }}</span>
               </th>
             </tr>
@@ -114,7 +114,7 @@
           <tbody>
             <tr v-if="filteredTasks.length === 0">
               <td colspan="7" class="task-browser__empty">
-                No tasks match the current filters
+                {{ t('No tasks match the current filters') }}
               </td>
             </tr>
             <tr v-for="task in paginatedTasks" :key="'tb-' + task.id">
@@ -124,7 +124,7 @@
               </td>
               <td>
                 <span class="iz-badge" :class="statusToneClass(task.status)">{{
-                  task.status
+                  statusLabel(task.status)
                 }}</span>
               </td>
               <td>
@@ -166,17 +166,17 @@
           :disabled="page <= 1"
           @click="page--"
         >
-          &lsaquo; Prev
+          {{ t('‹ Prev') }}
         </button>
         <span class="task-browser__page-info">
-          Page {{ page }} of {{ totalPages }}
+          {{ t('Page {page} of {total}', { page, total: totalPages }) }}
         </span>
         <button
           class="iz-btn iz-btn--sm"
           :disabled="page >= totalPages"
           @click="page++"
         >
-          Next &rsaquo;
+          {{ t('Next ›') }}
         </button>
       </div>
     </template>
@@ -184,6 +184,8 @@
 </template>
 
 <script>
+import { t, n, tc, locale } from "../lib/l10n.mjs";
+
 export default {
   name: "ProjectTaskBrowser",
   props: {
@@ -217,28 +219,28 @@ export default {
   computed: {
     stackOptions() {
       const set = {};
-      this.tasks.forEach((t) => { if (t.stack) set[t.stack] = true; });
+      this.tasks.forEach((task) => { if (task.stack) set[task.stack] = true; });
       return Object.keys(set).sort();
     },
     labelOptions() {
       const set = {};
-      this.tasks.forEach((t) => (t.labels || []).forEach((l) => { set[l] = true; }));
+      this.tasks.forEach((task) => (task.labels || []).forEach((l) => { set[l] = true; }));
       return Object.keys(set).sort();
     },
     assigneeOptions() {
       const set = {};
-      this.tasks.forEach((t) => (t.assignees || []).forEach((a) => { set[a] = true; }));
+      this.tasks.forEach((task) => (task.assignees || []).forEach((a) => { set[a] = true; }));
       return Object.keys(set).sort();
     },
     filteredTasks() {
       const name = this.filterName.toLowerCase();
-      return this.tasks.filter((t) => {
-        if (name && (t.title || "").toLowerCase().indexOf(name) === -1) return false;
-        if (this.filterStatus && t.status !== this.filterStatus) return false;
-        if (this.filterStack && t.stack !== this.filterStack) return false;
-        if (this.filterLabel && (t.labels || []).indexOf(this.filterLabel) === -1) return false;
-        if (this.filterAssignee && (t.assignees || []).indexOf(this.filterAssignee) === -1) return false;
-        if (this.filterDue && t.dueBucket !== this.filterDue) return false;
+      return this.tasks.filter((task) => {
+        if (name && (task.title || "").toLowerCase().indexOf(name) === -1) return false;
+        if (this.filterStatus && task.status !== this.filterStatus) return false;
+        if (this.filterStack && task.stack !== this.filterStack) return false;
+        if (this.filterLabel && (task.labels || []).indexOf(this.filterLabel) === -1) return false;
+        if (this.filterAssignee && (task.assignees || []).indexOf(this.filterAssignee) === -1) return false;
+        if (this.filterDue && task.dueBucket !== this.filterDue) return false;
         return true;
       });
     },
@@ -278,6 +280,14 @@ export default {
     },
   },
   methods: {
+    // The Deck status code (open / done / archived) stays the filter and sort
+    // key; only the badge text is translated. Unknown codes show as they are.
+    statusLabel(status) {
+      if (status === "open") return tc("open", "task status");
+      if (status === "done") return tc("done", "task status");
+      if (status === "archived") return tc("archived", "task status");
+      return status;
+    },
     // Deck status -> In Zicht badge tone. Kept as a map (not string concat)
     // so an unknown status degrades to the neutral tone instead of emitting a
     // class that doesn't exist.
@@ -307,7 +317,7 @@ export default {
       if (!d) return "—";
       const date = new Date(d);
       if (isNaN(date.getTime())) return d;
-      return date.toLocaleDateString("en-GB", {
+      return date.toLocaleDateString(locale(), {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -319,15 +329,14 @@ export default {
       if (isNaN(created.getTime())) return "—";
       const diffMs = Date.now() - created.getTime();
       const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      if (days < 1) return "Today";
-      if (days === 1) return "1 day";
-      if (days < 7) return days + " days";
+      if (days < 1) return t("Today");
+      if (days < 7) return n("%n day", "%n days", days);
       const weeks = Math.floor(days / 7);
-      if (weeks < 5) return weeks + (weeks === 1 ? " week" : " weeks");
+      if (weeks < 5) return n("%n week", "%n weeks", weeks);
       const months = Math.floor(days / 30);
-      if (months < 12) return months + (months === 1 ? " month" : " months");
+      if (months < 12) return n("%n month", "%n months", months);
       const years = Math.floor(days / 365);
-      return years + (years === 1 ? " year" : " years");
+      return n("%n year", "%n years", years);
     },
   },
 };
