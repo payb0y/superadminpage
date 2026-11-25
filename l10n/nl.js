@@ -1224,6 +1224,7 @@ OC.L10N.register(
     "Tasks open ↓": "Aantal openstaande taken ↓",
     "Tasks overdue ↓": "Aantal achterstallige taken ↓",
     "Tasks total ↓": "Totaal aantal taken ↓",
+    "Tasks|activity source": "Voortgangsmonitor",
     "TBD": "Nog te bepalen",
     "Team capacity could not be loaded.": "De teamcapaciteit kon niet worden geladen.",
     "Team Members": "Projectleden",

@@ -217,10 +217,10 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
-import { t, n, locale } from "../lib/l10n.mjs";
+import { t, n, tc, locale } from "../lib/l10n.mjs";
 
 const SOURCES = [
-  { key: "deck", label: () => t("Tasks") },
+  { key: "deck", label: () => tc("Tasks", "activity source") },
   { key: "files", label: () => t("Files") },
   { key: "talk", label: () => t("Calls") },
   { key: "calendar", label: () => t("Calendar") },
