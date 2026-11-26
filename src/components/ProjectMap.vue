@@ -17,6 +17,7 @@
 // them), and even renaming the chunks didn't help. Static imports trade
 // ~40kb gzipped on the main bundle for total deploy reliability.
 import L from "leaflet";
+import { localizeLeaflet } from "../lib/leafletL10n.mjs";
 import "leaflet/dist/leaflet.css";
 import { t } from "../lib/l10n.mjs";
 
@@ -66,6 +67,7 @@ export default {
     },
   },
   mounted() {
+    localizeLeaflet(L);
     this._map = L.map(this.$refs.mapRoot, { scrollWheelZoom: true }).setView(
       [this.lat, this.lng],
       16

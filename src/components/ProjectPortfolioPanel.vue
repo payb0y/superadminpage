@@ -221,7 +221,7 @@
                   :title="t('Filter table by this status')"
                   tabindex="0"
                   role="button"
-                  :aria-label="t('Filter table by {status}, {n} projects', { status: status.label, n: status.count })"
+                  :aria-label="n('Filter table by {status}, %n project', 'Filter table by {status}, %n projects', status.count, { status: status.label })"
                   @click="openTableView(status.key)"
                   @keydown="onDrilldownKeydown($event, status.key)"
                 >

@@ -91,7 +91,7 @@
                   class="iz-badge iz-badge--warning"
                   :title="t('Recorded in the subscription audit trail, but this organization\'s current subscription does not match it — so the amount on this line never took effect. Only the most recent logged change can be checked this way.')"
                 >{{ t("logged, never applied") }}</span>
-                <span v-if="event.notes" class="financials__event-note">“{{ event.notes }}”</span>
+                <span v-if="event.notes" class="financials__event-note">“{{ noteLabel(event.notes) }}”</span>
               </span>
               <span class="financials__event-amount" :class="amountTone(event.amount)">
                 {{ signedMoney(event.amount) }}
@@ -654,6 +654,11 @@ export default {
     this.fetch();
   },
   methods: {
+    // Notes written by the system itself (the organization app's expiry job)
+    // are fixed English sentences; an admin's own note is shown as typed.
+    noteLabel(note) {
+      return note === "Expired by cron" ? t("Expired by cron") : note;
+    },
     async fetch() {
       try {
         const res = await axios.get(

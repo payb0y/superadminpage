@@ -674,7 +674,7 @@ class OrgOverviewService {
         $sqlNotes = "
             SELECT cp.id AS project_id, COUNT(f.fileid) AS cnt
             FROM *PREFIX*custom_projects cp
-            LEFT JOIN *PREFIX*filecache pnf ON pnf.parent = cp.folder_id AND pnf.name IN ('Public Notes', 'Openbare notities')
+            LEFT JOIN *PREFIX*filecache pnf ON pnf.parent = cp.folder_id AND pnf.name IN ('Public Notes', 'Openbare notities', 'Gedeelde notities')
             LEFT JOIN *PREFIX*filecache f ON f.parent = pnf.fileid
                 AND f.mimetype != (SELECT id FROM *PREFIX*mimetypes WHERE mimetype = 'httpd/unix-directory')
             WHERE cp.organization_id = ? AND cp.id IN ($ph)

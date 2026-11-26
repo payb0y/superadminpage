@@ -169,15 +169,15 @@
             <div class="projects-panel__resources">
               <div class="projects-panel__resource-item">
                 <span class="projects-panel__resource-value">{{ (project.resources && project.resources.files) || 0 }}</span>
-                <span class="projects-panel__resource-label">{{ t('Files') }}</span>
+                <span class="projects-panel__resource-label">{{ n('File', 'Files', (project.resources && project.resources.files) || 0) }}</span>
               </div>
               <div class="projects-panel__resource-item">
                 <span class="projects-panel__resource-value">{{ (project.resources && project.resources.whiteboards) || 0 }}</span>
-                <span class="projects-panel__resource-label">{{ t('Whiteboards') }}</span>
+                <span class="projects-panel__resource-label">{{ n('Whiteboard', 'Whiteboards', (project.resources && project.resources.whiteboards) || 0) }}</span>
               </div>
               <div class="projects-panel__resource-item">
                 <span class="projects-panel__resource-value">{{ (project.resources && project.resources.notes) || 0 }}</span>
-                <span class="projects-panel__resource-label">{{ t('Notes') }}</span>
+                <span class="projects-panel__resource-label">{{ n('Note', 'Notes', (project.resources && project.resources.notes) || 0) }}</span>
               </div>
             </div>
           </div>

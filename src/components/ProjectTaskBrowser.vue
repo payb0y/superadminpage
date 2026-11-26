@@ -30,7 +30,7 @@
           <select v-model="filterStack" class="iz-select">
             <option value="">{{ t('All') }}</option>
             <option v-for="s in stackOptions" :key="s" :value="s">
-              {{ s }}
+              {{ stepDisplayName(s) }}
             </option>
           </select>
         </div>
@@ -120,7 +120,7 @@
             <tr v-for="task in paginatedTasks" :key="'tb-' + task.id">
               <td class="task-browser__cell-title">{{ task.title }}</td>
               <td>
-                <span class="iz-badge iz-badge--accent">{{ task.stack }}</span>
+                <span class="iz-badge iz-badge--accent">{{ stepDisplayName(task.stack) }}</span>
               </td>
               <td>
                 <span class="iz-badge" :class="statusToneClass(task.status)">{{
@@ -185,6 +185,7 @@
 
 <script>
 import { t, n, tc, locale } from "../lib/l10n.mjs";
+import { stepDisplayName } from "../lib/stepNames.mjs";
 
 export default {
   name: "ProjectTaskBrowser",
@@ -280,6 +281,7 @@ export default {
     },
   },
   methods: {
+    stepDisplayName,
     // The Deck status code (open / done / archived) stays the filter and sort
     // key; only the badge text is translated. Unknown codes show as they are.
     statusLabel(status) {

@@ -802,7 +802,15 @@ class ActivityService {
     }
 
     private function humanize(string $type, string $subject, ?string $user, ?string $file = null): string {
-        $actor = $user ?: $this->l->t('System');
+        $actor = ($user !== null && $user !== '' && $user !== '__system__') ? $user : $this->l->t('System');
+        // A known Files or Deck event reads as a phrase ("Taak aangemaakt")
+        // instead of its codes; the codes stay in `action` for filtering.
+        $event = $this->eventLabel($subject);
+        if ($event !== null) {
+            return $file
+                ? $this->l->t('%1$s: %2$s on %3$s', [$actor, $event, $file])
+                : $this->l->t('%1$s: %2$s', [$actor, $event]);
+        }
         // Subject strings come from NC apps and aren't 1:1 actions, but they're
         // good enough as a free-form fragment — we prefix with the actor and
         // join with the activity type for context. One whole sentence per
@@ -848,6 +856,67 @@ class ActivityService {
             case 'scheduled':   return $this->l->t('Scheduled');
             case 'manual':      return $this->l->t('Manual');
             default:            return $code;
+        }
+    }
+
+    /**
+     * Display phrase for an activity subject from the Files or Deck app, or
+     * null for a subject this feed does not know (shown with its codes, as
+     * before). Deck cards are tasks and boards are Voortgangsmonitors here.
+     */
+    private function eventLabel(string $subject): ?string {
+        switch ($subject) {
+            // Files
+            case 'created_self': case 'created_by': case 'created_public':
+                return $this->l->t('File created');
+            case 'changed_self': case 'changed_by':
+                return $this->l->t('File changed');
+            case 'deleted_self': case 'deleted_by':
+                return $this->l->t('File deleted');
+            case 'restored_self': case 'restored_by':
+                return $this->l->t('File restored');
+            case 'renamed_self': case 'renamed_by':
+                return $this->l->t('File renamed');
+            case 'moved_self': case 'moved_by':
+                return $this->l->t('File moved');
+            // Deck
+            case 'board_create':            return $this->l->t('Board created');
+            case 'board_update': case 'board_update_title':
+                                            return $this->l->t('Board changed');
+            case 'board_update_archived':   return $this->l->t('Board archived');
+            case 'board_delete':            return $this->l->t('Board deleted');
+            case 'board_restore':           return $this->l->t('Board restored');
+            case 'board_share':             return $this->l->t('Board shared');
+            case 'board_unshare':           return $this->l->t('Board no longer shared');
+            case 'stack_create':            return $this->l->t('Step created');
+            case 'stack_update': case 'stack_update_title': case 'stack_update_order':
+                                            return $this->l->t('Step changed');
+            case 'stack_delete':            return $this->l->t('Step deleted');
+            case 'card_create':             return $this->l->t('Task created');
+            case 'card_delete':             return $this->l->t('Task deleted');
+            case 'card_restore':            return $this->l->t('Task restored');
+            case 'card_update':             return $this->l->t('Task changed');
+            case 'card_update_title':       return $this->l->t('Task title changed');
+            case 'card_update_description': return $this->l->t('Task description changed');
+            case 'card_update_duedate':     return $this->l->t('Task deadline changed');
+            case 'card_update_archive':     return $this->l->t('Task archived');
+            case 'card_update_unarchive':   return $this->l->t('Task unarchived');
+            case 'card_update_done':        return $this->l->t('Task marked as done');
+            case 'card_update_undone':      return $this->l->t('Task marked as not done');
+            case 'card_update_stackId':     return $this->l->t('Task moved to another step');
+            case 'card_user_assign':        return $this->l->t('Task assigned');
+            case 'card_user_unassign':      return $this->l->t('Task unassigned');
+            case 'card_comment_create':     return $this->l->t('Comment added to task');
+            case 'attachment_create':       return $this->l->t('Attachment added to task');
+            case 'attachment_update':       return $this->l->t('Task attachment changed');
+            case 'attachment_delete':       return $this->l->t('Task attachment deleted');
+            case 'attachment_restore':      return $this->l->t('Task attachment restored');
+            case 'label_create':            return $this->l->t('Label created');
+            case 'label_update':            return $this->l->t('Label changed');
+            case 'label_delete':            return $this->l->t('Label deleted');
+            case 'label_assign':            return $this->l->t('Label added to task');
+            case 'label_unassign':          return $this->l->t('Label removed from task');
+            default:                        return null;
         }
     }
 

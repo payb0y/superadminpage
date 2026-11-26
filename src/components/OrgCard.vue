@@ -29,14 +29,14 @@
           class="org-card__metric-value"
           :class="{ 'iz-mark': metricHighlight === 'members' }"
         >{{ org.memberCount }}</span>
-        <span class="org-card__metric-label">{{ t("members") }}</span>
+        <span class="org-card__metric-label">{{ n("member", "members", org.memberCount) }}</span>
       </div>
       <div class="org-card__metric">
         <span
           class="org-card__metric-value"
           :class="{ 'iz-mark': metricHighlight === 'projects' }"
         >{{ org.projectCount }}</span>
-        <span class="org-card__metric-label">{{ t("projects") }}</span>
+        <span class="org-card__metric-label">{{ n("project", "projects", org.projectCount) }}</span>
       </div>
       <div class="org-card__metric">
         <span class="org-card__metric-value">{{ storageDisplay }}</span>
@@ -87,7 +87,7 @@
 </template>
 
 <script>
-import { t, formatNumber } from "../lib/l10n.mjs";
+import { t, n, formatNumber } from "../lib/l10n.mjs";
 
 // Subscription status code → label, made at display time.
 const STATUS_LABELS = {

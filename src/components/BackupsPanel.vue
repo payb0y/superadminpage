@@ -228,7 +228,7 @@
                   class="backups-panel__timeline-row"
                 >
                   <span class="iz-badge" :class="eventTone(event.level)">{{ levelLabel(event.level) }}</span>
-                  <strong>{{ event.message }}</strong>
+                  <strong>{{ eventMessage(event.message) }}</strong>
                   <span class="backups-panel__meta">{{ formatDate(event.createdAt) }}</span>
                 </div>
               </div>
@@ -366,7 +366,7 @@
                     class="backups-panel__timeline-row"
                   >
                     <span class="iz-badge" :class="eventTone(event.level)">{{ levelLabel(event.level) }}</span>
-                    <strong>{{ event.message }}</strong>
+                    <strong>{{ eventMessage(event.message) }}</strong>
                     <span class="backups-panel__meta">{{ formatDate(event.createdAt) }}</span>
                   </div>
                 </div>
@@ -462,9 +462,29 @@ const LEVEL_LABELS = {
   info: () => t("info"),
 };
 
+// The organization app writes its backup and rollback log lines in English;
+// the known ones are shown in the user's language, anything else as written.
+const EVENT_MESSAGES = {
+  "Organization backup job queued": () => t("Organization backup job queued"),
+  "Backup execution started": () => t("Backup execution started"),
+  "Incremental backup upgraded to full backup": () => t("Incremental backup upgraded to full backup"),
+  "Backup completed": () => t("Backup completed"),
+  "Backup failed": () => t("Backup failed"),
+  "Backup failed before execution start": () => t("Backup failed before execution start"),
+  "Backup expired": () => t("Backup expired"),
+  "Backup artifact deleted": () => t("Backup artifact deleted"),
+  "Rollback job queued": () => t("Rollback job queued"),
+  "Rollback execution started": () => t("Rollback execution started"),
+  "Rollback completed": () => t("Rollback completed"),
+  "Rollback failed": () => t("Rollback failed"),
+  "Rollback failed before execution start": () => t("Rollback failed before execution start"),
+};
+
 // The organization app's backup summary counts, rollback impact and step
 // keys (OrganizationBackupService / OrganizationRollbackService).
 const KEY_LABELS = {
+  organization: () => t("Organization"),
+  externals: () => t("External"),
   members: () => t("Members"),
   subscriptions: () => t("Subscriptions"),
   projects: () => t("Projects"),
@@ -621,6 +641,10 @@ export default {
     document.removeEventListener("visibilitychange", this.onVisibility);
   },
   methods: {
+    eventMessage(message) {
+      const label = EVENT_MESSAGES[message];
+      return label ? label() : message;
+    },
     orgBase() {
       return "/apps/organization/organizations/" + this.orgId + "/backups";
     },

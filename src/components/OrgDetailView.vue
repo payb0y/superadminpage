@@ -70,10 +70,10 @@
             ]"
           />
           <KpiCard
-            :title="t('Resources')"
+            :title="t('Members')"
             icon="resources"
             :metrics="[
-              { value: org.usageSummary.memberCount, label: t('members') },
+              { value: org.usageSummary.memberCount, label: n('member', 'members', org.usageSummary.memberCount) },
               {
                 value: org.subscription.maxMembers || '∞',
                 label: t('plan cap'),
@@ -199,7 +199,7 @@ import SubscriptionPanel from "./SubscriptionPanel.vue";
 import HandoverPanel from "./HandoverPanel.vue";
 import OrganizationSettingsPanel from "./OrganizationSettingsPanel.vue";
 import ExternalCollaboratorsPanel from "./ExternalCollaboratorsPanel.vue";
-import { t, formatNumber, locale } from "../lib/l10n.mjs";
+import { t, n, formatNumber, locale } from "../lib/l10n.mjs";
 
 // Subscription status code → label, made at display time.
 const STATUS_LABELS = {

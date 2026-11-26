@@ -481,7 +481,7 @@
               v-if="isOwner(member)"
               class="members-panel__role members-panel__role--owner"
               :title="t('Organization owner')"
-            >{{ t("Owner") }}</span>
+            >{{ t("Organization owner") }}</span>
             <span
               class="members-panel__role"
               :class="'members-panel__role--' + member.role"

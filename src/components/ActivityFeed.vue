@@ -148,7 +148,7 @@
                 <span class="activity-feed__row-time">{{ formatTime(row.ts) }}</span>
                 <template v-if="row.actor_uid">
                   <span class="activity-feed__row-dot">·</span>
-                  <span class="activity-feed__row-actor">{{ row.actor_uid }}</span>
+                  <span class="activity-feed__row-actor">{{ row.actor_uid === "__system__" ? t("System") : row.actor_uid }}</span>
                 </template>
               </div>
             </div>

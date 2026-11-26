@@ -60,7 +60,7 @@
             @change="clearDryRun"
           />
           <span>
-            <strong>{{ t("Dry run") }}</strong>
+            <strong>{{ tc("Dry run", "handover") }}</strong>
             <span class="ho-panel__hint"> {{ t("— preview only, no changes applied") }}</span>
           </span>
         </label>
