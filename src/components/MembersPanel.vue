@@ -656,7 +656,7 @@
         v-if="filteredMembers.length > 0"
         class="members-panel__showing-hint"
       >
-        {{ t("Showing {shown} of {total} members", { shown: paginatedMembers.length, total: filteredMembers.length }) }}
+        {{ n("Showing {shown} of %n member", "Showing {shown} of %n members", filteredMembers.length, { shown: paginatedMembers.length }) }}
       </div>
     </div>
   </component>

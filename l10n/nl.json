@@ -196,6 +196,10 @@
             "project",
             "projecten"
         ],
+        "_Showing {shown} of %n member_::_Showing {shown} of %n members_": [
+            "{shown} van %n medewerker weergegeven",
+            "{shown} van %n medewerkers weergegeven"
+        ],
         "_Starts in %n week_::_Starts in %n weeks_": [
             "Start over %n week",
             "Start over %n weken"
