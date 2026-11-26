@@ -1184,6 +1184,12 @@ export default {
 }
 
 /* Status pills */
+/* Dutch labels carry their own capitals ("Eigenaar van de organisatie",
+   "In wachtrij"); capitalising every word is only right for English. */
+html[lang^="nl"] .ho-panel__status {
+  text-transform: none;
+}
+
 .ho-panel__status {
   display: inline-flex;
   align-items: center;

@@ -1289,6 +1289,12 @@ export default {
   opacity: 0.8;
 }
 
+/* Dutch labels carry their own capitals ("Eigenaar van de organisatie",
+   "In wachtrij"); capitalising every word is only right for English. */
+html[lang^="nl"] .members-panel__role {
+  text-transform: none;
+}
+
 .members-panel__role {
   font-size: var(--iz-fs-micro);
   font-weight: 600;
